@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "401 Unauthorized になるのはなぜですか？",
     "Why does the request fail with an insufficient balance?": "残高不足でリクエストが失敗するのはなぜですか？",
     "Why is my model name rejected?": "モデル名が拒否されるのはなぜですか？",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "はい。OpenAI ルートはサーバー送信イベント、ツール呼び出し、推論出力に対応しており、Anthropic ルートは同等の Messages 機能に対応しています。"
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "はい。OpenAI ルートはサーバー送信イベント、ツール呼び出し、推論出力に対応しており、Anthropic ルートは同等の Messages 機能に対応しています。",
+    "WeChat Pay (Official)": "WeChat Pay（公式）",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "自社のWeChat Pay加盟店アカウントによるAPIv3 Native QRコード決済。決済通貨は人民元です。",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "WeChat Pay加盟店プラットフォームの加盟店認証情報を入力してください：AppID、加盟店ID、APIv3キー、証明書シリアル番号、加盟店秘密鍵（apiclient_key.pem）。",
+    "Enable WeChat Pay": "WeChat Payを有効化",
+    "AppID": "AppID",
+    "APIv3 Key": "APIv3キー",
+    "Certificate Serial Number": "証明書シリアル番号",
+    "Merchant Private Key (apiclient_key.pem)": "加盟店秘密鍵（apiclient_key.pem）",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "WeChatでQRコードをスキャンして {{amount}} を支払ってください。支払い後、残高は自動的に追加されます。",
+    "Order number": "注文番号",
+    "Failed to create the payment QR code": "支払いQRコードの作成に失敗しました",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "空欄の場合はサーバーアドレスを使用します。WeChat Payから到達可能な公開HTTPS URLである必要があります。",
+    "Unit price (CNY)": "単価（人民元）",
+    "How much CNY to charge per USD of balance": "残高1USDあたりに請求する人民元の金額",
+    "Order description": "注文説明",
+    "Shown to the payer inside WeChat": "WeChat内で支払者に表示されます"
   }
 }

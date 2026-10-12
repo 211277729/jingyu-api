@@ -180,6 +180,19 @@ const BILLING_SECTIONS = [
         }}
         waffoPancakeProvisionedStoreID={settings.WaffoPancakeStoreID ?? ''}
         waffoPancakeProvisionedProductID={settings.WaffoPancakeProductID ?? ''}
+        wxPayDefaultValues={{
+          WxPayEnabled: settings.WxPayEnabled ?? false,
+          WxPayAppId: settings.WxPayAppId ?? '',
+          WxPayMchId: settings.WxPayMchId ?? '',
+          WxPayMchApiV3Key: settings.WxPayMchApiV3Key ?? '',
+          WxPaySerialNo: settings.WxPaySerialNo ?? '',
+          WxPayPrivateKey: settings.WxPayPrivateKey ?? '',
+          WxPayNotifyUrl: settings.WxPayNotifyUrl ?? '',
+          WxPayUnitPrice: settings.WxPayUnitPrice ?? 1,
+          WxPayMinTopUp: settings.WxPayMinTopUp ?? 1,
+          WxPayCurrency: settings.WxPayCurrency ?? 'CNY',
+          WxPayDescription: settings.WxPayDescription ?? '',
+        }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,
           termsVersion:

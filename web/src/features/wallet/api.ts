@@ -39,6 +39,8 @@ import type {
   WaffoPaymentResponse,
   WaffoPancakePaymentRequest,
   WaffoPancakePaymentResponse,
+  WxPayPaymentRequest,
+  WxPayPaymentResponse,
 } from './types'
 
 // ============================================================================
@@ -158,9 +160,32 @@ export async function requestWaffoPayment(
 }
 
 /**
- * Calculate payment amount for Waffo Pancake payment
+ * Calculate payment amount for official WeChat Pay payment
  */
-export async function calculateWaffoPancakeAmount(
+export async function calculateWxPayAmount(
+  request: AmountRequest
+): Promise<AmountResponse> {
+  const res = await api.post('/api/user/wxpay/amount', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Request official WeChat Pay payment (returns Native QR code URL)
+ */
+export async function requestWxPayPayment(
+  request: WxPayPaymentRequest
+): Promise<WxPayPaymentResponse> {
+  const res = await api.post('/api/user/wxpay/pay', request, {
+    skipBusinessError: true,
+  } as Record<string, unknown>)
+  return res.data
+}
+
+/**
+ * Calculate payment amount for Waffo Pancake payment
+ */export async function calculateWaffoPancakeAmount(
   request: AmountRequest
 ): Promise<AmountResponse> {
   const res = await api.post('/api/user/waffo-pancake/amount', request, {

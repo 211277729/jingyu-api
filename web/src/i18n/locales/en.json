@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "Why do I get 401 Unauthorized?",
     "Why does the request fail with an insufficient balance?": "Why does the request fail with an insufficient balance?",
     "Why is my model name rejected?": "Why is my model name rejected?",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features."
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.",
+    "WeChat Pay (Official)": "WeChat Pay (Official)",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).",
+    "Enable WeChat Pay": "Enable WeChat Pay",
+    "AppID": "AppID",
+    "APIv3 Key": "APIv3 Key",
+    "Certificate Serial Number": "Certificate Serial Number",
+    "Merchant Private Key (apiclient_key.pem)": "Merchant Private Key (apiclient_key.pem)",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.",
+    "Order number": "Order number",
+    "Failed to create the payment QR code": "Failed to create the payment QR code",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.",
+    "Unit price (CNY)": "Unit price (CNY)",
+    "How much CNY to charge per USD of balance": "How much CNY to charge per USD of balance",
+    "Order description": "Order description",
+    "Shown to the payer inside WeChat": "Shown to the payer inside WeChat"
   }
 }

@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "为什么我会遇到 401 未授权？",
     "Why does the request fail with an insufficient balance?": "为什么请求会因余额不足而失败？",
     "Why is my model name rejected?": "为什么我的模型名称被拒绝？",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "可以。OpenAI 路由支持服务器发送事件、工具调用和推理输出；Anthropic 路由支持对应的 Messages 功能。"
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "可以。OpenAI 路由支持服务器发送事件、工具调用和推理输出；Anthropic 路由支持对应的 Messages 功能。",
+    "WeChat Pay (Official)": "微信支付（官方）",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "使用你自己的微信支付商户号进行 APIv3 Native 扫码支付，以人民币结算。",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "在微信支付商户平台获取并填写商户凭证：AppID、商户号、APIv3 密钥、证书序列号以及商户私钥（apiclient_key.pem）。",
+    "Enable WeChat Pay": "启用微信支付",
+    "AppID": "AppID",
+    "APIv3 Key": "APIv3 密钥",
+    "Certificate Serial Number": "证书序列号",
+    "Merchant Private Key (apiclient_key.pem)": "商户私钥（apiclient_key.pem）",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "使用微信扫码支付 {{amount}}。支付完成后余额将自动到账。",
+    "Order number": "订单号",
+    "Failed to create the payment QR code": "支付二维码创建失败",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "留空则使用服务器地址。必须是微信支付可访问的公网 HTTPS 地址。",
+    "Unit price (CNY)": "单价（人民币）",
+    "How much CNY to charge per USD of balance": "每 1 美元余额收取的人民币金额",
+    "Order description": "订单描述",
+    "Shown to the payer inside WeChat": "支付时在微信内展示给付款方"
   }
 }

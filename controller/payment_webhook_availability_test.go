@@ -151,6 +151,56 @@ func TestWaffoPancakeWebhookEnabledRequiresTopUpAndWebhookConfig(t *testing.T) {
 	require.False(t, isWaffoPancakeWebhookEnabled())
 }
 
+func TestWxPayWebhookEnabledRequiresFullMerchantConfig(t *testing.T) {
+	confirmPaymentComplianceForTest(t)
+	originalEnabled := setting.WxPayEnabled
+	originalAppId := setting.WxPayAppId
+	originalMchId := setting.WxPayMchId
+	originalApiV3Key := setting.WxPayMchApiV3Key
+	originalSerialNo := setting.WxPaySerialNo
+	originalPrivateKey := setting.WxPayPrivateKey
+	t.Cleanup(func() {
+		setting.WxPayEnabled = originalEnabled
+		setting.WxPayAppId = originalAppId
+		setting.WxPayMchId = originalMchId
+		setting.WxPayMchApiV3Key = originalApiV3Key
+		setting.WxPaySerialNo = originalSerialNo
+		setting.WxPayPrivateKey = originalPrivateKey
+	})
+
+	setting.WxPayEnabled = true
+	setting.WxPayAppId = "wx_app_id"
+	setting.WxPayMchId = "mch_id"
+	setting.WxPayMchApiV3Key = "api_v3_key"
+	setting.WxPaySerialNo = "serial_no"
+	setting.WxPayPrivateKey = "private-key"
+	require.True(t, isWxPayWebhookEnabled())
+
+	// 每个必填项缺失都必须禁用通道
+	setting.WxPayEnabled = false
+	require.False(t, isWxPayWebhookEnabled())
+	setting.WxPayEnabled = true
+
+	setting.WxPayAppId = ""
+	require.False(t, isWxPayWebhookEnabled())
+	setting.WxPayAppId = "wx_app_id"
+
+	setting.WxPayMchId = ""
+	require.False(t, isWxPayWebhookEnabled())
+	setting.WxPayMchId = "mch_id"
+
+	setting.WxPayMchApiV3Key = ""
+	require.False(t, isWxPayWebhookEnabled())
+	setting.WxPayMchApiV3Key = "api_v3_key"
+
+	setting.WxPaySerialNo = ""
+	require.False(t, isWxPayWebhookEnabled())
+	setting.WxPaySerialNo = "serial_no"
+
+	setting.WxPayPrivateKey = ""
+	require.False(t, isWxPayWebhookEnabled())
+}
+
 func TestEpayWebhookEnabledRequiresTopUpAndWebhookConfig(t *testing.T) {
 	confirmPaymentComplianceForTest(t)
 	originalPayAddress := operation_setting.PayAddress

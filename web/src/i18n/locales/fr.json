@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "Pourquoi j'obtiens 401 Unauthorized ?",
     "Why does the request fail with an insufficient balance?": "Pourquoi la requête échoue-t-elle avec un solde insuffisant ?",
     "Why is my model name rejected?": "Pourquoi mon nom de modèle est-il refusé ?",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Oui. Les routes OpenAI prennent en charge les server-sent events, les appels d'outils et la sortie de raisonnement ; la route Anthropic prend en charge les fonctionnalités Messages équivalentes."
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Oui. Les routes OpenAI prennent en charge les server-sent events, les appels d'outils et la sortie de raisonnement ; la route Anthropic prend en charge les fonctionnalités Messages équivalentes.",
+    "WeChat Pay (Official)": "WeChat Pay (officiel)",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "Paiements WeChat Pay APIv3 par QR code Native avec votre propre compte marchand. Règlement en CNY.",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "Renseignez les identifiants marchands de la plateforme WeChat Pay : AppID, identifiant marchand, clé APIv3, numéro de série du certificat et clé privée marchande (apiclient_key.pem).",
+    "Enable WeChat Pay": "Activer WeChat Pay",
+    "AppID": "AppID",
+    "APIv3 Key": "Clé APIv3",
+    "Certificate Serial Number": "Numéro de série du certificat",
+    "Merchant Private Key (apiclient_key.pem)": "Clé privée marchande (apiclient_key.pem)",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "Scannez le QR code avec WeChat pour payer {{amount}}. Le solde est crédité automatiquement après le paiement.",
+    "Order number": "Numéro de commande",
+    "Failed to create the payment QR code": "Échec de la création du QR code de paiement",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "Laissez vide pour utiliser l'adresse du serveur. Doit être une URL HTTPS publique accessible par WeChat Pay.",
+    "Unit price (CNY)": "Prix unitaire (CNY)",
+    "How much CNY to charge per USD of balance": "Montant en CNY facturé par USD de solde",
+    "Order description": "Description de la commande",
+    "Shown to the payer inside WeChat": "Affichée au payeur dans WeChat"
   }
 }

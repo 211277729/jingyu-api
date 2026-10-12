@@ -81,6 +81,10 @@ import {
   WaffoSettingsSection,
   type WaffoSettingsValues,
 } from './waffo-settings-section'
+import {
+  WxPaySettingsSection,
+  type WxPaySettingsValues,
+} from './wxpay-settings-section'
 
 function isHttpOriginUrl(value: string) {
   const trimmed = value.trim()
@@ -180,13 +184,40 @@ const paymentSchema = z.object({
   WaffoPancakeReturnURL: z.string(),
   WaffoPancakeUnitPrice: z.coerce.number().min(0),
   WaffoPancakeMinTopUp: z.coerce.number().min(1),
+  WxPayEnabled: z.boolean(),
+  WxPayAppId: z.string(),
+  WxPayMchId: z.string(),
+  WxPayMchApiV3Key: z.string(),
+  WxPaySerialNo: z.string(),
+  WxPayPrivateKey: z.string(),
+  WxPayNotifyUrl: z.string(),
+  WxPayUnitPrice: z.coerce.number().min(0),
+  WxPayMinTopUp: z.coerce.number().min(1),
+  WxPayCurrency: z.string(),
+  WxPayDescription: z.string(),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
 type WaffoFormFieldValues = Omit<WaffoSettingsValues, 'WaffoPayMethods'>
+type WxPayFormFieldValues = Pick<
+  PaymentFormValues,
+  | 'WxPayEnabled'
+  | 'WxPayAppId'
+  | 'WxPayMchId'
+  | 'WxPayMchApiV3Key'
+  | 'WxPaySerialNo'
+  | 'WxPayPrivateKey'
+  | 'WxPayNotifyUrl'
+  | 'WxPayUnitPrice'
+  | 'WxPayMinTopUp'
+  | 'WxPayCurrency'
+  | 'WxPayDescription'
+>
 type PaymentBaseFormValues = Omit<
   PaymentFormValues,
-  keyof WaffoFormFieldValues | keyof WaffoPancakeSettingsValues
+  | keyof WaffoFormFieldValues
+  | keyof WaffoPancakeSettingsValues
+  | keyof WxPayFormFieldValues
 >
 
 const CURRENT_COMPLIANCE_TERMS_VERSION = 'v1'
@@ -203,6 +234,7 @@ type PaymentSettingsSectionProps = {
   defaultValues: PaymentBaseFormValues
   waffoDefaultValues: WaffoSettingsValues
   waffoPancakeDefaultValues: WaffoPancakeSettingsValues
+  wxPayDefaultValues: WxPaySettingsValues
   waffoPancakeProvisionedStoreID?: string
   waffoPancakeProvisionedProductID?: string
   complianceDefaults: PaymentComplianceDefaults
@@ -221,6 +253,7 @@ export function PaymentSettingsSection({
   defaultValues,
   waffoDefaultValues,
   waffoPancakeDefaultValues,
+  wxPayDefaultValues,
   waffoPancakeProvisionedStoreID,
   waffoPancakeProvisionedProductID,
   complianceDefaults,
@@ -233,8 +266,9 @@ export function PaymentSettingsSection({
       ...defaultValues,
       ...waffoDefaultValues,
       ...waffoPancakeDefaultValues,
+      ...wxPayDefaultValues,
     }),
-    [defaultValues, waffoDefaultValues, waffoPancakeDefaultValues]
+    [defaultValues, waffoDefaultValues, waffoPancakeDefaultValues, wxPayDefaultValues]
   )
   const initialRef = React.useRef(initialFormValues)
   const defaultsSignature = React.useMemo(
@@ -408,6 +442,19 @@ export function PaymentSettingsSection({
     [setPaymentValue]
   )
 
+  const setWxPayValue = React.useCallback(
+    <K extends keyof WxPayFormFieldValues>(
+      key: K,
+      value: WxPayFormFieldValues[K]
+    ) => {
+      setPaymentValue(
+        key as keyof PaymentFormValues,
+        value as PaymentFormValues[keyof PaymentFormValues]
+      )
+    },
+    [setPaymentValue]
+  )
+
   React.useEffect(() => {
     const parsedDefaults = JSON.parse(defaultsSignature) as PaymentFormValues
     initialRef.current = parsedDefaults
@@ -461,6 +508,17 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         values.WaffoPancakeReturnURL.trim()
       ),
+      WxPayEnabled: values.WxPayEnabled,
+      WxPayAppId: values.WxPayAppId.trim(),
+      WxPayMchId: values.WxPayMchId.trim(),
+      WxPayMchApiV3Key: values.WxPayMchApiV3Key.trim(),
+      WxPaySerialNo: values.WxPaySerialNo.trim(),
+      WxPayPrivateKey: values.WxPayPrivateKey.trim(),
+      WxPayNotifyUrl: removeTrailingSlash(values.WxPayNotifyUrl.trim()),
+      WxPayUnitPrice: values.WxPayUnitPrice,
+      WxPayMinTopUp: values.WxPayMinTopUp,
+      WxPayCurrency: values.WxPayCurrency.trim() || 'CNY',
+      WxPayDescription: values.WxPayDescription.trim(),
     }
 
     const initial = {
@@ -508,6 +566,19 @@ export function PaymentSettingsSection({
       WaffoPancakeReturnURL: removeTrailingSlash(
         initialRef.current.WaffoPancakeReturnURL.trim()
       ),
+      WxPayEnabled: initialRef.current.WxPayEnabled,
+      WxPayAppId: initialRef.current.WxPayAppId.trim(),
+      WxPayMchId: initialRef.current.WxPayMchId.trim(),
+      WxPayMchApiV3Key: initialRef.current.WxPayMchApiV3Key.trim(),
+      WxPaySerialNo: initialRef.current.WxPaySerialNo.trim(),
+      WxPayPrivateKey: initialRef.current.WxPayPrivateKey.trim(),
+      WxPayNotifyUrl: removeTrailingSlash(
+        initialRef.current.WxPayNotifyUrl.trim()
+      ),
+      WxPayUnitPrice: initialRef.current.WxPayUnitPrice,
+      WxPayMinTopUp: initialRef.current.WxPayMinTopUp,
+      WxPayCurrency: initialRef.current.WxPayCurrency.trim() || 'CNY',
+      WxPayDescription: initialRef.current.WxPayDescription.trim(),
     }
 
     const updates: Array<{ key: string; value: string | number | boolean }> = []
@@ -705,6 +776,45 @@ export function PaymentSettingsSection({
       updates.push({ key: 'WaffoPayMethods', value: sanitized.WaffoPayMethods })
     }
 
+    // WeChat Pay official gateway: non-secret fields ride the options path;
+    // secrets only update when the operator types a new value.
+    if (sanitized.WxPayEnabled !== initial.WxPayEnabled) {
+      updates.push({ key: 'WxPayEnabled', value: sanitized.WxPayEnabled })
+    }
+    if (sanitized.WxPayAppId !== initial.WxPayAppId) {
+      updates.push({ key: 'WxPayAppId', value: sanitized.WxPayAppId })
+    }
+    if (sanitized.WxPayMchId !== initial.WxPayMchId) {
+      updates.push({ key: 'WxPayMchId', value: sanitized.WxPayMchId })
+    }
+    if (sanitized.WxPayMchApiV3Key) {
+      updates.push({ key: 'WxPayMchApiV3Key', value: sanitized.WxPayMchApiV3Key })
+    }
+    if (sanitized.WxPaySerialNo !== initial.WxPaySerialNo) {
+      updates.push({ key: 'WxPaySerialNo', value: sanitized.WxPaySerialNo })
+    }
+    if (sanitized.WxPayPrivateKey) {
+      updates.push({ key: 'WxPayPrivateKey', value: sanitized.WxPayPrivateKey })
+    }
+    if (sanitized.WxPayNotifyUrl !== initial.WxPayNotifyUrl) {
+      updates.push({ key: 'WxPayNotifyUrl', value: sanitized.WxPayNotifyUrl })
+    }
+    if (sanitized.WxPayUnitPrice !== initial.WxPayUnitPrice) {
+      updates.push({ key: 'WxPayUnitPrice', value: sanitized.WxPayUnitPrice })
+    }
+    if (sanitized.WxPayMinTopUp !== initial.WxPayMinTopUp) {
+      updates.push({ key: 'WxPayMinTopUp', value: sanitized.WxPayMinTopUp })
+    }
+    if (sanitized.WxPayCurrency !== initial.WxPayCurrency) {
+      updates.push({ key: 'WxPayCurrency', value: sanitized.WxPayCurrency })
+    }
+    if (sanitized.WxPayDescription !== initial.WxPayDescription) {
+      updates.push({
+        key: 'WxPayDescription',
+        value: sanitized.WxPayDescription,
+      })
+    }
+
     // Pancake pricing rides the generic options path (PUT /api/option/), not
     // the dedicated credential save below: it needs no credentials, and
     // gating it behind the store/product requirement would block a
@@ -826,6 +936,19 @@ export function PaymentSettingsSection({
     WaffoPancakeUnitPrice: currentFormValues.WaffoPancakeUnitPrice,
     WaffoPancakeMinTopUp: currentFormValues.WaffoPancakeMinTopUp,
   }
+  const wxPayValues: WxPaySettingsValues = {
+    WxPayEnabled: currentFormValues.WxPayEnabled,
+    WxPayAppId: currentFormValues.WxPayAppId,
+    WxPayMchId: currentFormValues.WxPayMchId,
+    WxPayMchApiV3Key: currentFormValues.WxPayMchApiV3Key,
+    WxPaySerialNo: currentFormValues.WxPaySerialNo,
+    WxPayPrivateKey: currentFormValues.WxPayPrivateKey,
+    WxPayNotifyUrl: currentFormValues.WxPayNotifyUrl,
+    WxPayUnitPrice: currentFormValues.WxPayUnitPrice,
+    WxPayMinTopUp: currentFormValues.WxPayMinTopUp,
+    WxPayCurrency: currentFormValues.WxPayCurrency,
+    WxPayDescription: currentFormValues.WxPayDescription,
+  }
 
   return (
     <SettingsSection title={t('Payment Gateway')}>
@@ -908,13 +1031,14 @@ export function PaymentSettingsSection({
           />
           <Tabs defaultValue='general' className='min-w-0'>
             <div className='overflow-x-auto pb-1'>
-              <TabsList className='grid min-w-[44rem] grid-cols-6'>
+              <TabsList className='grid min-w-[52rem] grid-cols-7'>
                 <TabsTrigger value='general'>{t('General')}</TabsTrigger>
                 <TabsTrigger value='epay'>Epay</TabsTrigger>
                 <TabsTrigger value='stripe'>{t('Stripe')}</TabsTrigger>
                 <TabsTrigger value='creem'>Creem</TabsTrigger>
                 <TabsTrigger value='waffo-pancake'>Waffo Pancake</TabsTrigger>
                 <TabsTrigger value='waffo'>Waffo</TabsTrigger>
+                <TabsTrigger value='wxpay'>{t('WeChat Pay')}</TabsTrigger>
               </TabsList>
             </div>
 
@@ -1646,6 +1770,13 @@ export function PaymentSettingsSection({
                 selectedBinding={waffoPancakeSelection}
                 savedBinding={waffoPancakeSavedBinding}
                 onSelectedBindingChange={setWaffoPancakeSelection}
+              />
+            </TabsContent>
+
+            <TabsContent value='wxpay' className={paymentTabContentClassName}>
+              <WxPaySettingsSection
+                values={wxPayValues}
+                onValueChange={setWxPayValue}
               />
             </TabsContent>
 

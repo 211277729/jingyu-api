@@ -108,3 +108,25 @@ func isEpayWebhookConfigured() bool {
 func isEpayWebhookEnabled() bool {
 	return isEpayTopUpEnabled()
 }
+
+func isWxPayTopUpEnabled() bool {
+	if !isPaymentComplianceConfirmed() {
+		return false
+	}
+	if !setting.WxPayEnabled {
+		return false
+	}
+	return isWxPayWebhookConfigured()
+}
+
+func isWxPayWebhookConfigured() bool {
+	return strings.TrimSpace(setting.WxPayAppId) != "" &&
+		strings.TrimSpace(setting.WxPayMchId) != "" &&
+		strings.TrimSpace(setting.WxPayMchApiV3Key) != "" &&
+		strings.TrimSpace(setting.WxPaySerialNo) != "" &&
+		strings.TrimSpace(setting.WxPayPrivateKey) != ""
+}
+
+func isWxPayWebhookEnabled() bool {
+	return isWxPayTopUpEnabled()
+}

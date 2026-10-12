@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "Vì sao tôi gặp lỗi 401 Unauthorized?",
     "Why does the request fail with an insufficient balance?": "Vì sao yêu cầu thất bại với lỗi số dư không đủ?",
     "Why is my model name rejected?": "Vì sao tên mô hình của tôi bị từ chối?",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Có. Các route OpenAI hỗ trợ server-sent events, gọi công cụ và đầu ra suy luận; route Anthropic hỗ trợ các tính năng Messages tương đương."
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Có. Các route OpenAI hỗ trợ server-sent events, gọi công cụ và đầu ra suy luận; route Anthropic hỗ trợ các tính năng Messages tương đương.",
+    "WeChat Pay (Official)": "WeChat Pay (chính thức)",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "Thanh toán WeChat Pay APIv3 qua mã QR Native bằng tài khoản doanh nghiệp của riêng bạn. Thanh toán bằng CNY.",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "Nhập thông tin xác thực doanh nghiệp từ nền tảng WeChat Pay: AppID, mã doanh nghiệp, khóa APIv3, số serial chứng chỉ và khóa riêng (apiclient_key.pem).",
+    "Enable WeChat Pay": "Bật WeChat Pay",
+    "AppID": "AppID",
+    "APIv3 Key": "Khóa APIv3",
+    "Certificate Serial Number": "Số serial chứng chỉ",
+    "Merchant Private Key (apiclient_key.pem)": "Khóa riêng (apiclient_key.pem)",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "Quét mã QR bằng WeChat để thanh toán {{amount}}. Số dư sẽ được cộng tự động sau khi thanh toán.",
+    "Order number": "Mã đơn hàng",
+    "Failed to create the payment QR code": "Không tạo được mã QR thanh toán",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "Để trống để dùng địa chỉ máy chủ. Phải là URL HTTPS công khai mà WeChat Pay truy cập được.",
+    "Unit price (CNY)": "Đơn giá (CNY)",
+    "How much CNY to charge per USD of balance": "Số CNY tính cho mỗi 1 USD số dư",
+    "Order description": "Mô tả đơn hàng",
+    "Shown to the payer inside WeChat": "Hiển thị cho người trả tiền trong WeChat"
   }
 }

@@ -111,6 +111,16 @@ export function isWaffoPancakePayment(paymentType: string): boolean {
   return paymentType === PAYMENT_TYPES.WAFFO_PANCAKE
 }
 
+/**
+ * Check if payment method is official WeChat Pay
+ *
+ * WeChat Pay Native returns a QR code URL (code_url) that the wallet UI
+ * renders in a dialog, so it is special-cased in payment dispatch logic.
+ */
+export function isWxPayPayment(paymentType: string): boolean {
+  return paymentType === PAYMENT_TYPES.WXPAY_OFFICIAL
+}
+
 export interface PaymentProcessors {
   regular: (topupAmount: number, paymentType: string) => Promise<boolean>
   waffo: (topupAmount: number, payMethodIndex: number) => Promise<boolean>
@@ -162,6 +172,10 @@ export function getDefaultPaymentType(topupInfo: TopupInfo | null): string {
     return PAYMENT_TYPES.WAFFO_PANCAKE
   }
 
+  if (topupInfo.enable_wxpay_topup) {
+    return PAYMENT_TYPES.WXPAY_OFFICIAL
+  }
+
   return DEFAULT_PAYMENT_TYPE
 }
 
@@ -187,6 +201,10 @@ export function getMinTopupAmount(topupInfo: TopupInfo | null): number {
 
   if (topupInfo.enable_waffo_pancake_topup) {
     return topupInfo.waffo_pancake_min_topup || DEFAULT_MIN_TOPUP
+  }
+
+  if (topupInfo.enable_wxpay_topup) {
+    return topupInfo.wxpay_min_topup || DEFAULT_MIN_TOPUP
   }
 
   return DEFAULT_MIN_TOPUP

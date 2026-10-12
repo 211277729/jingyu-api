@@ -97,12 +97,35 @@ func GetTopUpInfo(c *gin.Context) {
 		}
 	}
 
+	enableWxPay := isWxPayTopUpEnabled()
+	if enableWxPay {
+		hasWxPay := false
+		for _, method := range payMethods {
+			if method["type"] == model.PaymentMethodWxPay {
+				hasWxPay = true
+				break
+			}
+		}
+
+		if !hasWxPay {
+			wxPayMethod := map[string]string{
+				"name":      "WeChat Pay",
+				"type":      model.PaymentMethodWxPay,
+				"color":     "#07C160",
+				"min_topup": strconv.Itoa(setting.WxPayMinTopUp),
+			}
+			payMethods = append(payMethods, wxPayMethod)
+		}
+	}
+
 	data := gin.H{
 		"enable_online_topup":              isEpayTopUpEnabled(),
 		"enable_stripe_topup":              isStripeTopUpEnabled(),
 		"enable_creem_topup":               isCreemTopUpEnabled(),
 		"enable_waffo_topup":               enableWaffo,
 		"enable_waffo_pancake_topup":       enableWaffoPancake,
+		"enable_wxpay_topup":               enableWxPay,
+		"wxpay_min_topup":                  setting.WxPayMinTopUp,
 		"enable_redemption":                complianceConfirmed,
 		"payment_compliance_confirmed":     complianceConfirmed,
 		"payment_compliance_terms_version": operation_setting.CurrentComplianceTermsVersion,

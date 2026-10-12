@@ -7313,6 +7313,22 @@
     "Why do I get 401 Unauthorized?": "Почему я получаю 401 Unauthorized?",
     "Why does the request fail with an insufficient balance?": "Почему запрос завершается ошибкой о недостаточном балансе?",
     "Why is my model name rejected?": "Почему моё название модели отклоняется?",
-    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Да. Маршруты OpenAI поддерживают server-sent events, вызов инструментов и вывод рассуждений; маршрут Anthropic поддерживает аналогичные возможности Messages."
+    "Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.": "Да. Маршруты OpenAI поддерживают server-sent events, вызов инструментов и вывод рассуждений; маршрут Anthropic поддерживает аналогичные возможности Messages.",
+    "WeChat Pay (Official)": "WeChat Pay (официальный)",
+    "WeChat Pay APIv3 Native QR payments with your own merchant account. Settlement is in CNY.": "Платежи WeChat Pay APIv3 по QR-коду Native с вашим собственным мерчант-аккаунтом. Расчёты в CNY.",
+    "Fill in the merchant credentials from the WeChat Pay merchant platform: AppID, merchant ID, APIv3 key, certificate serial number, and the merchant private key (apiclient_key.pem).": "Укажите учётные данные продавца из платформы WeChat Pay: AppID, ID продавца, ключ APIv3, серийный номер сертификата и приватный ключ продавца (apiclient_key.pem).",
+    "Enable WeChat Pay": "Включить WeChat Pay",
+    "AppID": "AppID",
+    "APIv3 Key": "Ключ APIv3",
+    "Certificate Serial Number": "Серийный номер сертификата",
+    "Merchant Private Key (apiclient_key.pem)": "Приватный ключ продавца (apiclient_key.pem)",
+    "Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.": "Отсканируйте QR-код в WeChat, чтобы оплатить {{amount}}. Баланс пополнится автоматически после оплаты.",
+    "Order number": "Номер заказа",
+    "Failed to create the payment QR code": "Не удалось создать QR-код для оплаты",
+    "Leave blank to use the server address. Must be a public HTTPS URL reachable by WeChat Pay.": "Оставьте пустым, чтобы использовать адрес сервера. Должен быть публичный HTTPS-адрес, доступный WeChat Pay.",
+    "Unit price (CNY)": "Цена за единицу (CNY)",
+    "How much CNY to charge per USD of balance": "Сколько CNY взимать за 1 USD баланса",
+    "Order description": "Описание заказа",
+    "Shown to the payer inside WeChat": "Отображается плательщику внутри WeChat"
   }
 }

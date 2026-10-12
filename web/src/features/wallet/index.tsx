@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { SectionPageLayout } from '@/components/layout'
 import { useStatus } from '@/hooks/use-status'
@@ -29,6 +30,7 @@ import { BillingHistoryDialog } from './components/dialogs/billing-history-dialo
 import { CreemConfirmDialog } from './components/dialogs/creem-confirm-dialog'
 import { PaymentConfirmDialog } from './components/dialogs/payment-confirm-dialog'
 import { TransferDialog } from './components/dialogs/transfer-dialog'
+import { WxPayQrCodeDialog } from './components/dialogs/wxpay-qr-code-dialog'
 import { RechargeFormCard } from './components/recharge-form-card'
 import { SubscriptionPlansCard } from './components/subscription-plans-card'
 import { WalletStatsCard } from './components/wallet-stats-card'
@@ -41,11 +43,13 @@ import {
   useCreemPayment,
   useWaffoPayment,
   useWaffoPancakePayment,
+  useWxPayPayment,
 } from './hooks'
 import {
   getDefaultPaymentType,
   getMinTopupAmount,
   dispatchSelectedPayment,
+  isWxPayPayment,
 } from './lib'
 import type {
   UserWalletData,
@@ -79,6 +83,7 @@ export function Wallet(props: WalletProps) {
   const [selectedCreemProduct, setSelectedCreemProduct] =
     useState<CreemProduct | null>(null)
   const [showSubscriptionPanel, setShowSubscriptionPanel] = useState(true)
+  const [wxPayDialogOpen, setWxPayDialogOpen] = useState(false)
 
   const { status } = useStatus()
   const { currency } = useSystemConfig()
@@ -108,6 +113,14 @@ export function Wallet(props: WalletProps) {
   const { processing: waffoProcessing, processWaffoPayment } = useWaffoPayment()
   const { processing: pancakeProcessing, processWaffoPancakePayment } =
     useWaffoPancakePayment()
+  const {
+    processing: wxPayProcessing,
+    codeUrl: wxPayCodeUrl,
+    orderId: wxPayOrderId,
+    processWxPayPayment,
+    dismissWxPayQrCode,
+    noQrCodeMessage: wxPayNoQrCodeMessage,
+  } = useWxPayPayment()
 
   // Fetch and refresh user data
   const fetchUser = useCallback(async () => {
@@ -193,6 +206,19 @@ export function Wallet(props: WalletProps) {
   // Handle payment confirmation
   const handlePaymentConfirm = async () => {
     if (!selectedPaymentMethod) return
+
+    // WeChat Pay Native returns a QR code shown in its own dialog instead of
+    // redirecting; the balance refresh happens after the dialog closes.
+    if (isWxPayPayment(selectedPaymentMethod.type)) {
+      const created = await processWxPayPayment(topupAmount)
+      if (created) {
+        setConfirmDialogOpen(false)
+        setWxPayDialogOpen(true)
+      } else {
+        toast.error(wxPayNoQrCodeMessage)
+      }
+      return
+    }
 
     const success = await dispatchSelectedPayment(
       selectedPaymentMethod,
@@ -360,9 +386,23 @@ export function Wallet(props: WalletProps) {
         paymentAmount={paymentAmount}
         paymentMethod={selectedPaymentMethod}
         calculating={calculating}
-        processing={processing || waffoProcessing || pancakeProcessing}
+        processing={processing || waffoProcessing || pancakeProcessing || wxPayProcessing}
         discountRate={getDiscountRate()}
         usdExchangeRate={effectiveUsdExchangeRate}
+      />
+
+      <WxPayQrCodeDialog
+        open={wxPayDialogOpen}
+        onOpenChange={(open) => {
+          setWxPayDialogOpen(open)
+          if (!open) {
+            dismissWxPayQrCode()
+            void fetchUser()
+          }
+        }}
+        codeUrl={wxPayCodeUrl}
+        orderId={wxPayOrderId}
+        paymentAmount={paymentAmount}
       />
 
       <TransferDialog

@@ -125,6 +125,18 @@ func InitOptionMap() {
 	common.OptionMap["WaffoPancakeMinTopUp"] = strconv.Itoa(setting.WaffoPancakeMinTopUp)
 	common.OptionMap["WaffoPancakeStoreID"] = setting.WaffoPancakeStoreID
 	common.OptionMap["WaffoPancakeProductID"] = setting.WaffoPancakeProductID
+	common.OptionMap["WxPayEnabled"] = strconv.FormatBool(setting.WxPayEnabled)
+	common.OptionMap["WxPayAppId"] = setting.WxPayAppId
+	common.OptionMap["WxPayMchId"] = setting.WxPayMchId
+	common.OptionMap["WxPayMchApiV3Key"] = setting.WxPayMchApiV3Key
+	common.OptionMap["WxPaySerialNo"] = setting.WxPaySerialNo
+	common.OptionMap["WxPayPrivateKey"] = setting.WxPayPrivateKey
+	common.OptionMap["WxPayNotifyUrl"] = setting.WxPayNotifyUrl
+	common.OptionMap["WxPayUnitPrice"] = strconv.FormatFloat(setting.WxPayUnitPrice, 'f', -1, 64)
+	common.OptionMap["WxPayMinTopUp"] = strconv.Itoa(setting.WxPayMinTopUp)
+	common.OptionMap["WxPayCurrency"] = setting.WxPayCurrency
+	common.OptionMap["WxPayDescription"] = setting.WxPayDescription
+	common.OptionMap["WxPayCallbackCert"] = setting.WxPayCallbackCert
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -573,6 +585,30 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WaffoPancakeUnitPrice, _ = strconv.ParseFloat(value, 64)
 	case "WaffoPancakeMinTopUp":
 		setting.WaffoPancakeMinTopUp, _ = strconv.Atoi(value)
+	case "WxPayEnabled":
+		setting.WxPayEnabled = value == "true"
+	case "WxPayAppId":
+		setting.WxPayAppId = value
+	case "WxPayMchId":
+		setting.WxPayMchId = value
+	case "WxPayMchApiV3Key":
+		setting.WxPayMchApiV3Key = value
+	case "WxPaySerialNo":
+		setting.WxPaySerialNo = value
+	case "WxPayPrivateKey":
+		setting.WxPayPrivateKey = value
+	case "WxPayNotifyUrl":
+		setting.WxPayNotifyUrl = value
+	case "WxPayUnitPrice":
+		setting.WxPayUnitPrice, _ = strconv.ParseFloat(value, 64)
+	case "WxPayMinTopUp":
+		setting.WxPayMinTopUp, _ = strconv.Atoi(value)
+	case "WxPayCurrency":
+		setting.WxPayCurrency = value
+	case "WxPayDescription":
+		setting.WxPayDescription = value
+	case "WxPayCallbackCert":
+		setting.WxPayCallbackCert = value
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":
