@@ -178,6 +178,8 @@ const paymentSchema = z.object({
   WaffoPancakeMerchantID: z.string(),
   WaffoPancakePrivateKey: z.string(),
   WaffoPancakeReturnURL: z.string(),
+  WaffoPancakeUnitPrice: z.coerce.number().min(0),
+  WaffoPancakeMinTopUp: z.coerce.number().min(1),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
@@ -703,6 +705,28 @@ export function PaymentSettingsSection({
       updates.push({ key: 'WaffoPayMethods', value: sanitized.WaffoPayMethods })
     }
 
+    // Pancake pricing rides the generic options path (PUT /api/option/), not
+    // the dedicated credential save below: it needs no credentials, and
+    // gating it behind the store/product requirement would block a
+    // price-only change.
+    if (
+      values.WaffoPancakeUnitPrice !== initialRef.current.WaffoPancakeUnitPrice
+    ) {
+      updates.push({
+        key: 'WaffoPancakeUnitPrice',
+        value: values.WaffoPancakeUnitPrice,
+      })
+    }
+
+    if (
+      values.WaffoPancakeMinTopUp !== initialRef.current.WaffoPancakeMinTopUp
+    ) {
+      updates.push({
+        key: 'WaffoPancakeMinTopUp',
+        value: values.WaffoPancakeMinTopUp,
+      })
+    }
+
     const hasWaffoPancakeChanges =
       sanitized.WaffoPancakeMerchantID !== initial.WaffoPancakeMerchantID ||
       sanitized.WaffoPancakePrivateKey.length > 0 ||
@@ -799,6 +823,8 @@ export function PaymentSettingsSection({
     WaffoPancakeMerchantID: currentFormValues.WaffoPancakeMerchantID,
     WaffoPancakePrivateKey: currentFormValues.WaffoPancakePrivateKey,
     WaffoPancakeReturnURL: currentFormValues.WaffoPancakeReturnURL,
+    WaffoPancakeUnitPrice: currentFormValues.WaffoPancakeUnitPrice,
+    WaffoPancakeMinTopUp: currentFormValues.WaffoPancakeMinTopUp,
   }
 
   return (

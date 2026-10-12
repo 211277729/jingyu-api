@@ -4758,6 +4758,7 @@
     "Price": "价格",
     "Price ($/1K calls)": "价格（$/1K 次）",
     "Price (local currency / USD)": "价格（本地货币/美元）",
+    "Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.": "每单位额度的收费价格。请与全局「价格」设置保持一致，否则收银台实收金额会与充值预览不符。",
     "Price display": "价格显示",
     "Price display mode": "价格显示模式",
     "Price estimation": "价格预估",

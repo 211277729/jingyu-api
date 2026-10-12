@@ -348,6 +348,10 @@ export type BillingSettings = {
   WaffoPancakeMerchantID: string
   WaffoPancakePrivateKey: string
   WaffoPancakeReturnURL: string
+  // Checkout currency is fixed to USD, so this is a plain multiplier applied
+  // to the credit amount (see controller/topup_waffo_pancake.go).
+  WaffoPancakeUnitPrice: number
+  WaffoPancakeMinTopUp: number
   // Bound by the operator through the catalog flow in the admin Pancake
   // section (saved via /api/option/waffo-pancake/save).
   WaffoPancakeStoreID: string

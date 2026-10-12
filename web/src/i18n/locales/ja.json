@@ -4758,6 +4758,7 @@
     "Price": "価格",
     "Price ($/1K calls)": "価格（$/1K 回）",
     "Price (local currency / USD)": "価格 (現地通貨 / USD)",
+    "Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.": "クレジット1単位あたりの請求額。グローバルな「価格」設定と同じ値にしないと、決済画面の請求額がチャージのプレビューと一致しません。",
     "Price display": "価格表示",
     "Price display mode": "価格表示モード",
     "Price estimation": "料金見積もり",

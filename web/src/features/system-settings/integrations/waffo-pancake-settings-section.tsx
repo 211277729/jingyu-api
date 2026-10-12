@@ -42,6 +42,8 @@ export type WaffoPancakeSettingsValues = {
   WaffoPancakeMerchantID: string
   WaffoPancakePrivateKey: string
   WaffoPancakeReturnURL: string
+  WaffoPancakeUnitPrice: number
+  WaffoPancakeMinTopUp: number
 }
 
 export interface WaffoPancakeBinding {
@@ -451,6 +453,50 @@ export function WaffoPancakeSettingsSection({
               'The environment (test vs production) is decided by the key you paste here — use the Test key while integrating, then swap to the Production key when going live.'
             )}
           </p>
+        </div>
+
+        {/*
+          Pricing — sits next to the credentials because both feed the same
+          checkout call. Pancake's checkout currency is fixed to USD, so
+          UnitPrice is a plain multiplier: credit × UnitPrice becomes the USD
+          amount sent to Pancake. Keep it equal to the global Price setting, or
+          the checkout total will disagree with the recharge preview.
+        */}
+        <div className='grid gap-4 sm:grid-cols-2 lg:col-span-2'>
+          <div className='grid gap-1.5'>
+            <Label>{t('Unit price (USD)')}</Label>
+            <Input
+              type='number'
+              step={0.1}
+              min={0}
+              value={values.WaffoPancakeUnitPrice}
+              onChange={(event) =>
+                onValueChange(
+                  'WaffoPancakeUnitPrice',
+                  event.target.value === '' ? 0 : event.target.valueAsNumber
+                )
+              }
+            />
+            <p className='text-muted-foreground text-xs'>
+              {t(
+                'Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.'
+              )}
+            </p>
+          </div>
+          <div className='grid gap-1.5'>
+            <Label>{t('Minimum top-up quantity')}</Label>
+            <Input
+              type='number'
+              min={1}
+              value={values.WaffoPancakeMinTopUp}
+              onChange={(event) =>
+                onValueChange(
+                  'WaffoPancakeMinTopUp',
+                  event.target.value === '' ? 1 : event.target.valueAsNumber
+                )
+              }
+            />
+          </div>
         </div>
 
         {/*
