@@ -43,6 +43,7 @@ import {
   getPaymentIcon,
   getMinTopupAmount,
   calculatePresetPricing,
+  isPaymentGatewayEnabled,
 } from '../lib'
 import type {
   PaymentMethod,
@@ -139,8 +140,14 @@ export function RechargeFormCard({
     enableWaffoPancakeTopup ||
     enableWxPayTopup
   const hasAnyTopup = hasConfigurableTopup || enableCreemTopup
-  const hasStandardPaymentMethods =
-    Array.isArray(topupInfo?.pay_methods) && topupInfo.pay_methods.length > 0
+  // Hide entries whose gateway is not configured: the Epay method list can
+  // hold alipay/custom types while the Epay gateway itself is disabled.
+  const standardPaymentMethods = topupInfo
+    ? (topupInfo.pay_methods ?? []).filter((method) =>
+        isPaymentGatewayEnabled(topupInfo, method.type)
+      )
+    : []
+  const hasStandardPaymentMethods = standardPaymentMethods.length > 0
   const hasWaffoPaymentMethods =
     Array.isArray(waffoPayMethods) && waffoPayMethods.length > 0
   const minTopup = getMinTopupAmount(topupInfo)
@@ -332,7 +339,7 @@ export function RechargeFormCard({
                 </Label>
                 {hasStandardPaymentMethods ? (
                   <div className='grid grid-cols-2 gap-1.5 sm:gap-3 lg:grid-cols-3'>
-                    {topupInfo?.pay_methods?.map((method) => {
+                    {standardPaymentMethods.map((method) => {
                       const minTopup = Math.max(
                         method.min_topup || 0,
                         getMinTopupAmount(topupInfo)

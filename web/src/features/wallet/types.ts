@@ -158,6 +158,8 @@ export interface TopupInfo {
   enable_wxpay_topup?: boolean
   /** Minimum topup amount for official WeChat Pay */
   wxpay_min_topup?: number
+  /** Unit price (local currency per USD) for official WeChat Pay */
+  wxpay_unit_price?: number
   /** Whether redemption code usage is enabled */
   enable_redemption?: boolean
   /** Whether compliance confirmation has been completed */

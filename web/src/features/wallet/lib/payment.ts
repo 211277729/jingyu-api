@@ -121,6 +121,56 @@ export function isWxPayPayment(paymentType: string): boolean {
   return paymentType === PAYMENT_TYPES.WXPAY_OFFICIAL
 }
 
+/**
+ * Whether the gateway behind a payment type is actually configured on the
+ * server. The Epay method list can hold entries (alipay, custom types, …)
+ * whose gateway is disabled, and choosing one both misprices the on-page
+ * preview and fails at checkout.
+ */
+export function isPaymentGatewayEnabled(
+  topupInfo: TopupInfo,
+  paymentType: string
+): boolean {
+  if (isWxPayPayment(paymentType)) {
+    return topupInfo.enable_wxpay_topup === true
+  }
+  if (isStripePayment(paymentType)) {
+    return topupInfo.enable_stripe_topup === true
+  }
+  if (isWaffoPancakePayment(paymentType)) {
+    return topupInfo.enable_waffo_pancake_topup === true
+  }
+  if (isWaffoPayment(paymentType)) {
+    return topupInfo.enable_waffo_topup === true
+  }
+  if (paymentType === PAYMENT_TYPES.CREEM) {
+    return topupInfo.enable_creem_topup === true
+  }
+  // Every remaining type is an Epay method.
+  return topupInfo.enable_online_topup === true
+}
+
+/**
+ * Unit price for the on-page amount previews.
+ *
+ * Epay methods share the server-wide price reported by /api/status, while
+ * gateways that carry their own unit price setting (official WeChat Pay) use
+ * that value so preset cards never quote another gateway's rate.
+ */
+export function getDisplayPriceRatio(
+  topupInfo: TopupInfo | null,
+  paymentType: string,
+  sharedPriceRatio: number
+): number {
+  if (topupInfo && isWxPayPayment(paymentType)) {
+    const unitPrice = topupInfo.wxpay_unit_price
+    if (typeof unitPrice === 'number' && unitPrice > 0) {
+      return unitPrice
+    }
+  }
+  return sharedPriceRatio
+}
+
 export interface PaymentProcessors {
   regular: (topupAmount: number, paymentType: string) => Promise<boolean>
   waffo: (topupAmount: number, payMethodIndex: number) => Promise<boolean>
@@ -155,7 +205,15 @@ export function getDefaultPaymentType(topupInfo: TopupInfo | null): string {
     return DEFAULT_PAYMENT_TYPE
   }
 
-  // Return first available payment method or default
+  // Prefer the first method whose gateway is actually configured, so the
+  // initial preview price belongs to a gateway the user can really pay with.
+  const configuredMethod = topupInfo.pay_methods?.find((method) =>
+    isPaymentGatewayEnabled(topupInfo, method.type)
+  )
+  if (configuredMethod) {
+    return configuredMethod.type
+  }
+
   if (topupInfo.pay_methods?.length > 0) {
     return topupInfo.pay_methods[0].type
   }

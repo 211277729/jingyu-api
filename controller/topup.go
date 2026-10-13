@@ -126,6 +126,7 @@ func GetTopUpInfo(c *gin.Context) {
 		"enable_waffo_pancake_topup":       enableWaffoPancake,
 		"enable_wxpay_topup":               enableWxPay,
 		"wxpay_min_topup":                  setting.WxPayMinTopUp,
+		"wxpay_unit_price":                 setting.WxPayUnitPrice,
 		"enable_redemption":                complianceConfirmed,
 		"payment_compliance_confirmed":     complianceConfirmed,
 		"payment_compliance_terms_version": operation_setting.CurrentComplianceTermsVersion,

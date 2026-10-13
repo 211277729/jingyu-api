@@ -47,6 +47,7 @@ import {
 } from './hooks'
 import {
   getDefaultPaymentType,
+  getDisplayPriceRatio,
   getMinTopupAmount,
   dispatchSelectedPayment,
   isWxPayPayment,
@@ -167,6 +168,14 @@ export function Wallet(props: WalletProps) {
   const getCurrentPaymentType = useCallback(() => {
     return selectedPaymentMethod?.type || getDefaultPaymentType(topupInfo)
   }, [selectedPaymentMethod, topupInfo])
+
+  // Preset cards preview the money for the currently selected gateway, so a
+  // WeChat Pay selection never quotes the shared Epay price.
+  const displayPriceRatio = getDisplayPriceRatio(
+    topupInfo,
+    getCurrentPaymentType(),
+    (status?.price as number) || 1
+  )
 
   // Handle preset selection
   const handleSelectPreset = (preset: PresetAmount) => {
@@ -341,7 +350,7 @@ export function Wallet(props: WalletProps) {
                   redeeming={redeeming}
                   topupLink={topupInfo?.topup_link}
                   loading={topupLoading}
-                  priceRatio={(status?.price as number) || 1}
+                  priceRatio={displayPriceRatio}
                   usdExchangeRate={effectiveUsdExchangeRate}
                   onOpenBilling={() => setBillingDialogOpen(true)}
                   creemProducts={topupInfo?.creem_products}
