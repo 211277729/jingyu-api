@@ -7335,6 +7335,10 @@
     "WeChat Pay Public Key ID": "WeChat Pay Public Key ID",
     "WeChat Pay Public Key": "WeChat Pay Public Key",
     "Used to decrypt webhook payloads in both credential modes.": "Used to decrypt webhook payloads in both credential modes.",
-    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode."
+    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.",
+    "Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.": "Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.",
+    "Payment successful": "Payment successful",
+    "Payment successful. Your balance has been updated.": "Payment successful. Your balance has been updated.",
+    "WeChat Pay top-up completed": "WeChat Pay top-up completed"
   }
 }

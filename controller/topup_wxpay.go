@@ -386,3 +386,32 @@ func verifyWxPayNotifyAmount(transaction *payments.Transaction, tradeNo string) 
 	}
 	return nil
 }
+
+type WxPayOrderStatusRequest struct {
+	OrderId string `json:"order_id"`
+}
+
+// RequestWxPayOrderStatus lets the QR dialog poll local settlement state while
+// the user pays. In local development (or whenever the WeChat notify callback
+// cannot reach this deployment) this is how the UI learns the payment
+// succeeded; it only reports the locally stored order status and never
+// settles anything by itself.
+func RequestWxPayOrderStatus(c *gin.Context) {
+	var req WxPayOrderStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil || req.OrderId == "" {
+		common.ApiErrorT(c, "Invalid parameters")
+		return
+	}
+	userId := c.GetInt("id")
+	topUp := model.GetTopUpByTradeNo(req.OrderId)
+	if topUp == nil || topUp.UserId != userId {
+		common.ApiErrorT(c, "Order does not exist")
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data": gin.H{
+			"status": topUp.Status,
+		},
+	})
+}

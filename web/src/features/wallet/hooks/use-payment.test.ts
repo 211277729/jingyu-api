@@ -22,28 +22,51 @@ import { PAYMENT_TYPES } from '../constants'
 import { requestPaymentAmount } from './use-payment'
 
 describe('payment amount routing', () => {
+  const baseCalculators = {
+    regular: async () => {
+      calls.push('regular')
+      return { success: true, data: '1' }
+    },
+    stripe: async () => {
+      calls.push('stripe')
+      return { success: true, data: '2' }
+    },
+    waffo: async (request: { amount: number }) => {
+      calls.push(`waffo:${request.amount}`)
+      return { success: true, data: '18.75' }
+    },
+    waffoPancake: async () => {
+      calls.push('pancake')
+      return { success: true, data: '4' }
+    },
+    wxPay: async () => {
+      calls.push('wxpay')
+      return { success: true, data: '10' }
+    },
+  }
+  let calls: string[] = []
+
   test('uses the dedicated Waffo amount calculator', async () => {
-    const calls: string[] = []
-    const amount = await requestPaymentAmount(120, PAYMENT_TYPES.WAFFO, {
-      regular: async () => {
-        calls.push('regular')
-        return { success: true, data: '1' }
-      },
-      stripe: async () => {
-        calls.push('stripe')
-        return { success: true, data: '2' }
-      },
-      waffo: async (request) => {
-        calls.push(`waffo:${request.amount}`)
-        return { success: true, data: '18.75' }
-      },
-      waffoPancake: async () => {
-        calls.push('pancake')
-        return { success: true, data: '4' }
-      },
-    })
+    calls = []
+    const amount = await requestPaymentAmount(
+      120,
+      PAYMENT_TYPES.WAFFO,
+      baseCalculators
+    )
 
     expect(amount).toBe(18.75)
     expect(calls).toEqual(['waffo:120'])
+  })
+
+  test('uses the dedicated WeChat Pay amount calculator', async () => {
+    calls = []
+    const amount = await requestPaymentAmount(
+      10,
+      PAYMENT_TYPES.WXPAY_OFFICIAL,
+      baseCalculators
+    )
+
+    expect(amount).toBe(10)
+    expect(calls).toEqual(['wxpay'])
   })
 })

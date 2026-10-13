@@ -404,6 +404,10 @@ export function Wallet(props: WalletProps) {
         codeUrl={wxPayCodeUrl}
         orderId={wxPayOrderId}
         paymentAmount={paymentAmount}
+        onPaid={() => {
+          toast.success(t('WeChat Pay top-up completed'))
+          void fetchUser()
+        }}
       />
 
       <TransferDialog

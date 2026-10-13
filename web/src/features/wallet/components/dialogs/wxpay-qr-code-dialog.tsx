@@ -16,7 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { CheckCircle2 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import {
@@ -28,7 +30,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { getWxPayOrderStatus, isApiSuccess } from '../../api'
 import { formatCurrency } from '../../lib'
+
+const WX_PAY_STATUS_POLL_INTERVAL_MS = 3000
+const WX_PAY_STATUS_POLL_MAX_ATTEMPTS = 100
 
 interface WxPayQrCodeDialogProps {
   open: boolean
@@ -36,15 +42,78 @@ interface WxPayQrCodeDialogProps {
   codeUrl: string | null
   orderId: string | null
   paymentAmount: number
+  /** Called once when the polled order status turns settled. */
+  onPaid?: () => void
 }
 
 /**
  * Renders the WeChat Pay Native QR code (code_url) for the user to scan.
- * Closing the dialog refreshes the balance so a completed payment is picked
- * up through the webhook settlement.
+ *
+ * While open, the dialog polls the local order status: whenever the backend
+ * settles the order (normally through the WeChat notify callback) the dialog
+ * flips to a success state and closes itself. In local development the
+ * callback cannot reach the server, so settlement happens through the admin
+ * complete-order action and the poll picks it up the same way.
  */
 export function WxPayQrCodeDialog(props: WxPayQrCodeDialogProps) {
   const { t } = useTranslation()
+  const [paid, setPaid] = useState(false)
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Keep the latest props in a ref so the poll interval callback always reads
+  // fresh values without being re-registered on every render.
+  const pollContextRef = useRef({
+    open: props.open,
+    orderId: props.orderId,
+    onPaid: props.onPaid,
+    onOpenChange: props.onOpenChange,
+  })
+  pollContextRef.current = {
+    open: props.open,
+    orderId: props.orderId,
+    onPaid: props.onPaid,
+    onOpenChange: props.onOpenChange,
+  }
+
+  useEffect(() => {
+    if (!props.open) {
+      setPaid(false)
+      return
+    }
+
+    let attempts = 0
+    let stopped = false
+
+    const poll = async () => {
+      if (stopped) return
+      const context = pollContextRef.current
+      if (context.orderId) {
+        try {
+          const response = await getWxPayOrderStatus(context.orderId)
+          if (isApiSuccess(response) && response.data?.status === 'success') {
+            setPaid(true)
+            context.onPaid?.()
+            // Give the user a moment to see the success state, then close.
+            setTimeout(() => {
+              if (!stopped) context.onOpenChange(false)
+            }, 2000)
+            return
+          }
+        } catch {
+          // Transient network errors just mean this tick finds nothing.
+        }
+      }
+      attempts++
+      if (attempts < WX_PAY_STATUS_POLL_MAX_ATTEMPTS) {
+        pollTimerRef.current = setTimeout(poll, WX_PAY_STATUS_POLL_INTERVAL_MS)
+      }
+    }
+
+    pollTimerRef.current = setTimeout(poll, WX_PAY_STATUS_POLL_INTERVAL_MS)
+    return () => {
+      stopped = true
+      if (pollTimerRef.current) clearTimeout(pollTimerRef.current)
+    }
+  }, [props.open])
 
   return (
     <AlertDialog open={props.open} onOpenChange={props.onOpenChange}>
@@ -54,24 +123,35 @@ export function WxPayQrCodeDialog(props: WxPayQrCodeDialogProps) {
             {t('WeChat Pay')}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {t(
-              'Scan the QR code with WeChat to pay {{amount}}. The balance is added automatically after payment.',
-              { amount: formatCurrency(props.paymentAmount) }
-            )}
+            {paid
+              ? t('Payment successful. Your balance has been updated.')
+              : t(
+                  'Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.',
+                  { amount: formatCurrency(props.paymentAmount) }
+                )}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className='flex flex-col items-center gap-3 py-2'>
-          {props.codeUrl ? (
+          {paid && (
+            <div className='flex flex-col items-center gap-2 py-8 text-green-600'>
+              <CheckCircle2 className='h-16 w-16' />
+              <span className='text-sm font-medium'>
+                {t('Payment successful')}
+              </span>
+            </div>
+          )}
+          {!paid && props.codeUrl && (
             <div className='rounded-lg border bg-white p-3'>
               <QRCodeSVG value={props.codeUrl} size={192} />
             </div>
-          ) : (
+          )}
+          {!paid && !props.codeUrl && (
             <p className='text-muted-foreground text-sm'>
               {t('Failed to create the payment QR code')}
             </p>
           )}
-          {props.orderId && (
+          {!paid && props.orderId && (
             <p className='text-muted-foreground font-mono text-xs'>
               {t('Order number')}: {props.orderId}
             </p>
@@ -84,7 +164,7 @@ export function WxPayQrCodeDialog(props: WxPayQrCodeDialogProps) {
             variant='outline'
             onClick={() => props.onOpenChange(false)}
           >
-            {t('Close')}
+            {paid ? t('Done') : t('Close')}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

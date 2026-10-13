@@ -184,6 +184,20 @@ export async function requestWxPayPayment(
 }
 
 /**
+ * Poll the local settlement status of a WeChat Pay order
+ */
+export async function getWxPayOrderStatus(
+  orderId: string
+): Promise<ApiResponse<{ status?: string }>> {
+  const res = await api.post(
+    '/api/user/wxpay/order_status',
+    { order_id: orderId },
+    { skipBusinessError: true } as Record<string, unknown>
+  )
+  return res.data
+}
+
+/**
  * Calculate payment amount for Waffo Pancake payment
  */export async function calculateWaffoPancakeAmount(
   request: AmountRequest
