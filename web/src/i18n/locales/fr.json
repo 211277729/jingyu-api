@@ -7339,6 +7339,7 @@
     "Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.": "Scannez le QR code avec WeChat pour payer {{amount}}. Cette fenêtre se ferme automatiquement une fois le paiement confirmé.",
     "Payment successful": "Paiement réussi",
     "Payment successful. Your balance has been updated.": "Paiement réussi. Votre solde a été mis à jour.",
-    "WeChat Pay top-up completed": "Recharge WeChat Pay terminée"
+    "WeChat Pay top-up completed": "Recharge WeChat Pay terminée",
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Les modifications ne prennent effet qu’après avoir cliqué sur « Save Settings » ; actualiser maintenant les annule."
   }
 }

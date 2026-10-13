@@ -7339,6 +7339,7 @@
     "Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.": "Quét mã QR bằng WeChat để thanh toán {{amount}}. Cửa sổ này sẽ tự động đóng sau khi thanh toán được xác nhận.",
     "Payment successful": "Thanh toán thành công",
     "Payment successful. Your balance has been updated.": "Thanh toán thành công. Số dư của bạn đã được cập nhật.",
-    "WeChat Pay top-up completed": "Nạp tiền qua WeChat Pay hoàn tất"
+    "WeChat Pay top-up completed": "Nạp tiền qua WeChat Pay hoàn tất",
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Thay đổi chỉ có hiệu lực sau khi bạn nhấn \"Save Settings\"; tải lại trang bây giờ sẽ mất các thay đổi này."
   }
 }

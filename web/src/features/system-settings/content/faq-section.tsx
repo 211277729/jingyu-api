@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash2, Save } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -52,6 +52,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { handleServerError } from '@/lib/handle-server-error'
 
+import { FormDirtyIndicator } from '../components/form-dirty-indicator'
+import { FormNavigationGuard } from '../components/form-navigation-guard'
 import { SettingsSwitchField } from '../components/settings-form-layout'
 import { SettingsSection } from '../components/settings-section'
 import { useUpdateOption } from '../hooks/use-update-option'
@@ -102,7 +104,16 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
     },
   })
 
+  // Latest dirty flag for the data-sync effect. Settings data is refetched on
+  // window focus (staleTime 5 min) and after any option write, and those
+  // refetches must not silently discard a local draft.
+  const hasChangesRef = useRef(false)
   useEffect(() => {
+    hasChangesRef.current = hasChanges
+  }, [hasChanges])
+
+  useEffect(() => {
+    if (hasChangesRef.current) return
     try {
       const parsed = JSON.parse(data || '[]')
       if (Array.isArray(parsed)) {
@@ -231,6 +242,8 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
 
   return (
     <SettingsSection title={t('FAQ')}>
+      <FormDirtyIndicator isDirty={hasChanges} />
+      <FormNavigationGuard when={hasChanges} />
       <div className='space-y-4'>
         <div className='flex flex-wrap items-center justify-between gap-2'>
           <div className='flex flex-wrap items-center gap-2'>
@@ -251,12 +264,19 @@ export function FAQSection({ enabled, data }: FAQSectionProps) {
             <Button
               onClick={handleSaveAll}
               size='sm'
-              variant='secondary'
+              variant={hasChanges ? 'default' : 'secondary'}
               disabled={!hasChanges || updateOption.isPending}
             >
               <Save className='mr-2 h-4 w-4' />
               {updateOption.isPending ? t('Saving...') : t('Save Settings')}
             </Button>
+            {hasChanges && (
+              <span className='text-xs font-medium text-amber-600 dark:text-amber-400'>
+                {t(
+                  'Edits take effect only after you click "Save Settings"; refreshing now discards them.'
+                )}
+              </span>
+            )}
           </div>
           <SettingsSwitchField
             checked={isEnabled}

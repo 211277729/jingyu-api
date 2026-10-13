@@ -7339,6 +7339,7 @@
     "Scan the QR code with WeChat to pay {{amount}}. This dialog closes automatically once the payment is confirmed.": "使用微信扫码支付 {{amount}}。支付确认后本窗口将自动关闭。",
     "Payment successful": "支付成功",
     "Payment successful. Your balance has been updated.": "支付成功，余额已更新。",
-    "WeChat Pay top-up completed": "微信支付充值完成"
+    "WeChat Pay top-up completed": "微信支付充值完成",
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "修改需点击「保存设置」才会生效，现在刷新会丢失这些修改。"
   }
 }
