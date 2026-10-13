@@ -7331,6 +7331,10 @@
     "Order description": "注文説明",
     "Shown to the payer inside WeChat": "WeChat内で支払者に表示されます",
     "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "有効化すると、以下のすべての認証情報フィールドが必須になります。入力が完了すると、ウォレットにWeChat Payが表示されます。",
-    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "WeChat Payの認証情報は入力済みですが、「WeChat Payを有効化」スイッチがオフです。有効化するまでユーザーには表示されません。"
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "WeChat Payの認証情報は入力済みですが、「WeChat Payを有効化」スイッチがオフです。有効化するまでユーザーには表示されません。",
+    "WeChat Pay Public Key ID": "WeChat Pay 公開鍵 ID",
+    "WeChat Pay Public Key": "WeChat Pay 公開鍵",
+    "Used to decrypt webhook payloads in both credential modes.": "両方の認証モードでWebhookペイロードの復号に使用されます。",
+    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "公開鍵モード（新しい加盟店アカウントに推奨）：以下の両フィールドを入力すると、従来のプラットフォーム証明書の代わりにWeChat Pay公開鍵でコールバックを検証します。空欄の場合はプラットフォーム証明書モードを使用します。"
   }
 }

@@ -7331,6 +7331,10 @@
     "Order description": "Description de la commande",
     "Shown to the payer inside WeChat": "Affichée au payeur dans WeChat",
     "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "Une fois activé, tous les champs d'identifiants ci-dessous sont obligatoires ; le portefeuille n'affiche WeChat Pay qu'une fois ces champs complets.",
-    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Les identifiants WeChat Pay sont renseignés, mais l'interrupteur « Activer WeChat Pay » est désactivé — la passerelle reste masquée aux utilisateurs tant que vous ne l'activez pas."
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Les identifiants WeChat Pay sont renseignés, mais l'interrupteur « Activer WeChat Pay » est désactivé — la passerelle reste masquée aux utilisateurs tant que vous ne l'activez pas.",
+    "WeChat Pay Public Key ID": "ID de clé publique WeChat Pay",
+    "WeChat Pay Public Key": "Clé publique WeChat Pay",
+    "Used to decrypt webhook payloads in both credential modes.": "Utilisée pour déchiffrer les charges utiles des webhooks dans les deux modes de crédentials.",
+    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "Mode clé publique (recommandé pour les nouveaux comptes marchands) : remplissez les deux champs ci-dessous pour vérifier les callbacks avec la clé publique WeChat Pay au lieu de l'ancien certificat de plateforme. Laissez-les vides pour utiliser le mode certificat de plateforme."
   }
 }

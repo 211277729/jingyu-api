@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shopspring/decimal"
 	"github.com/wechatpay-apiv3/wechatpay-go/core"
+	"github.com/wechatpay-apiv3/wechatpay-go/core/auth"
 	"github.com/wechatpay-apiv3/wechatpay-go/core/auth/verifiers"
 	"github.com/wechatpay-apiv3/wechatpay-go/core/downloader"
 	"github.com/wechatpay-apiv3/wechatpay-go/core/notify"
@@ -30,12 +31,37 @@ import (
 )
 
 // getWxPayClient builds a WeChat Pay APIv3 client from the configured merchant
-// credentials. The certificate downloader keeps platform certificates fresh so
-// webhook signatures can be verified without manual certificate rotation.
+// credentials. Two credential modes are supported:
+//
+//   - 公钥模式 (public key mode, default for new merchant accounts): the client
+//     verifies responses and encrypts sensitive fields with the WeChat Pay
+//     public key identified by WxPayPublicKeyID.
+//   - 平台证书模式 (legacy platform certificate mode): the certificate
+//     downloader keeps platform certificates fresh so webhook signatures can be
+//     verified without manual certificate rotation.
 func getWxPayClient() (*core.Client, error) {
 	privateKey, err := getWxPayPrivateKey()
 	if err != nil {
 		return nil, err
+	}
+	if setting.IsWxPayPublicKeyMode() {
+		publicKey, err := getWxPayPublicKey()
+		if err != nil {
+			return nil, err
+		}
+		ctx := context.Background()
+		return core.NewClient(ctx,
+			option.WithWechatPayPublicKeyAuthCipher(
+				setting.WxPayMchId,
+				setting.WxPaySerialNo,
+				privateKey,
+				setting.WxPayPublicKeyID,
+				publicKey,
+			),
+		)
+	}
+	if setting.WxPayMchApiV3Key == "" {
+		return nil, errors.New("either the WeChat Pay public key pair or the APIv3 key must be configured")
 	}
 	ctx := context.Background()
 	return core.NewClient(ctx,
@@ -53,6 +79,13 @@ func getWxPayPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, errors.New("merchant private key is not configured")
 	}
 	return utils.LoadPrivateKey(setting.WxPayPrivateKey)
+}
+
+func getWxPayPublicKey() (*rsa.PublicKey, error) {
+	if setting.WxPayPublicKey == "" {
+		return nil, errors.New("wechat pay public key is not configured")
+	}
+	return utils.LoadPublicKey(setting.WxPayPublicKey)
 }
 
 // getWxPayMoney converts the user-facing amount to CNY for WeChat Pay.
@@ -255,14 +288,25 @@ func WxPayNotify(c *gin.Context) {
 		return
 	}
 
-	// 触发证书下载器注册，保证平台证书可用于验签
+	// 触发客户端初始化：公钥模式校验公钥配置，证书模式注册证书下载器
 	if _, err := getWxPayClient(); err != nil {
 		logger.LogError(c.Request.Context(), common.LogText("WxPay webhook client initialization failed path=%q client_ip=%s error=%q", c.Request.RequestURI, c.ClientIP(), err.Error()))
 		c.JSON(http.StatusInternalServerError, gin.H{"code": "FAIL", "message": "client initialization failed"})
 		return
 	}
 
-	verifier := verifiers.NewSHA256WithRSAVerifier(downloader.MgrInstance().GetCertificateVisitor(setting.WxPayMchId))
+	var verifier auth.Verifier
+	if setting.IsWxPayPublicKeyMode() {
+		publicKey, err := getWxPayPublicKey()
+		if err != nil {
+			logger.LogError(c.Request.Context(), common.LogText("WxPay webhook public key invalid path=%q client_ip=%s error=%q", c.Request.RequestURI, c.ClientIP(), err.Error()))
+			c.JSON(http.StatusInternalServerError, gin.H{"code": "FAIL", "message": "public key error"})
+			return
+		}
+		verifier = verifiers.NewSHA256WithRSAPubkeyVerifier(setting.WxPayPublicKeyID, *publicKey)
+	} else {
+		verifier = verifiers.NewSHA256WithRSAVerifier(downloader.MgrInstance().GetCertificateVisitor(setting.WxPayMchId))
+	}
 	block, err := aes.NewCipher([]byte(setting.WxPayMchApiV3Key))
 	if err != nil {
 		logger.LogError(c.Request.Context(), common.LogText("WxPay webhook APIv3 key invalid path=%q client_ip=%s error=%q", c.Request.RequestURI, c.ClientIP(), err.Error()))

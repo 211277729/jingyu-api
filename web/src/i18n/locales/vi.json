@@ -7331,6 +7331,10 @@
     "Order description": "Mô tả đơn hàng",
     "Shown to the payer inside WeChat": "Hiển thị cho người trả tiền trong WeChat",
     "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "Khi bật, tất cả các trường thông tin xác thực bên dưới đều bắt buộc; ví chỉ hiển thị WeChat Pay khi đã nhập đủ.",
-    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Thông tin xác thực WeChat Pay đã nhập, nhưng công tắc «Bật WeChat Pay» đang tắt — cổng thanh toán sẽ bị ẩn khỏi người dùng cho đến khi bạn bật."
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Thông tin xác thực WeChat Pay đã nhập, nhưng công tắc «Bật WeChat Pay» đang tắt — cổng thanh toán sẽ bị ẩn khỏi người dùng cho đến khi bạn bật.",
+    "WeChat Pay Public Key ID": "ID khóa công khai WeChat Pay",
+    "WeChat Pay Public Key": "Khóa công khai WeChat Pay",
+    "Used to decrypt webhook payloads in both credential modes.": "Dùng để giải mã dữ liệu webhook trong cả hai chế độ xác thực.",
+    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "Chế độ khóa công khai (khuyến nghị cho tài khoản doanh nghiệp mới): điền cả hai trường bên dưới để xác minh callback bằng khóa công khai WeChat Pay thay vì chứng chỉ nền tảng cũ. Để trống sẽ dùng chế độ chứng chỉ nền tảng."
   }
 }

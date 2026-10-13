@@ -137,6 +137,8 @@ func InitOptionMap() {
 	common.OptionMap["WxPayCurrency"] = setting.WxPayCurrency
 	common.OptionMap["WxPayDescription"] = setting.WxPayDescription
 	common.OptionMap["WxPayCallbackCert"] = setting.WxPayCallbackCert
+	common.OptionMap["WxPayPublicKeyID"] = setting.WxPayPublicKeyID
+	common.OptionMap["WxPayPublicKey"] = setting.WxPayPublicKey
 	common.OptionMap["TopupGroupRatio"] = common.TopupGroupRatio2JSONString()
 	common.OptionMap["Chats"] = setting.Chats2JsonString()
 	common.OptionMap["AutoGroups"] = setting.AutoGroups2JsonString()
@@ -609,6 +611,10 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.WxPayDescription = value
 	case "WxPayCallbackCert":
 		setting.WxPayCallbackCert = value
+	case "WxPayPublicKeyID":
+		setting.WxPayPublicKeyID = value
+	case "WxPayPublicKey":
+		setting.WxPayPublicKey = value
 	case "TopupGroupRatio":
 		err = common.UpdateTopupGroupRatioByJSONString(value)
 	case "GitHubClientId":

@@ -367,6 +367,8 @@ export type BillingSettings = {
   WxPayMinTopUp: number
   WxPayCurrency: string
   WxPayDescription: string
+  WxPayPublicKeyID: string
+  WxPayPublicKey: string
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number

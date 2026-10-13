@@ -7331,6 +7331,10 @@
     "Order description": "订单描述",
     "Shown to the payer inside WeChat": "支付时在微信内展示给付款方",
     "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "启用后下方所有凭证项均为必填；凭证填写完整后钱包页才会显示微信支付。",
-    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "微信支付凭证已填写，但「启用微信支付」开关未打开——开启前用户侧不会显示微信支付入口。"
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "微信支付凭证已填写，但「启用微信支付」开关未打开——开启前用户侧不会显示微信支付入口。",
+    "WeChat Pay Public Key ID": "微信支付公钥 ID",
+    "WeChat Pay Public Key": "微信支付公钥",
+    "Used to decrypt webhook payloads in both credential modes.": "用于解密回调报文，两种凭证模式下均为必填。",
+    "Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.": "公钥模式（新商户号推荐）：填写以下两项后，回调验签将使用微信支付公钥而非旧版平台证书。留空则使用平台证书模式。"
   }
 }

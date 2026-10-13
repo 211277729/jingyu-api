@@ -195,6 +195,8 @@ const paymentSchema = z.object({
   WxPayMinTopUp: z.coerce.number().min(1),
   WxPayCurrency: z.string(),
   WxPayDescription: z.string(),
+  WxPayPublicKeyID: z.string(),
+  WxPayPublicKey: z.string(),
 })
 
 type PaymentFormValues = z.infer<typeof paymentSchema>
@@ -212,6 +214,8 @@ type WxPayFormFieldValues = Pick<
   | 'WxPayMinTopUp'
   | 'WxPayCurrency'
   | 'WxPayDescription'
+  | 'WxPayPublicKeyID'
+  | 'WxPayPublicKey'
 >
 type PaymentBaseFormValues = Omit<
   PaymentFormValues,
@@ -519,6 +523,8 @@ export function PaymentSettingsSection({
       WxPayMinTopUp: values.WxPayMinTopUp,
       WxPayCurrency: values.WxPayCurrency.trim() || 'CNY',
       WxPayDescription: values.WxPayDescription.trim(),
+      WxPayPublicKeyID: values.WxPayPublicKeyID.trim(),
+      WxPayPublicKey: values.WxPayPublicKey.trim(),
     }
 
     const initial = {
@@ -579,6 +585,8 @@ export function PaymentSettingsSection({
       WxPayMinTopUp: initialRef.current.WxPayMinTopUp,
       WxPayCurrency: initialRef.current.WxPayCurrency.trim() || 'CNY',
       WxPayDescription: initialRef.current.WxPayDescription.trim(),
+      WxPayPublicKeyID: initialRef.current.WxPayPublicKeyID.trim(),
+      WxPayPublicKey: initialRef.current.WxPayPublicKey.trim(),
     }
 
     const updates: Array<{ key: string; value: string | number | boolean }> = []
@@ -814,6 +822,15 @@ export function PaymentSettingsSection({
         value: sanitized.WxPayDescription,
       })
     }
+    if (sanitized.WxPayPublicKeyID !== initial.WxPayPublicKeyID) {
+      updates.push({
+        key: 'WxPayPublicKeyID',
+        value: sanitized.WxPayPublicKeyID,
+      })
+    }
+    if (sanitized.WxPayPublicKey) {
+      updates.push({ key: 'WxPayPublicKey', value: sanitized.WxPayPublicKey })
+    }
 
     // Pancake pricing rides the generic options path (PUT /api/option/), not
     // the dedicated credential save below: it needs no credentials, and
@@ -964,6 +981,8 @@ export function PaymentSettingsSection({
     WxPayMinTopUp: currentFormValues.WxPayMinTopUp,
     WxPayCurrency: currentFormValues.WxPayCurrency,
     WxPayDescription: currentFormValues.WxPayDescription,
+    WxPayPublicKeyID: currentFormValues.WxPayPublicKeyID,
+    WxPayPublicKey: currentFormValues.WxPayPublicKey,
   }
 
   return (

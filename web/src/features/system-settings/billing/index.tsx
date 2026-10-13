@@ -117,6 +117,8 @@ const defaultBillingSettings: BillingSettings = {
   WxPayMinTopUp: 1,
   WxPayCurrency: 'CNY',
   WxPayDescription: '',
+  WxPayPublicKeyID: '',
+  WxPayPublicKey: '',
   'checkin_setting.enabled': false,
   'checkin_setting.min_quota': 1000,
   'checkin_setting.max_quota': 10000,

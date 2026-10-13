@@ -120,11 +120,17 @@ func isWxPayTopUpEnabled() bool {
 }
 
 func isWxPayWebhookConfigured() bool {
-	return strings.TrimSpace(setting.WxPayAppId) != "" &&
-		strings.TrimSpace(setting.WxPayMchId) != "" &&
-		strings.TrimSpace(setting.WxPayMchApiV3Key) != "" &&
-		strings.TrimSpace(setting.WxPaySerialNo) != "" &&
-		strings.TrimSpace(setting.WxPayPrivateKey) != ""
+	if strings.TrimSpace(setting.WxPayAppId) == "" ||
+		strings.TrimSpace(setting.WxPayMchId) == "" ||
+		strings.TrimSpace(setting.WxPaySerialNo) == "" ||
+		strings.TrimSpace(setting.WxPayPrivateKey) == "" {
+		return false
+	}
+	// 公钥模式（新商户号默认）：需公钥 ID + 公钥内容；平台证书模式：需 APIv3 密钥
+	if setting.IsWxPayPublicKeyMode() {
+		return true
+	}
+	return strings.TrimSpace(setting.WxPayMchApiV3Key) != ""
 }
 
 func isWxPayWebhookEnabled() bool {

@@ -192,6 +192,8 @@ const BILLING_SECTIONS = [
           WxPayMinTopUp: settings.WxPayMinTopUp ?? 1,
           WxPayCurrency: settings.WxPayCurrency ?? 'CNY',
           WxPayDescription: settings.WxPayDescription ?? '',
+          WxPayPublicKeyID: settings.WxPayPublicKeyID ?? '',
+          WxPayPublicKey: settings.WxPayPublicKey ?? '',
         }}
         complianceDefaults={{
           confirmed: settings['payment_setting.compliance_confirmed'] ?? false,

@@ -37,6 +37,8 @@ export interface WxPaySettingsValues {
   WxPayMinTopUp: number
   WxPayCurrency: string
   WxPayDescription: string
+  WxPayPublicKeyID: string
+  WxPayPublicKey: string
 }
 
 interface Props {
@@ -136,6 +138,11 @@ export function WxPaySettingsSection(props: Props) {
               props.onValueChange('WxPayMchApiV3Key', event.target.value)
             }
           />
+          <p className='text-muted-foreground text-xs'>
+            {t(
+              'Used to decrypt webhook payloads in both credential modes.'
+            )}
+          </p>
         </div>
         <div className='grid gap-1.5'>
           <Label required>{t('Certificate Serial Number')}</Label>
@@ -146,6 +153,40 @@ export function WxPaySettingsSection(props: Props) {
               props.onValueChange('WxPaySerialNo', event.target.value)
             }
           />
+        </div>
+      </div>
+
+      <div className='rounded-lg border border-dashed p-3'>
+        <p className='text-muted-foreground mb-2 text-xs'>
+          {t(
+            'Public key mode (recommended for new merchant accounts): fill in both fields below to verify callbacks with the WeChat Pay public key instead of the legacy platform certificate. Leave them blank to use the platform certificate mode.'
+          )}
+        </p>
+        <div className='grid grid-cols-2 gap-4'>
+          <div className='grid gap-1.5'>
+            <Label>{t('WeChat Pay Public Key ID')}</Label>
+            <Input
+              placeholder='PUB_KEY_ID_3000000000000000000000000000000'
+              value={values.WxPayPublicKeyID}
+              onChange={(event) =>
+                props.onValueChange('WxPayPublicKeyID', event.target.value)
+              }
+            />
+          </div>
+          <div className='grid gap-1.5'>
+            <Label>{t('WeChat Pay Public Key')}</Label>
+            <Textarea
+              rows={3}
+              className='font-mono text-xs'
+              placeholder={
+                '-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----'
+              }
+              value={values.WxPayPublicKey}
+              onChange={(event) =>
+                props.onValueChange('WxPayPublicKey', event.target.value)
+              }
+            />
+          </div>
         </div>
       </div>
 
