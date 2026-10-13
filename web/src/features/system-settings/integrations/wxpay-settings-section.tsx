@@ -22,9 +22,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-
-import { SettingsSwitchField } from '../components/settings-form-layout'
 
 export interface WxPaySettingsValues {
   WxPayEnabled: boolean
@@ -84,12 +83,23 @@ export function WxPaySettingsSection(props: Props) {
         </AlertDescription>
       </Alert>
 
-      <SettingsSwitchField
-        checked={values.WxPayEnabled}
-        onCheckedChange={(v) => props.onValueChange('WxPayEnabled', v)}
-        label={t('Enable WeChat Pay')}
-        className='py-0'
-      />
+      <div className='bg-muted/20 flex items-center justify-between gap-4 rounded-xl border px-4 py-3'>
+        <div className='min-w-0'>
+          <Label className='text-sm font-medium'>
+            {t('Enable WeChat Pay')}
+          </Label>
+          <p className='text-muted-foreground text-xs'>
+            {t(
+              'All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.'
+            )}
+          </p>
+        </div>
+        <Switch
+          aria-label={t('Enable WeChat Pay')}
+          checked={values.WxPayEnabled}
+          onCheckedChange={(v) => props.onValueChange('WxPayEnabled', v)}
+        />
+      </div>
 
       <div className='grid grid-cols-2 gap-4'>
         <div className='grid gap-1.5'>

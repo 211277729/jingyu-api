@@ -2796,7 +2796,7 @@
     "footer.columns.related.links.oneApi": "One API",
     "footer.columns.related.title": "Related Projects",
     "footer.defaultCopyright": "All rights reserved.",
-    "footer.new\u0061pi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
+    "footer.newapi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.",
     "GitHub ID is empty!": "GitHub ID is empty!",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment",
@@ -7329,6 +7329,7 @@
     "Unit price (CNY)": "Unit price (CNY)",
     "How much CNY to charge per USD of balance": "How much CNY to charge per USD of balance",
     "Order description": "Order description",
-    "Shown to the payer inside WeChat": "Shown to the payer inside WeChat"
+    "Shown to the payer inside WeChat": "Shown to the payer inside WeChat",
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete."
   }
 }

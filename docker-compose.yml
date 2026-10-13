@@ -74,6 +74,8 @@ services:
   redis:
     image: redis:latest
     container_name: jingyu-redis
+    ports:
+      - "6379:6379"  # 从宿主机访问 Redis 时使用的端口，默认 6379；如果不需要外部访问可以注释掉 (Port for accessing Redis from host, default 6379; comment out if not needed)
     restart: always
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}"]
     networks:
@@ -82,6 +84,8 @@ services:
   postgres:
     image: postgres:15
     container_name: jingyu-postgres
+    ports:
+      - "5432:5432"  # 从宿主机访问 PostgreSQL 时使用的端口，默认 5432；如果不需要外部访问可以注释掉 (Port for accessing PostgreSQL from host, default 5432; comment out if not needed)
     restart: always
     environment:
       POSTGRES_USER: root

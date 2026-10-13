@@ -2796,7 +2796,7 @@
     "footer.columns.related.links.oneApi": "1つのAPI",
     "footer.columns.related.title": "関連プロジェクト",
     "footer.defaultCopyright": "すべての権利を留保します。",
-    "footer.new\u0061pi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
+    "footer.newapi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "高度なカスタムチャネルでは、プロトコル変換を行わない /v1/responses ルートにのみ適用されます。",
     "GitHub ID is empty!": "GitHub ID が空です！",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "2025 年 5 月 10 日以降に追加されたチャネルの場合、デプロイ時にモデル名から「.」を削除する必要はありません",
@@ -7329,6 +7329,7 @@
     "Unit price (CNY)": "単価（人民元）",
     "How much CNY to charge per USD of balance": "残高1USDあたりに請求する人民元の金額",
     "Order description": "注文説明",
-    "Shown to the payer inside WeChat": "WeChat内で支払者に表示されます"
+    "Shown to the payer inside WeChat": "WeChat内で支払者に表示されます",
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "有効化すると、以下のすべての認証情報フィールドが必須になります。入力が完了すると、ウォレットにWeChat Payが表示されます。"
   }
 }
