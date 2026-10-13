@@ -7330,6 +7330,7 @@
     "How much CNY to charge per USD of balance": "Montant en CNY facturé par USD de solde",
     "Order description": "Description de la commande",
     "Shown to the payer inside WeChat": "Affichée au payeur dans WeChat",
-    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "Une fois activé, tous les champs d'identifiants ci-dessous sont obligatoires ; le portefeuille n'affiche WeChat Pay qu'une fois ces champs complets."
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "Une fois activé, tous les champs d'identifiants ci-dessous sont obligatoires ; le portefeuille n'affiche WeChat Pay qu'une fois ces champs complets.",
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Les identifiants WeChat Pay sont renseignés, mais l'interrupteur « Activer WeChat Pay » est désactivé — la passerelle reste masquée aux utilisateurs tant que vous ne l'activez pas."
   }
 }

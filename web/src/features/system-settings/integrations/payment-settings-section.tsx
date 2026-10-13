@@ -853,6 +853,22 @@ export function PaymentSettingsSection({
       await updateOption.mutateAsync(update)
     }
 
+    // Friendly reminder: credentials filled in but the enable switch was left
+    // off, so the gateway is still invisible to users.
+    const wxPayCredentialsComplete =
+      sanitized.WxPayAppId !== '' &&
+      sanitized.WxPayMchId !== '' &&
+      (sanitized.WxPayMchApiV3Key !== '' || initial.WxPayMchApiV3Key !== '') &&
+      sanitized.WxPaySerialNo !== '' &&
+      (sanitized.WxPayPrivateKey !== '' || initial.WxPayPrivateKey !== '')
+    if (!sanitized.WxPayEnabled && wxPayCredentialsComplete) {
+      toast.warning(
+        t(
+          'WeChat Pay credentials are filled in, but the "Enable WeChat Pay" switch is off — the gateway stays hidden from users until you enable it.'
+        )
+      )
+    }
+
     if (!hasWaffoPancakeChanges) {
       return
     }

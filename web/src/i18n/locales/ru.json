@@ -7330,6 +7330,7 @@
     "How much CNY to charge per USD of balance": "Сколько CNY взимать за 1 USD баланса",
     "Order description": "Описание заказа",
     "Shown to the payer inside WeChat": "Отображается плательщику внутри WeChat",
-    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "После включения все поля учётных данных ниже обязательны; кошелёк показывает WeChat Pay только когда они заполнены."
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "После включения все поля учётных данных ниже обязательны; кошелёк показывает WeChat Pay только когда они заполнены.",
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "Учётные данные WeChat Pay заполнены, но переключатель «Включить WeChat Pay» выключен — шлюз скрыт от пользователей, пока вы его не включите."
   }
 }

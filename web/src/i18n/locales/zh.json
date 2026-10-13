@@ -7330,6 +7330,7 @@
     "How much CNY to charge per USD of balance": "每 1 美元余额收取的人民币金额",
     "Order description": "订单描述",
     "Shown to the payer inside WeChat": "支付时在微信内展示给付款方",
-    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "启用后下方所有凭证项均为必填；凭证填写完整后钱包页才会显示微信支付。"
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "启用后下方所有凭证项均为必填；凭证填写完整后钱包页才会显示微信支付。",
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "微信支付凭证已填写，但「启用微信支付」开关未打开——开启前用户侧不会显示微信支付入口。"
   }
 }

@@ -7330,6 +7330,7 @@
     "How much CNY to charge per USD of balance": "残高1USDあたりに請求する人民元の金額",
     "Order description": "注文説明",
     "Shown to the payer inside WeChat": "WeChat内で支払者に表示されます",
-    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "有効化すると、以下のすべての認証情報フィールドが必須になります。入力が完了すると、ウォレットにWeChat Payが表示されます。"
+    "All credential fields below are required once enabled; the wallet shows WeChat Pay only when they are complete.": "有効化すると、以下のすべての認証情報フィールドが必須になります。入力が完了すると、ウォレットにWeChat Payが表示されます。",
+    "WeChat Pay credentials are filled in, but the \"Enable WeChat Pay\" switch is off — the gateway stays hidden from users until you enable it.": "WeChat Payの認証情報は入力済みですが、「WeChat Payを有効化」スイッチがオフです。有効化するまでユーザーには表示されません。"
   }
 }
