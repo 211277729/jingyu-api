@@ -354,6 +354,7 @@ export function Wallet(props: WalletProps) {
                   enableWaffoPancakeTopup={
                     topupInfo?.enable_waffo_pancake_topup
                   }
+                  enableWxPayTopup={topupInfo?.enable_wxpay_topup}
                 />
               </div>
 
