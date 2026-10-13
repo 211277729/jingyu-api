@@ -2313,6 +2313,81 @@
         ]
       }
     },
+    "/api/user/wxpay/amount": {
+      "post": {
+        "summary": "获取微信支付金额",
+        "deprecated": false,
+        "description": "🔐 需要登录（User权限）",
+        "tags": [
+          "充值"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "Combination343": []
+          },
+          {
+            "Combination1243": []
+          }
+        ]
+      }
+    },
+    "/api/user/wxpay/pay": {
+      "post": {
+        "summary": "发起微信支付（Native扫码）",
+        "deprecated": false,
+        "description": "🔐 需要登录（User权限）",
+        "tags": [
+          "充值"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "Combination343": []
+          },
+          {
+            "Combination1243": []
+          }
+        ]
+      }
+    },
+    "/api/user/wxpay/notify": {
+      "post": {
+        "summary": "微信支付回调",
+        "deprecated": false,
+        "description": "🔓 无需鉴权（支付回调，微信支付平台验签）",
+        "tags": [
+          "充值"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功",
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "Combination343": []
+          },
+          {
+            "Combination1243": []
+          }
+        ]
+      }
+    },
     "/api/user/epay/notify": {
       "get": {
         "summary": "易支付回调",

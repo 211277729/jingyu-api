@@ -190,6 +190,53 @@ func createEpayTestOrder(t *testing.T, userId int, tradeNo string, provider stri
 	return topUp
 }
 
+func TestRechargeWxPayCreditsQuotaExactlyOnceAndRejectsForeignOrders(t *testing.T) {
+	truncateTables(t)
+
+	oldQuotaPerUnit := common.QuotaPerUnit
+	common.QuotaPerUnit = 500000
+	t.Cleanup(func() { common.QuotaPerUnit = oldQuotaPerUnit })
+
+	user := insertUserForPaymentGuardTest(t, 511, 0)
+	topUp := &TopUp{
+		UserId:          user.Id,
+		Amount:          2,
+		Money:           14.6,
+		TradeNo:         "WX511-TESTONCE01",
+		PaymentMethod:   PaymentMethodWxPay,
+		PaymentProvider: PaymentProviderWxPay,
+		CreateTime:      common.GetTimestamp(),
+		Status:          common.TopUpStatusPending,
+	}
+	require.NoError(t, topUp.Insert())
+
+	require.NoError(t, RechargeWxPay(topUp.TradeNo, "127.0.0.1"))
+	assert.Equal(t, 2*500000, getUserQuotaForPaymentGuardTest(t, user.Id))
+
+	reloaded := GetTopUpByTradeNo(topUp.TradeNo)
+	require.NotNil(t, reloaded)
+	assert.Equal(t, common.TopUpStatusSuccess, reloaded.Status)
+
+	require.NoError(t, RechargeWxPay(topUp.TradeNo, "127.0.0.1"))
+	assert.Equal(t, 2*500000, getUserQuotaForPaymentGuardTest(t, user.Id))
+
+	// Foreign provider order must be rejected even when pending.
+	foreign := &TopUp{
+		UserId:          user.Id,
+		Amount:          1,
+		Money:           7.3,
+		TradeNo:         "WX511-FOREIGN01",
+		PaymentMethod:   PaymentMethodStripe,
+		PaymentProvider: PaymentProviderStripe,
+		CreateTime:      common.GetTimestamp(),
+		Status:          common.TopUpStatusPending,
+	}
+	require.NoError(t, foreign.Insert())
+	err := RechargeWxPay(foreign.TradeNo, "127.0.0.1")
+	require.Error(t, err)
+	assert.EqualError(t, err, "top-up failed")
+}
+
 func TestRechargeEpayCreditsQuotaExactlyOnce(t *testing.T) {
 	truncateTables(t)
 

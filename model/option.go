@@ -128,9 +128,9 @@ func InitOptionMap() {
 	common.OptionMap["WxPayEnabled"] = strconv.FormatBool(setting.WxPayEnabled)
 	common.OptionMap["WxPayAppId"] = setting.WxPayAppId
 	common.OptionMap["WxPayMchId"] = setting.WxPayMchId
-	common.OptionMap["WxPayMchApiV3Key"] = setting.WxPayMchApiV3Key
+	common.OptionMap["WxPayMchApiV3Key"] = ""
 	common.OptionMap["WxPaySerialNo"] = setting.WxPaySerialNo
-	common.OptionMap["WxPayPrivateKey"] = setting.WxPayPrivateKey
+	common.OptionMap["WxPayPrivateKey"] = ""
 	common.OptionMap["WxPayNotifyUrl"] = setting.WxPayNotifyUrl
 	common.OptionMap["WxPayUnitPrice"] = strconv.FormatFloat(setting.WxPayUnitPrice, 'f', -1, 64)
 	common.OptionMap["WxPayMinTopUp"] = strconv.Itoa(setting.WxPayMinTopUp)
