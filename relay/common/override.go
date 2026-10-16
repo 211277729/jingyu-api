@@ -22,6 +22,31 @@ import (
 var negativeIndexRegexp = regexp.MustCompile(`\.(-\d+)`)
 
 const (
+	UserSessionPlaceholder = "{user_session}"
+	UserIdPlaceholder      = "{user_id}"
+)
+
+// userSessionTokenLength is the hex length of the per-user session token. A
+// 24-hex-char HMAC prefix is opaque, compact enough for an HTTP header, and
+// cannot be reversed to the user id without the deployment secret.
+const userSessionTokenLength = 24
+
+// DeriveUserSessionToken renders a stable opaque per-user session token for
+// upstream providers that require a session header (for example OpenCode Go's
+// x-opencode-session). The HMAC key is bound to the deployment secret and a
+// domain tag, so the value stays constant for the same user across channels,
+// retries and provider failovers while remaining unlinkable to the user id by
+// the upstream.
+func DeriveUserSessionToken(userID int) string {
+	key := []byte("channel-user-session-v1:" + common.SessionSecret)
+	mac := common.GenerateHMACWithKey(key, strconv.Itoa(userID))
+	if len(mac) > userSessionTokenLength {
+		mac = mac[:userSessionTokenLength]
+	}
+	return mac
+}
+
+const (
 	paramOverrideContextRequestHeaders = "request_headers"
 	paramOverrideContextHeaderOverride = "header_override"
 	paramOverrideContextAuditRecorder  = "__param_override_audit_recorder"
@@ -1254,6 +1279,17 @@ func resolveHeaderOverrideValue(context map[string]any, headerName string, value
 	headerValue := strings.TrimSpace(fmt.Sprintf("%v", value))
 	if headerValue == "" {
 		return "", false, nil
+	}
+	if strings.Contains(headerValue, UserSessionPlaceholder) || strings.Contains(headerValue, UserIdPlaceholder) {
+		userID, parseErr := strconv.Atoi(strings.TrimSpace(fmt.Sprintf("%v", context["user_id"])))
+		if parseErr != nil {
+			// The caller cannot authenticate every entry point, so an
+			// unresolvable placeholder is treated as "not set" instead of
+			// leaking the raw placeholder upstream.
+			return "", false, nil
+		}
+		headerValue = strings.ReplaceAll(headerValue, UserSessionPlaceholder, DeriveUserSessionToken(userID))
+		headerValue = strings.ReplaceAll(headerValue, UserIdPlaceholder, strconv.Itoa(userID))
 	}
 	return headerValue, true, nil
 }

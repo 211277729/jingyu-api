@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -150,7 +151,7 @@ func shouldSkipPassthroughHeader(name string) bool {
 	return false
 }
 
-func applyHeaderOverridePlaceholders(template string, c *gin.Context, apiKey string) (string, bool, error) {
+func applyHeaderOverridePlaceholders(template string, c *gin.Context, info *common.RelayInfo) (string, bool, error) {
 	trimmed := strings.TrimSpace(template)
 	if strings.HasPrefix(trimmed, clientHeaderPlaceholderPrefix) {
 		afterPrefix := trimmed[len(clientHeaderPlaceholderPrefix):]
@@ -174,8 +175,14 @@ func applyHeaderOverridePlaceholders(template string, c *gin.Context, apiKey str
 		return clientHeaderValue, true, nil
 	}
 
-	if strings.Contains(template, "{api_key}") {
-		template = strings.ReplaceAll(template, "{api_key}", apiKey)
+	if strings.Contains(template, common.UserSessionPlaceholder) && info != nil {
+		template = strings.ReplaceAll(template, common.UserSessionPlaceholder, common.DeriveUserSessionToken(info.UserId))
+	}
+	if strings.Contains(template, common.UserIdPlaceholder) && info != nil {
+		template = strings.ReplaceAll(template, common.UserIdPlaceholder, strconv.Itoa(info.UserId))
+	}
+	if strings.Contains(template, "{api_key}") && info != nil {
+		template = strings.ReplaceAll(template, "{api_key}", info.ApiKey)
 	}
 	if strings.TrimSpace(template) == "" {
 		return "", false, nil
@@ -187,6 +194,8 @@ func applyHeaderOverridePlaceholders(template string, c *gin.Context, apiKey str
 // Supported placeholders:
 //   - {api_key}: resolved to the channel API key
 //   - {client_header:<name>}: resolved to the incoming request header value
+//   - {user_id}: resolved to the authenticated user id
+//   - {user_session}: resolved to a stable opaque per-user session token (HMAC over the user id)
 //
 // Header passthrough rules (keys only; values are ignored):
 //   - "*": passthrough all incoming headers by name (excluding unsafe headers)
@@ -280,7 +289,7 @@ func processHeaderOverride(info *common.RelayInfo, c *gin.Context) (map[string]s
 			continue
 		}
 
-		value, include, err := applyHeaderOverridePlaceholders(str, c, info.ApiKey)
+		value, include, err := applyHeaderOverridePlaceholders(str, c, info)
 		if err != nil {
 			return nil, types.NewError(err, types.ErrorCodeChannelHeaderOverrideInvalid)
 		}

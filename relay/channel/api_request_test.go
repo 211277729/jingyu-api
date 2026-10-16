@@ -207,6 +207,123 @@ func TestProcessHeaderOverride_PassHeadersTemplateSetsRuntimeHeaders(t *testing.
 	require.Empty(t, upstreamReq.Header.Get("X-Codex-Beta-Features"))
 }
 
+func TestProcessHeaderOverride_UserSessionPlaceholderResolvesPerUser(t *testing.T) {
+	t.Parallel()
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+
+	info := &relaycommon.RelayInfo{
+		UserId: 7,
+		ChannelMeta: &relaycommon.ChannelMeta{
+			HeadersOverride: map[string]any{
+				"X-Opencode-Session": "{user_session}",
+				"X-User-Id":          "{user_id}",
+			},
+		},
+	}
+
+	headers, err := processHeaderOverride(info, ctx)
+	require.NoError(t, err)
+	require.Equal(t, relaycommon.DeriveUserSessionToken(7), headers["x-opencode-session"])
+	require.Equal(t, "7", headers["x-user-id"])
+
+	// 稳定性:同一用户重复解析得到同一会话标识。
+	again, err := processHeaderOverride(info, ctx)
+	require.NoError(t, err)
+	require.Equal(t, headers["x-opencode-session"], again["x-opencode-session"])
+
+	// 不同用户得到不同标识。
+	other := &relaycommon.RelayInfo{UserId: 8, ChannelMeta: info.ChannelMeta}
+	otherHeaders, err := processHeaderOverride(other, ctx)
+	require.NoError(t, err)
+	require.NotEqual(t, headers["x-opencode-session"], otherHeaders["x-opencode-session"])
+}
+
+func TestProcessHeaderOverride_UserSessionPlaceholderResolvesDuringChannelTest(t *testing.T) {
+	t.Parallel()
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+
+	info := &relaycommon.RelayInfo{
+		UserId:        7,
+		IsChannelTest: true,
+		ChannelMeta: &relaycommon.ChannelMeta{
+			HeadersOverride: map[string]any{
+				"X-Opencode-Session": "{user_session}",
+			},
+		},
+	}
+
+	headers, err := processHeaderOverride(info, ctx)
+	require.NoError(t, err)
+	require.Equal(t, relaycommon.DeriveUserSessionToken(7), headers["x-opencode-session"])
+}
+
+func TestProcessHeaderOverride_UserSessionFallbackInParamOverride(t *testing.T) {
+	t.Parallel()
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(recorder)
+	ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+
+	paramOverride := map[string]any{
+		"operations": []any{
+			map[string]any{
+				"mode": "copy_header",
+				"from": "x-opencode-session",
+				"to":   "x-opencode-session",
+			},
+			map[string]any{
+				"mode":        "set_header",
+				"path":        "x-opencode-session",
+				"value":       "{user_session}",
+				"keep_origin": true,
+			},
+		},
+	}
+
+	// 客户端未携带会话头:回退到按用户派生的标识。
+	info := &relaycommon.RelayInfo{
+		UserId: 7,
+		ChannelMeta: &relaycommon.ChannelMeta{
+			ParamOverride:   paramOverride,
+			HeadersOverride: map[string]any{},
+		},
+	}
+	_, err := relaycommon.ApplyParamOverrideWithRelayInfo([]byte(`{"model":"mimo-v2.6-flash"}`), info)
+	require.NoError(t, err)
+	require.True(t, info.UseRuntimeHeadersOverride)
+	require.Equal(t, relaycommon.DeriveUserSessionToken(7), info.RuntimeHeadersOverride["x-opencode-session"])
+
+	headers, err := processHeaderOverride(info, ctx)
+	require.NoError(t, err)
+	require.Equal(t, relaycommon.DeriveUserSessionToken(7), headers["x-opencode-session"])
+
+	upstreamReq := httptest.NewRequest(http.MethodPost, "https://opencode.example/v1/chat/completions", nil)
+	applyHeaderOverrideToRequest(upstreamReq, headers)
+	require.Equal(t, relaycommon.DeriveUserSessionToken(7), upstreamReq.Header.Get("X-Opencode-Session"))
+
+	// 客户端自带会话头:保留客户端的值,不落回退值。
+	clientInfo := &relaycommon.RelayInfo{
+		UserId:         7,
+		RequestHeaders: map[string]string{"x-opencode-session": "client-session"},
+		ChannelMeta: &relaycommon.ChannelMeta{
+			ParamOverride:   paramOverride,
+			HeadersOverride: map[string]any{},
+		},
+	}
+	_, err = relaycommon.ApplyParamOverrideWithRelayInfo([]byte(`{"model":"mimo-v2.6-flash"}`), clientInfo)
+	require.NoError(t, err)
+	require.Equal(t, "client-session", clientInfo.RuntimeHeadersOverride["x-opencode-session"])
+}
+
 func TestToWebSocketURL(t *testing.T) {
 	for input, want := range map[string]string{
 		"https://api.openai.com/v1/responses":             "wss://api.openai.com/v1/responses",

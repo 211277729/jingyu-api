@@ -1810,6 +1810,47 @@ func TestApplyParamOverrideSyncFieldsInvalidTarget(t *testing.T) {
 	}
 }
 
+func TestApplyParamOverrideSetHeaderUserSessionPlaceholder(t *testing.T) {
+	input := []byte(`{"temperature":0.7}`)
+	override := map[string]any{
+		"operations": []any{
+			map[string]any{
+				"mode":  "set_header",
+				"path":  "x-opencode-session",
+				"value": "{user_session}",
+			},
+		},
+	}
+
+	// 上下文带 user_id:解析为按用户派生的稳定标识。
+	ctx := map[string]any{"user_id": 7}
+	_, err := ApplyParamOverride(input, override, ctx)
+	if err != nil {
+		t.Fatalf("ApplyParamOverride returned error: %v", err)
+	}
+	headers, ok := ctx["header_override"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected header_override context map")
+	}
+	if headers["x-opencode-session"] != DeriveUserSessionToken(7) {
+		t.Fatalf("expected derived session token, got: %v", headers["x-opencode-session"])
+	}
+
+	// 上下文缺 user_id:占位符不得原样泄漏到上游,该头整体不设置。
+	anonymousCtx := map[string]any{}
+	_, err = ApplyParamOverride(input, override, anonymousCtx)
+	if err != nil {
+		t.Fatalf("ApplyParamOverride returned error: %v", err)
+	}
+	anonymousHeaders, ok := anonymousCtx["header_override"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected header_override context map")
+	}
+	if _, exists := anonymousHeaders["x-opencode-session"]; exists {
+		t.Fatalf("expected placeholder header to be dropped without user_id, got: %v", anonymousHeaders["x-opencode-session"])
+	}
+}
+
 func TestApplyParamOverrideSetHeaderKeepOrigin(t *testing.T) {
 	input := []byte(`{"temperature":0.7}`)
 	override := map[string]any{
