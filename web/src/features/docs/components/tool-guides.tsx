@@ -16,10 +16,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { ClaudeCode, Codex, DeepSeek } from '@lobehub/icons'
 import { ArrowRightLeft } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
+import { getLobeIcon } from '@/lib/lobe-icon'
 
 import { ToolGuideCard, type ToolGuideStep } from './tool-guide-card'
 
@@ -171,7 +172,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('DeepSeek Harness')}
-        logo={<DeepSeek.Color size={20} />}
+        logo={<span className='shrink-0'>{getLobeIcon('DeepSeek.Color', 20)}</span>}
         intro={t(
           'DeepSeek Harness declares providers in its Models settings page. Add this gateway once and every agent preset can use it.'
         )}
@@ -181,7 +182,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('Codex')}
-        logo={<Codex.Color size={20} />}
+        logo={<span className='shrink-0'>{getLobeIcon('Codex.Color', 20)}</span>}
         intro={t(
           'Codex needs a model that serves the Responses API, so it cannot use models listed above as chat-only.'
         )}
@@ -193,7 +194,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('Claude Code')}
-        logo={<ClaudeCode.Color size={20} />}
+        logo={<span className='shrink-0'>{getLobeIcon('ClaudeCode.Color', 20)}</span>}
         intro={t(
           'Claude Code reads its endpoint and credential from the environment, and takes the origin only.'
         )}

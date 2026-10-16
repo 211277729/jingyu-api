@@ -21,33 +21,34 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 import { convertDetectedLanguage } from './languages'
-import en from './locales/en.json'
-import fr from './locales/fr.json'
-import ja from './locales/ja.json'
-import ru from './locales/ru.json'
-import vi from './locales/vi.json'
-import zhTW from './locales/zh-TW.json'
-import zhCN from './locales/zh.json'
 
-export const resources = {
-  en,
-  zhCN,
-  fr,
-  ru,
-  ja,
-  vi,
-  zhTW,
+// English is bundled with the main chunk so the fallback language is always
+// available synchronously; every other locale is code-split and fetched on
+// demand. This keeps the entry bundle small — the six lazy locales together
+// weigh several megabytes raw, and any visitor uses only one of them.
+import en from './locales/en.json'
+
+export const lazyLocaleModules = {
+  fr: () => import('./locales/fr.json'),
+  ja: () => import('./locales/ja.json'),
+  ru: () => import('./locales/ru.json'),
+  vi: () => import('./locales/vi.json'),
+  zhCN: () => import('./locales/zh.json'),
+  zhTW: () => import('./locales/zh-TW.json'),
 } as const
+
+type LazyLocaleCode = keyof typeof lazyLocaleModules
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources,
+    resources: { en },
     fallbackLng: 'en',
     supportedLngs: ['en', 'zhCN', 'fr', 'ru', 'ja', 'vi', 'zhTW'],
     load: 'currentOnly',
     nsSeparator: false, // Allow literal colons in keys (e.g., URLs, labels)
+    partialBundledLanguages: true,
     debug: import.meta.env.DEV,
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
@@ -60,5 +61,57 @@ i18n
       convertDetectedLanguage,
     },
   })
+
+// Kick off the fetch for the detected locale before the first render so the
+// lazy locale chunk arrives while the browser is still parsing other chunks.
+export function preloadLocale(language: string | undefined): void {
+  const code = language as LazyLocaleCode | undefined
+  if (code && code in lazyLocaleModules) void lazyLocaleModules[code]()
+}
+
+// Load a lazy locale bundle into i18next. Concurrent calls for the same locale
+// share one in-flight import. The returned promise settles once the bundle is
+// registered, so `i18n.changeLanguage` afterwards is synchronous-safe.
+const loadedLocales = new Map<LazyLocaleCode, Promise<unknown>>()
+
+export function ensureLocale(language: string): Promise<void> {
+  const code = language as LazyLocaleCode
+  const loader = lazyLocaleModules[code]
+  if (!loader) return Promise.resolve()
+
+  let pending = loadedLocales.get(code)
+  if (!pending) {
+    pending = loader()
+      .then((module) => {
+        // The locale JSON wraps its content in a `translation` namespace;
+        // addResourceBundle expects the namespace payload itself.
+        const bundle = (module.default as { translation: unknown }).translation
+        if (!bundle || typeof bundle !== 'object') {
+          throw new Error(`locale ${code} has no translation namespace`)
+        }
+        i18n.addResourceBundle(code, 'translation', bundle, true, true)
+      })
+      .catch((error) => {
+        // Drop the memoized promise so a later call can retry the import;
+        // react-i18next meanwhile falls back to English.
+        loadedLocales.delete(code)
+        throw error
+      })
+    loadedLocales.set(code, pending)
+  }
+  return pending.then(() => undefined)
+}
+
+i18n.on('languageChanged', (language) => {
+  if (language) void ensureLocale(language)
+})
+
+// Load the target bundle first, then switch. React keeps rendering the
+// previous language while the new one streams in, so the UI never shows raw
+// keys mid-switch.
+export async function changeAppLanguage(language: string): Promise<void> {
+  await ensureLocale(language)
+  await i18n.changeLanguage(language)
+}
 
 export default i18n

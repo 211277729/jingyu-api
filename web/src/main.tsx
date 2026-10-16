@@ -25,13 +25,18 @@ import { installBuildMetadata } from '@/lib/build-metadata'
 import { applyFaviconToDom } from '@/lib/dom-utils'
 import '@/lib/dayjs'
 import { initializeFrontendCache } from '@/lib/frontend-cache'
+import { loadLobeIconCatalog } from '@/lib/lobe-icon'
 import { createAppQueryClient } from '@/lib/query-client'
 import { readCachedStatus, statusQueryOptions } from '@/lib/status-query'
 
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
-import './i18n/config'
+import i18n, {
+  ensureLocale,
+  preloadLocale,
+} from './i18n/config'
+
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 
@@ -67,6 +72,19 @@ const rootElement = document.querySelector<HTMLElement>('#root')
 if (!rootElement) {
   throw new Error('Root element not found')
 }
+
+function awaitLocalePreload(): Promise<void> {
+  return Promise.resolve().then(() => {
+    // The detected language lives in `i18n.language`; `resolvedLanguage`
+    // resolves to whichever already-loaded bundle it can (English before the
+    // lazy chunk arrives), so it must not decide the bootstrap locale.
+    const bootstrap = i18n.language || i18n.resolvedLanguage || 'en'
+    preloadLocale(bootstrap)
+    if (i18n.hasResourceBundle(bootstrap, 'translation')) return undefined
+    return ensureLocale(bootstrap)
+  })
+}
+
 // Set document.title and favicon from cached status, then refresh from network
 ;(function initSystemBranding() {
   try {
@@ -100,19 +118,31 @@ if (!rootElement) {
     /* empty */
   }
 })()
-if (!rootElement.innerHTML) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <FontProvider>
-            <DirectionProvider>
-              <RouterProvider router={router} />
-            </DirectionProvider>
-          </FontProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </StrictMode>
-  )
-}
+
+// The bootstrap translation bundle (and the small icon catalog used by the
+// landing page) stream in parallel with the rest of the entry; hold the first
+// render until they arrive so text never flashes in a half-translated state
+// and hero icons render fully-formed. English users resolve immediately
+// (English is bundled with the entry).
+const bootstrap = Promise.all([
+  awaitLocalePreload().catch(() => undefined),
+  loadLobeIconCatalog().catch(() => undefined),
+])
+
+void bootstrap.then(() => {
+    if (rootElement.innerHTML) return
+    const root = ReactDOM.createRoot(rootElement)
+    root.render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <FontProvider>
+              <DirectionProvider>
+                <RouterProvider router={router} />
+              </DirectionProvider>
+            </FontProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </StrictMode>
+    )
+  })

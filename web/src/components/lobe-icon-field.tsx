@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
-import { getLobeIcon, getLobeIconNames } from '@/lib/lobe-icon'
+import { getLobeIcon, useLobeIconNames } from '@/lib/lobe-icon'
 
 export function LobeIconField(props: {
   id?: string
@@ -34,14 +34,15 @@ export function LobeIconField(props: {
   const { t } = useTranslation()
   const [custom, setCustom] = useState(false)
   const usesCustom = !props.allowInheritance || Boolean(props.value) || custom
+  const iconNames = useLobeIconNames()
   const options = useMemo(
     () =>
-      getLobeIconNames().map((name) => ({
+      iconNames.map((name) => ({
         value: name,
         label: name,
         icon: getLobeIcon(name, 18),
       })),
-    []
+    [iconNames]
   )
   const effectiveIcon = props.value || props.inheritedIcon
   return (

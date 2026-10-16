@@ -14,6 +14,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/andybalholm/brotli"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -40,6 +41,26 @@ func performFrontendRequest(router http.Handler, method, target, acceptEncoding 
 	return recorder
 }
 
+// decodeCompressedBody reverses the response content coding.
+func decodeCompressedBody(t *testing.T, encoding string, body []byte) []byte {
+	t.Helper()
+	switch encoding {
+	case "br":
+		reader := brotli.NewReader(bytes.NewReader(body))
+		decoded, err := io.ReadAll(reader)
+		require.NoError(t, err)
+		return decoded
+	case "gzip":
+		reader, err := gzip.NewReader(bytes.NewReader(body))
+		require.NoError(t, err)
+		decoded, err := io.ReadAll(reader)
+		require.NoError(t, err)
+		return decoded
+	default:
+		return body
+	}
+}
+
 func TestServeFrontendFilesCompressesEachFileOnce(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	frontendDir := t.TempDir()
@@ -62,32 +83,38 @@ func TestServeFrontendFilesCompressesEachFileOnce(t *testing.T) {
 	assert.Equal(t, script, plain.Body.Bytes())
 	frontendFS.opens.Store(0)
 
-	responses := make([]*httptest.ResponseRecorder, 8)
-	var wg sync.WaitGroup
-	for i := range responses {
-		wg.Go(func() {
-			responses[i] = performFrontendRequest(router, http.MethodGet, "/static/js/app.js", "gzip, deflate, br")
+	// Brotli is chosen whenever the client advertises it, even alongside gzip.
+	compressedResponses := make([]*httptest.ResponseRecorder, 8)
+	var compressedWG sync.WaitGroup
+	for i := range compressedResponses {
+		compressedWG.Go(func() {
+			compressedResponses[i] = performFrontendRequest(router, http.MethodGet, "/static/js/app.js", "gzip, deflate, br")
 		})
 	}
-	wg.Wait()
-	for _, response := range responses {
+	compressedWG.Wait()
+	for _, response := range compressedResponses {
 		require.Equal(t, http.StatusOK, response.Code)
-		assert.Equal(t, "gzip", response.Header().Get("Content-Encoding"))
+		assert.Equal(t, "br", response.Header().Get("Content-Encoding"))
 		assert.Equal(t, "Accept-Encoding", response.Header().Get("Vary"))
 		assert.Equal(t, plain.Header().Get("Content-Type"), response.Header().Get("Content-Type"))
 		assert.Equal(t, strconv.Itoa(response.Body.Len()), response.Header().Get("Content-Length"))
-		assert.Equal(t, responses[0].Body.Bytes(), response.Body.Bytes())
+		assert.Equal(t, compressedResponses[0].Body.Bytes(), response.Body.Bytes())
 	}
-	reader, err := gzip.NewReader(bytes.NewReader(responses[0].Body.Bytes()))
-	require.NoError(t, err)
-	decoded, err := io.ReadAll(reader)
-	require.NoError(t, err)
-	assert.Equal(t, script, decoded)
+	brotliDecoded := decodeCompressedBody(t, "br", compressedResponses[0].Body.Bytes())
+	assert.Equal(t, script, brotliDecoded)
 
-	head := performFrontendRequest(router, http.MethodHead, "/static/js/app.js", "gzip")
+	// Gzip-only clients still get gzip.
+	gzipOnly := performFrontendRequest(router, http.MethodGet, "/static/js/app.js", "gzip")
+	require.Equal(t, http.StatusOK, gzipOnly.Code)
+	assert.Equal(t, "gzip", gzipOnly.Header().Get("Content-Encoding"))
+	gzipDecoded := decodeCompressedBody(t, "gzip", gzipOnly.Body.Bytes())
+	assert.Equal(t, script, gzipDecoded)
+	assert.Less(t, len(gzipOnly.Body.Bytes()), len(script), "gzip must shrink a compressible script")
+
+	head := performFrontendRequest(router, http.MethodHead, "/static/js/app.js", "br")
 	assert.Equal(t, http.StatusOK, head.Code)
-	assert.Equal(t, "gzip", head.Header().Get("Content-Encoding"))
-	assert.Equal(t, strconv.Itoa(responses[0].Body.Len()), head.Header().Get("Content-Length"))
+	assert.Equal(t, "br", head.Header().Get("Content-Encoding"))
+	assert.Equal(t, strconv.Itoa(compressedResponses[0].Body.Len()), head.Header().Get("Content-Length"))
 	assert.Empty(t, head.Body.Bytes())
 	assert.Equal(t, int32(1), frontendFS.opens.Load(), "the file must be read and compressed once")
 

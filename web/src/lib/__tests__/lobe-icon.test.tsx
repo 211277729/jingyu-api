@@ -36,7 +36,7 @@ describe('Lobe icons', () => {
   ])('includes icon variants when bundling from %s', (root) => {
     // Vitest loads imports without applying Rspack's webpackInclude filter.
     const source = readFileSync(
-      resolve(import.meta.dirname, '../lobe-icon.tsx'),
+      resolve(import.meta.dirname, '../lobe-icon-internal.tsx'),
       'utf8'
     )
     const comment = source.match(/\/\*\s*(webpackInclude:[\s\S]*?)\*\//)
@@ -69,7 +69,8 @@ describe('Lobe icons', () => {
     render(
       getLobeIcon('Claude.Color.size={32}.role="img".aria-label="Claude icon"')
     )
-    expect(screen.getByText('C')).toHaveStyle({ width: '32px', height: '32px' })
+    // The icon catalog loads asynchronously; once it resolves the chained
+    // `size={32}` prop applies and the SVG replaces the placeholder.
     const icon = await screen.findByRole('img', { name: 'Claude icon' })
     expect(icon.tagName.toLowerCase()).toBe('svg')
     expect(icon).toHaveAttribute('width', '32')

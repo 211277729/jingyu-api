@@ -31,6 +31,7 @@ import {
   INTERFACE_LANGUAGE_OPTIONS,
   normalizeInterfaceLanguage,
 } from '@/i18n/languages'
+import { changeAppLanguage } from '@/i18n/config'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth-store'
@@ -41,7 +42,7 @@ export function LanguageSwitcher() {
   const currentLanguage = normalizeInterfaceLanguage(i18n.language)
   const handleChangeLanguage = useCallback(
     async (code: string) => {
-      await i18n.changeLanguage(code)
+      await changeAppLanguage(code)
       if (user) {
         try {
           await api.put('/api/user/self', { language: code })
@@ -50,7 +51,7 @@ export function LanguageSwitcher() {
         }
       }
     },
-    [i18n, user]
+    [user]
   )
 
   return (
