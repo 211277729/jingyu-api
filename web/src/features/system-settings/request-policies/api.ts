@@ -14,6 +14,9 @@ export type PolicyEvent = {
   error_code?: string
   error_source?: string
   elapsed_ms: number
+  // First-token latency measured inside this attempt. Present only on the
+  // attempt's first terminal event, so a retry shows each attempt's own TTFT.
+  ttft_ms?: number
   decision: PolicyDecision
   health?: string
 }

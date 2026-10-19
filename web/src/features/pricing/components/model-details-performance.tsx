@@ -27,6 +27,7 @@ import {
 } from '@/components/data-table'
 import { GroupBadge } from '@/components/group-badge'
 import { getPerfMetrics } from '@/features/performance-metrics/api'
+import { MetricsScopeNote } from '@/features/performance-metrics/components/metrics-scope-note'
 import {
   formatLatency,
   formatThroughput,
@@ -174,6 +175,7 @@ export function ModelDetailsPerformance(props: { model: PricingModel }) {
 
   return (
     <div className='flex flex-col gap-4'>
+      <MetricsScopeNote scope={metricsQuery.data?.data.metrics_scope} />
       <div className='grid grid-cols-1 gap-2 sm:grid-cols-3'>
         <StatCard
           icon={Timer}

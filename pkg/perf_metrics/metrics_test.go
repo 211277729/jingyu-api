@@ -345,3 +345,81 @@ func TestPerformanceAggregationAndFlush(t *testing.T) {
 		})
 	}
 }
+
+func TestApplySummaryScopePublishesScopedSpeedOnly(t *testing.T) {
+	full := SummaryAllResult{
+		Summary: &Summary{AvgLatencyMs: 11000, SuccessRate: 99.5, AvgTps: 40},
+		Models: []ModelSummary{
+			{ModelName: "busy-model", AvgLatencyMs: 12000, SuccessRate: 98, AvgTps: 30, RequestCount: 200},
+			{ModelName: "quiet-model", AvgLatencyMs: 9000, SuccessRate: 100, AvgTps: 50, RequestCount: 3},
+		},
+		RecentSuccessSeries: map[string][]SuccessRatePoint{"busy-model": {{Ts: 1, SuccessRate: 98}}},
+	}
+	stats := []model.PromptScopedStat{
+		// 60 requests, 600s of total time, of which 100s were first-token latency,
+		// and 30000 completion tokens.
+		{Key: "busy-model", RequestCount: 60, TotalUseTimeMs: 600000, CompletionTokens: 30000, TtftSumMs: 100000, TtftCount: 60},
+		// Below the sample floor: keeps the full-population number.
+		{Key: "quiet-model", RequestCount: 2, TotalUseTimeMs: 8000, CompletionTokens: 100, TtftSumMs: 3000, TtftCount: 2},
+	}
+
+	scoped := ApplySummaryScope(full, stats, 20, BuildScope("short", 8000, "标准对话"))
+
+	require.NotNil(t, scoped.MetricsScope)
+	assert.Equal(t, "short", scoped.MetricsScope.Mode)
+	assert.Equal(t, 8000, scoped.MetricsScope.PromptTokenLimit)
+	assert.Equal(t, "标准对话", scoped.MetricsScope.Note)
+
+	assert.EqualValues(t, 10000, scoped.Models[0].AvgLatencyMs, "600000ms over 60 requests")
+	assert.InDelta(t, 60.0, scoped.Models[0].AvgTps, 0.01, "30000 tokens over the 500s generation window")
+	assert.EqualValues(t, 98, scoped.Models[0].SuccessRate, "success rate keeps the full population")
+	assert.EqualValues(t, 200, scoped.Models[0].RequestCount, "request count keeps the full population")
+	assert.Equal(t, full.RecentSuccessSeries, scoped.RecentSuccessSeries)
+
+	assert.EqualValues(t, 9000, scoped.Models[1].AvgLatencyMs, "a model below the sample floor falls back")
+
+	// The site-wide summary covers every scoped sample, including models that fell
+	// back to the full population on their own card.
+	assert.EqualValues(t, 9806, scoped.Summary.AvgLatencyMs, "608000ms over 62 requests")
+	assert.InDelta(t, 59.6, scoped.Summary.AvgTps, 0.01, "30100 tokens over the 505s generation window")
+
+	assert.Nil(t, ApplySummaryScope(full, stats, 20, nil).MetricsScope, "an unset scope keeps the full population")
+	assert.Empty(t, ApplySummaryScope(full, nil, 20, BuildScope("short", 8000, "")).MetricsScope, "no scoped samples keeps the full population")
+}
+
+func TestApplyQueryScopeOverridesGroupsAndHourlySeries(t *testing.T) {
+	full := QueryResult{
+		ModelName: "model-a",
+		Summary:   &Summary{AvgLatencyMs: 20000, SuccessRate: 99, AvgTps: 20},
+		Groups: []GroupResult{
+			{Group: "default", AvgTtftMs: 11800, AvgLatencyMs: 20000, SuccessRate: 99, AvgTps: 20},
+			{Group: "vip", AvgTtftMs: 16400, AvgLatencyMs: 24000, SuccessRate: 100, AvgTps: 25},
+		},
+		Series: []BucketPoint{
+			{Ts: 7200, AvgTtftMs: 11800, AvgLatencyMs: 20000, SuccessRate: 100, AvgTps: 20},
+			{Ts: 3600, AvgTtftMs: 47700, AvgLatencyMs: 47496, SuccessRate: 98.8, AvgTps: 15},
+		},
+	}
+	groupStats := []model.PromptScopedStat{
+		{Key: "default", RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40},
+	}
+	hourStats := []model.PromptScopedStat{
+		{BucketTs: 7200, RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40},
+	}
+
+	scoped := ApplyQueryScope(full, groupStats, hourStats, 20, BuildScope("short", 8000, ""))
+
+	assert.EqualValues(t, 6000, scoped.Groups[0].AvgLatencyMs)
+	assert.EqualValues(t, 2400, scoped.Groups[0].AvgTtftMs)
+	assert.InDelta(t, 83.33, scoped.Groups[0].AvgTps, 0.01)
+	assert.EqualValues(t, 99, scoped.Groups[0].SuccessRate, "success rate keeps the full population")
+	assert.EqualValues(t, 16400, scoped.Groups[1].AvgTtftMs, "a group with no scoped samples falls back")
+
+	require.Len(t, scoped.Series, 1, "hours without scoped samples drop out of the latency trend")
+	assert.EqualValues(t, 7200, scoped.Series[0].Ts)
+	assert.EqualValues(t, 6000, scoped.Series[0].AvgLatencyMs)
+	assert.EqualValues(t, 2400, scoped.Series[0].AvgTtftMs)
+
+	assert.EqualValues(t, 6000, scoped.Summary.AvgLatencyMs)
+	assert.Nil(t, ApplyQueryScope(full, groupStats, hourStats, 20, nil).MetricsScope)
+}

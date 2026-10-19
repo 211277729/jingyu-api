@@ -47,7 +47,7 @@ func RecordRelayResult(ctx context.Context, info *relaycommon.RelayInfo, apiErr 
 	hasTtft := info.IsStream && info.HasSendResponse()
 	ttftMs := int64(0)
 	if hasTtft {
-		ttftMs = info.FirstResponseTime.Sub(info.StartTime).Milliseconds()
+		ttftMs = info.FirstResponseLatency().Milliseconds()
 	}
 	latencyMs := now.Sub(info.StartTime).Milliseconds()
 	generationMs := latencyMs

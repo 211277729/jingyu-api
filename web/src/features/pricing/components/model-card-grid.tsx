@@ -22,6 +22,7 @@ import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
+import { MetricsScopeNote } from '@/features/performance-metrics/components/metrics-scope-note'
 import { getPerfMetricsSummary } from '@/features/performance-metrics/api'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
@@ -93,6 +94,11 @@ export const ModelCardGrid = memo(function ModelCardGrid(
 
   return (
     <div className='flex flex-col gap-4 sm:gap-5'>
+      {/* 与卡片内容同一条左竖线（CardHeader/CardContent 使用 px-4）。 */}
+      <MetricsScopeNote
+        scope={perfQuery.data?.data?.metrics_scope}
+        className='px-4'
+      />
       <div className='grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3'>
         {pagedModels.map((model) => (
           <ModelCard

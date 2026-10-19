@@ -39,6 +39,7 @@ export function PolicyDecisionRecord(props: {
           <p className='text-muted-foreground text-xs break-words'>
             {event.attempt > 0 ? `${t('Attempt')} ${event.attempt} · ` : ''}
             {event.elapsed_ms} ms
+            {event.ttft_ms ? ` · ${t('First token')} ${event.ttft_ms} ms` : ''}
             {event.group ? ` · ${event.group}` : ''}
             {event.rule ? ` · ${event.rule}` : ''}
             {event.status ? ` · HTTP ${event.status}` : ''}

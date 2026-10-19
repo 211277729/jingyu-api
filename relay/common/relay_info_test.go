@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
@@ -393,6 +394,44 @@ func TestInitChannelMetaResetsPerAttemptStreamStateAndPreservesRequestState(t *t
 	}, info)
 	require.NotEmpty(t, responses)
 	assert.Equal(t, "message_start", responses[0].Type)
+}
+
+func TestFirstResponseLatencyMeasuresTheAnsweringAttemptOnly(t *testing.T) {
+	info := &RelayInfo{IsStream: true, isFirstResponse: true}
+	info.StartTime = time.Now().Add(-30 * time.Second)
+	info.AttemptStartTime = info.StartTime
+	info.FirstResponseTime = info.StartTime.Add(-time.Second)
+
+	// Nothing answered yet: the -1s sentinel survives, so a log reader can still
+	// tell "no first response" from a real measurement.
+	assert.Equal(t, int64(-1000), info.FirstResponseLatency().Milliseconds())
+	assert.False(t, info.HasSendResponse())
+
+	// Attempt 1 stalls for 8s and fails without a byte; the retry answers after 2s.
+	info.AttemptStartTime = time.Now().Add(-8 * time.Second)
+	info.BeginAttemptTiming()
+	info.AttemptStartTime = time.Now().Add(-2 * time.Second)
+	info.SetFirstResponseTime()
+
+	require.True(t, info.HasSendResponse())
+	assert.InDelta(t, 2000, info.FirstResponseLatency().Milliseconds(), 250,
+		"TTFT is measured from the answering attempt, not from the request start")
+
+	// An attempt that already delivered a byte keeps its own baseline even though
+	// the next attempt moved AttemptStartTime forward.
+	answered := info.FirstResponseLatency()
+	info.BeginAttemptTiming()
+	assert.Equal(t, answered, info.FirstResponseLatency())
+}
+
+func TestFirstResponseLatencyWithoutRetryUsesTheRequestStart(t *testing.T) {
+	info := &RelayInfo{IsStream: true, isFirstResponse: true}
+	info.StartTime = time.Now().Add(-3 * time.Second)
+	info.AttemptStartTime = info.StartTime
+	info.FirstResponseTime = info.StartTime.Add(-time.Second)
+	info.SetFirstResponseTime()
+
+	assert.InDelta(t, 3000, info.FirstResponseLatency().Milliseconds(), 250)
 }
 
 func ptr[T any](value T) *T {

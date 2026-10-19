@@ -55,6 +55,13 @@ const OPERATIONS_SECTIONS = [
             settings['perf_metrics_setting.bucket_time'] ?? 'hour',
           'perf_metrics_setting.retention_days':
             settings['perf_metrics_setting.retention_days'] ?? 0,
+          'perf_metrics_setting.published_bucket':
+            settings['perf_metrics_setting.published_bucket'] ?? 'short',
+          'perf_metrics_setting.published_prompt_token_limit':
+            settings['perf_metrics_setting.published_prompt_token_limit'] ??
+            8000,
+          'perf_metrics_setting.published_note':
+            settings['perf_metrics_setting.published_note'] ?? '',
         }}
       />
     ),

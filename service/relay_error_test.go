@@ -231,6 +231,42 @@ func TestDecideRelayRetryReasons(t *testing.T) {
 	}
 }
 
+func TestAttemptTTFTIsRecordedPerAttempt(t *testing.T) {
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+	state := RequestPolicy(c)
+
+	state.BeginAttempt(&model.Channel{Id: 11}, "default")
+	state.NoteAttemptTTFT(1500 * time.Millisecond)
+	rateLimited := types.NewOpenAIError(errors.New("rate limited"), types.ErrorCodeBadResponseStatusCode, http.StatusTooManyRequests)
+	RecordPolicyFailure(c, 11, rateLimited, DecideRelayRetry(c, rateLimited, 1))
+
+	state.BeginAttempt(&model.Channel{Id: 12}, "default")
+	state.NoteAttemptTTFT(900 * time.Millisecond)
+	c.Set("channel_id", 12)
+	MarkRequestPolicySuccess(c, nil)
+
+	events := state.Events()
+	require.Len(t, events, 5)
+	assert.Zero(t, events[0].TtftMS, "the attempt marker carries no TTFT")
+	assert.Equal(t, int64(1500), events[1].TtftMS, "the failed attempt reports its own TTFT")
+	assert.Zero(t, events[2].TtftMS, "the retry decision of the same attempt stays empty")
+	assert.Zero(t, events[3].TtftMS)
+	assert.Equal(t, int64(900), events[4].TtftMS, "the answering attempt reports its own TTFT")
+	assert.Equal(t, 12, events[4].ChannelID)
+
+	// A request that never answered keeps the field out of the log payload.
+	untouched, _ := gin.CreateTestContext(httptest.NewRecorder())
+	plain := RequestPolicy(untouched)
+	plain.BeginAttempt(&model.Channel{Id: 13}, "default")
+	plain.NoteAttemptTTFT(-time.Second)
+	plain.AddEvent(PolicyEvent{ChannelID: 13, Decision: PolicyDecision{Action: "attempt", Reason: "channel_selected", Source: "routing"}})
+	assert.Zero(t, plain.Events()[1].TtftMS)
+	payload, err := common.Marshal(plain.Events()[0])
+	require.NoError(t, err)
+	assert.NotContains(t, string(payload), "ttft_ms")
+}
+
 func TestRequestPolicyEventsReachLogAdminInfo(t *testing.T) {
 	previousAutoDisable := common.AutomaticDisableChannelEnabled
 	common.AutomaticDisableChannelEnabled = true

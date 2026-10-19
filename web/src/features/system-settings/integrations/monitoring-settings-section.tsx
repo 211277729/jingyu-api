@@ -67,6 +67,9 @@ const monitoringSchema = z.object({
     flush_interval: z.coerce.number().min(1),
     bucket_time: z.enum(['minute', '5min', 'hour']),
     retention_days: z.coerce.number().min(0),
+    published_bucket: z.enum(['all', 'short']),
+    published_prompt_token_limit: z.coerce.number().min(1),
+    published_note: z.string(),
   }),
 })
 
@@ -79,6 +82,9 @@ type FlatMonitoringDefaults = {
   'perf_metrics_setting.flush_interval': number
   'perf_metrics_setting.bucket_time': 'minute' | '5min' | 'hour'
   'perf_metrics_setting.retention_days': number
+  'perf_metrics_setting.published_bucket': 'all' | 'short'
+  'perf_metrics_setting.published_prompt_token_limit': number
+  'perf_metrics_setting.published_note': string
 }
 
 type MonitoringSettingsSectionProps = {
@@ -94,6 +100,10 @@ const buildFormDefaults = (
     flush_interval: defaults['perf_metrics_setting.flush_interval'],
     bucket_time: defaults['perf_metrics_setting.bucket_time'],
     retention_days: defaults['perf_metrics_setting.retention_days'],
+    published_bucket: defaults['perf_metrics_setting.published_bucket'],
+    published_prompt_token_limit:
+      defaults['perf_metrics_setting.published_prompt_token_limit'],
+    published_note: defaults['perf_metrics_setting.published_note'],
   },
 })
 
@@ -108,6 +118,12 @@ const normalizeDefaults = (
     defaults['perf_metrics_setting.bucket_time'],
   'perf_metrics_setting.retention_days':
     defaults['perf_metrics_setting.retention_days'],
+  'perf_metrics_setting.published_bucket':
+    defaults['perf_metrics_setting.published_bucket'],
+  'perf_metrics_setting.published_prompt_token_limit':
+    defaults['perf_metrics_setting.published_prompt_token_limit'],
+  'perf_metrics_setting.published_note':
+    (defaults['perf_metrics_setting.published_note'] ?? '').trim(),
 })
 
 const normalizeFormValues = (
@@ -120,6 +136,12 @@ const normalizeFormValues = (
   'perf_metrics_setting.bucket_time': values.perf_metrics_setting.bucket_time,
   'perf_metrics_setting.retention_days':
     values.perf_metrics_setting.retention_days,
+  'perf_metrics_setting.published_bucket':
+    values.perf_metrics_setting.published_bucket,
+  'perf_metrics_setting.published_prompt_token_limit':
+    values.perf_metrics_setting.published_prompt_token_limit,
+  'perf_metrics_setting.published_note':
+    values.perf_metrics_setting.published_note.trim(),
 })
 
 export function MonitoringSettingsSection({
@@ -155,6 +177,7 @@ export function MonitoringSettingsSection({
   }, [defaultValues])
 
   const perfMetricsEnabled = form.watch('perf_metrics_setting.enabled')
+  const publishedScope = form.watch('perf_metrics_setting.published_bucket')
 
   const onSubmit = async (values: MonitoringFormValues) => {
     const normalized = normalizeFormValues(values)
@@ -307,6 +330,94 @@ export function MonitoringSettingsSection({
                   </FormControl>
                   <FormDescription>
                     {t('0 means data is kept permanently')}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* items-start：该行各列内容行数不同（有的列有说明文字），
+              默认拉伸会让内容较少的那列把多余高度分摊到各行，控件被推低。 */}
+          <div className='grid grid-cols-1 items-start gap-4 md:grid-cols-3'>
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_bucket'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Published latency scope')}</FormLabel>
+                  <Select
+                    items={[
+                      { value: 'all', label: t('All requests') },
+                      {
+                        value: 'short',
+                        label: t('Standard chat requests'),
+                      },
+                    ]}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={!perfMetricsEnabled}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent alignItemWithTrigger={false}>
+                      <SelectGroup>
+                        <SelectItem value='all'>
+                          {t('All requests')}
+                        </SelectItem>
+                        <SelectItem value='short'>
+                          {t('Standard chat requests')}
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {t(
+                      'Latency and throughput on the model square use this request population.'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_prompt_token_limit'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('Standard chat input token limit')}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={1}
+                      step={1}
+                      {...safeNumberFieldProps(field)}
+                      disabled={!perfMetricsEnabled || publishedScope !== 'short'}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_note'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Published scope note')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled={!perfMetricsEnabled || publishedScope !== 'short'}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t('Leave empty to use the built-in sentence')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

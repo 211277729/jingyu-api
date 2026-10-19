@@ -22,6 +22,14 @@ export type PerformanceSummary = {
   avg_tps: number
 }
 
+// MetricsScope states which request population the published speed numbers
+// cover. It is present only when that population is narrower than every request.
+export type MetricsScope = {
+  mode: string
+  prompt_token_limit?: number
+  note?: string
+}
+
 export type PerformanceSeriesPoint = {
   ts: number
   avg_ttft_ms: number
@@ -50,6 +58,7 @@ export type PerformanceMetricsData = {
     model_name: string
     series_schema?: string
     groups: PerformanceGroup[]
+    metrics_scope?: MetricsScope
   }
 }
 
@@ -73,5 +82,6 @@ export type PerfSummaryAllData = {
     window_end?: number
     models: PerfModelSummary[]
     recent_success_series?: Record<string, SuccessRatePoint[]>
+    metrics_scope?: MetricsScope
   }
 }

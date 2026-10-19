@@ -406,6 +406,9 @@ export type OperationsSettings = {
   'perf_metrics_setting.flush_interval': number
   'perf_metrics_setting.bucket_time': 'hour' | 'minute' | '5min'
   'perf_metrics_setting.retention_days': number
+  'perf_metrics_setting.published_bucket': 'all' | 'short'
+  'perf_metrics_setting.published_prompt_token_limit': number
+  'perf_metrics_setting.published_note': string
 }
 
 export type SecuritySettings = {

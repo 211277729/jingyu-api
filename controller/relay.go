@@ -186,6 +186,9 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 		}
 		c.Request.Body = io.NopCloser(bodyStorage)
 
+		// 每次尝试单独计首字：失败重试不会把上一次尝试的耗时算进本次的首字耗时
+		relayInfo.BeginAttemptTiming()
+
 		switch relayFormat {
 		case types.RelayFormatOpenAIRealtime:
 			newAPIError = relay.WssHelper(c, relayInfo)
@@ -196,6 +199,8 @@ func Relay(c *gin.Context, relayFormat types.RelayFormat) {
 		default:
 			newAPIError = relayHandler(c, relayInfo)
 		}
+
+		service.RequestPolicy(c).NoteAttemptTTFT(relayInfo.FirstResponseLatency())
 
 		if newAPIError == nil {
 			service.MarkRequestPolicySuccess(c, relayInfo.StreamStatus)

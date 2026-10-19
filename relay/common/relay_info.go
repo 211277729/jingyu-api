@@ -81,16 +81,23 @@ type TokenCountMeta struct {
 }
 
 type RelayInfo struct {
-	TokenId           int
-	TokenKey          string
-	TokenGroup        string
-	UserId            int
-	UsingGroup        string // 使用的分组，当auto跨分组重试时，会变动
-	UserGroup         string // 用户所在分组
-	TokenUnlimited    bool
-	StartTime         time.Time
+	TokenId        int
+	TokenKey       string
+	TokenGroup     string
+	UserId         int
+	UsingGroup     string // 使用的分组，当auto跨分组重试时，会变动
+	UserGroup      string // 用户所在分组
+	TokenUnlimited bool
+	StartTime      time.Time
+	// AttemptStartTime is the moment the channel attempt now in flight began.
+	// First-token latency is measured from it, so an enabled retry never folds a
+	// failed attempt's latency into the reported TTFT.
+	AttemptStartTime  time.Time
 	FirstResponseTime time.Time
 	isFirstResponse   bool
+	// firstResponseBaseline snapshots AttemptStartTime when the first response
+	// arrives, so a later retry cannot move the baseline after the fact.
+	firstResponseBaseline time.Time
 	//SendLastReasoningResponse bool
 	IsStream               bool
 	IsGeminiBatchEmbedding bool
@@ -632,6 +639,7 @@ func genBaseRelayInfo(c *gin.Context, request dto.Request) *RelayInfo {
 		IsStream:        isStream,
 
 		StartTime:         startTime,
+		AttemptStartTime:  startTime,
 		FirstResponseTime: startTime.Add(-time.Second),
 		ThinkingContentInfo: ThinkingContentInfo{
 			IsFirstThinkingContent:  true,
@@ -990,8 +998,33 @@ func (info *RelayInfo) ConvOptions() *convmeta.Options {
 func (info *RelayInfo) SetFirstResponseTime() {
 	if info.isFirstResponse {
 		info.FirstResponseTime = time.Now()
+		info.firstResponseBaseline = info.AttemptStartTime
 		info.isFirstResponse = false
 	}
+}
+
+// BeginAttemptTiming starts a fresh first-token baseline for the attempt that is
+// about to be sent upstream. Call it once per attempt, right before the request.
+func (info *RelayInfo) BeginAttemptTiming() {
+	info.AttemptStartTime = time.Now()
+}
+
+// FirstResponseLatency is the time to the first upstream byte of the attempt that
+// produced it, so retries report the answering attempt's TTFT instead of the sum
+// of every attempt. A request that never produced a first byte keeps the -1s
+// sentinel that marks it as "no first response".
+func (info *RelayInfo) FirstResponseLatency() time.Duration {
+	if !info.HasSendResponse() {
+		return info.FirstResponseTime.Sub(info.StartTime)
+	}
+	baseline := info.firstResponseBaseline
+	if baseline.IsZero() {
+		baseline = info.AttemptStartTime
+	}
+	if baseline.IsZero() {
+		baseline = info.StartTime
+	}
+	return info.FirstResponseTime.Sub(baseline)
 }
 
 func (info *RelayInfo) HasSendResponse() bool {

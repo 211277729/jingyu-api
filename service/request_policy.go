@@ -23,16 +23,20 @@ type PolicyDecision struct {
 }
 
 type PolicyEvent struct {
-	Attempt     int            `json:"attempt"`
-	ChannelID   int            `json:"channel_id,omitempty"`
-	Group       string         `json:"group,omitempty"`
-	Rule        string         `json:"rule,omitempty"`
-	Status      int            `json:"status,omitempty"`
-	ErrorCode   string         `json:"error_code,omitempty"`
-	ErrorSource string         `json:"error_source,omitempty"`
-	ElapsedMS   int64          `json:"elapsed_ms"`
-	Decision    PolicyDecision `json:"decision"`
-	Health      string         `json:"health,omitempty"`
+	Attempt     int    `json:"attempt"`
+	ChannelID   int    `json:"channel_id,omitempty"`
+	Group       string `json:"group,omitempty"`
+	Rule        string `json:"rule,omitempty"`
+	Status      int    `json:"status,omitempty"`
+	ErrorCode   string `json:"error_code,omitempty"`
+	ErrorSource string `json:"error_source,omitempty"`
+	ElapsedMS   int64  `json:"elapsed_ms"`
+	// TtftMS is the first-token latency measured inside this attempt. It is set on
+	// the attempt's first terminal event, so an attempt that answered and an
+	// attempt that failed after a partial stream stay distinguishable in the log.
+	TtftMS   int64          `json:"ttft_ms,omitempty"`
+	Decision PolicyDecision `json:"decision"`
+	Health   string         `json:"health,omitempty"`
 }
 
 // RequestPolicyState records how one request was routed so administrators can
@@ -49,6 +53,7 @@ type RequestPolicyState struct {
 	Successful        bool
 	OutcomeRecorded   bool
 	mu                sync.Mutex
+	pendingTtftMS     int64
 	events            []PolicyEvent
 }
 
@@ -75,9 +80,27 @@ func (s *RequestPolicyState) AddEvent(event PolicyEvent) {
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	// The attempt's first terminal event carries the TTFT noted for it; later
+	// events of the same attempt (for example the retry decision) leave it empty.
+	if event.TtftMS == 0 {
+		event.TtftMS = s.pendingTtftMS
+		s.pendingTtftMS = 0
+	}
 	if len(s.events) < 512 {
 		s.events = append(s.events, event)
 	}
+}
+
+// NoteAttemptTTFT hands the attempt that just ended its own first-token latency.
+// It is consumed by that attempt's first terminal event, so retries never mix
+// attempts inside one ttft_ms value.
+func (s *RequestPolicyState) NoteAttemptTTFT(ttft time.Duration) {
+	if s == nil || ttft <= 0 {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pendingTtftMS = ttft.Milliseconds()
 }
 
 func (s *RequestPolicyState) Events() []PolicyEvent {

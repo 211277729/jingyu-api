@@ -41,7 +41,7 @@ RUN apt-get update \
 
 COPY --from=builder2 /build/jingyu-api /
 COPY LICENSE NOTICE THIRD-PARTY-LICENSES.md /licenses/
-EXPOSE 3030
+EXPOSE 3000
 WORKDIR /data
 # Must equal the file name produced by `go build -o` on line 33 and copied on
 # line 42. A mismatch fails at container start with
