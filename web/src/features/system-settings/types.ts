@@ -411,6 +411,9 @@ export type OperationsSettings = {
   'perf_metrics_setting.published_bucket': 'all' | 'short'
   'perf_metrics_setting.published_prompt_token_limit': number
   'perf_metrics_setting.published_note': string
+  'perf_metrics_setting.published_tps_factor': number
+  'perf_metrics_setting.published_tps_floor': number
+  'perf_metrics_setting.published_tps_ceiling': number
 }
 
 export type SecuritySettings = {

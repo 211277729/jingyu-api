@@ -61,6 +61,9 @@ const defaultOperationsSettings: OperationsSettings = {
   'perf_metrics_setting.published_bucket': 'short',
   'perf_metrics_setting.published_prompt_token_limit': 8000,
   'perf_metrics_setting.published_note': '',
+  'perf_metrics_setting.published_tps_factor': 1,
+  'perf_metrics_setting.published_tps_floor': 0,
+  'perf_metrics_setting.published_tps_ceiling': 0,
 }
 
 export function OperationsSettings() {

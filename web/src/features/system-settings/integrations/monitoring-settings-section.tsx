@@ -70,6 +70,9 @@ const monitoringSchema = z.object({
     published_bucket: z.enum(['all', 'short']),
     published_prompt_token_limit: z.coerce.number().min(1),
     published_note: z.string(),
+    published_tps_factor: z.coerce.number().min(0),
+    published_tps_floor: z.coerce.number().min(0),
+    published_tps_ceiling: z.coerce.number().min(0),
   }),
 })
 
@@ -85,6 +88,9 @@ type FlatMonitoringDefaults = {
   'perf_metrics_setting.published_bucket': 'all' | 'short'
   'perf_metrics_setting.published_prompt_token_limit': number
   'perf_metrics_setting.published_note': string
+  'perf_metrics_setting.published_tps_factor': number
+  'perf_metrics_setting.published_tps_floor': number
+  'perf_metrics_setting.published_tps_ceiling': number
 }
 
 type MonitoringSettingsSectionProps = {
@@ -104,6 +110,10 @@ const buildFormDefaults = (
     published_prompt_token_limit:
       defaults['perf_metrics_setting.published_prompt_token_limit'],
     published_note: defaults['perf_metrics_setting.published_note'],
+    published_tps_factor: defaults['perf_metrics_setting.published_tps_factor'],
+    published_tps_floor: defaults['perf_metrics_setting.published_tps_floor'],
+    published_tps_ceiling:
+      defaults['perf_metrics_setting.published_tps_ceiling'],
   },
 })
 
@@ -122,8 +132,15 @@ const normalizeDefaults = (
     defaults['perf_metrics_setting.published_bucket'],
   'perf_metrics_setting.published_prompt_token_limit':
     defaults['perf_metrics_setting.published_prompt_token_limit'],
-  'perf_metrics_setting.published_note':
-    (defaults['perf_metrics_setting.published_note'] ?? '').trim(),
+  'perf_metrics_setting.published_note': (
+    defaults['perf_metrics_setting.published_note'] ?? ''
+  ).trim(),
+  'perf_metrics_setting.published_tps_factor':
+    defaults['perf_metrics_setting.published_tps_factor'],
+  'perf_metrics_setting.published_tps_floor':
+    defaults['perf_metrics_setting.published_tps_floor'],
+  'perf_metrics_setting.published_tps_ceiling':
+    defaults['perf_metrics_setting.published_tps_ceiling'],
 })
 
 const normalizeFormValues = (
@@ -142,6 +159,12 @@ const normalizeFormValues = (
     values.perf_metrics_setting.published_prompt_token_limit,
   'perf_metrics_setting.published_note':
     values.perf_metrics_setting.published_note.trim(),
+  'perf_metrics_setting.published_tps_factor':
+    values.perf_metrics_setting.published_tps_factor,
+  'perf_metrics_setting.published_tps_floor':
+    values.perf_metrics_setting.published_tps_floor,
+  'perf_metrics_setting.published_tps_ceiling':
+    values.perf_metrics_setting.published_tps_ceiling,
 })
 
 export function MonitoringSettingsSection({
@@ -365,9 +388,7 @@ export function MonitoringSettingsSection({
                     </FormControl>
                     <SelectContent alignItemWithTrigger={false}>
                       <SelectGroup>
-                        <SelectItem value='all'>
-                          {t('All requests')}
-                        </SelectItem>
+                        <SelectItem value='all'>{t('All requests')}</SelectItem>
                         <SelectItem value='short'>
                           {t('Standard chat requests')}
                         </SelectItem>
@@ -388,16 +409,16 @@ export function MonitoringSettingsSection({
               name='perf_metrics_setting.published_prompt_token_limit'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    {t('Standard chat input token limit')}
-                  </FormLabel>
+                  <FormLabel>{t('Standard chat input token limit')}</FormLabel>
                   <FormControl>
                     <Input
                       type='number'
                       min={1}
                       step={1}
                       {...safeNumberFieldProps(field)}
-                      disabled={!perfMetricsEnabled || publishedScope !== 'short'}
+                      disabled={
+                        !perfMetricsEnabled || publishedScope !== 'short'
+                      }
                     />
                   </FormControl>
                   <FormMessage />
@@ -413,11 +434,85 @@ export function MonitoringSettingsSection({
                   <FormControl>
                     <Input
                       {...field}
-                      disabled={!perfMetricsEnabled || publishedScope !== 'short'}
+                      disabled={
+                        !perfMetricsEnabled || publishedScope !== 'short'
+                      }
                     />
                   </FormControl>
                   <FormDescription>
                     {t('Leave empty to use the built-in sentence')}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* 展示口径：只缩放对外速度，不改日志与计费里的实测值。 */}
+          <div className='grid grid-cols-1 items-start gap-4 md:grid-cols-3'>
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_tps_factor'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Published throughput factor')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step={0.1}
+                      {...safeNumberFieldProps(field)}
+                      disabled={!perfMetricsEnabled}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t(
+                      'Scales the published speed only; logs and billing keep the measured value'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_tps_floor'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Published throughput floor')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step={10}
+                      {...safeNumberFieldProps(field)}
+                      disabled={!perfMetricsEnabled}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t('0 disables this bound')}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='perf_metrics_setting.published_tps_ceiling'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Published throughput ceiling')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step={10}
+                      {...safeNumberFieldProps(field)}
+                      disabled={!perfMetricsEnabled}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t('0 disables this bound')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

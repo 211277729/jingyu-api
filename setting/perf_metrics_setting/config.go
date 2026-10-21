@@ -23,6 +23,17 @@ type PerfMetricsSetting struct {
 	// PublishedMinSamples falls back to the full population when a model has too
 	// few scoped samples, which would otherwise publish noise or a blank value.
 	PublishedMinSamples int `json:"published_min_samples"`
+
+	// PublishedTpsFactor multiplies the throughput the model square shows, so the
+	// published speed can reach the provider's rated peak instead of the average of
+	// the sampled window. 1 publishes the measurement unchanged.
+	PublishedTpsFactor float64 `json:"published_tps_factor"`
+	// PublishedTpsFloor is the smallest throughput published for a model that has
+	// at least one measured streamed sample. 0 disables it.
+	PublishedTpsFloor float64 `json:"published_tps_floor"`
+	// PublishedTpsCeiling bounds the adjusted throughput so a sample spike cannot
+	// publish an implausible speed. 0 disables it.
+	PublishedTpsCeiling float64 `json:"published_tps_ceiling"`
 }
 
 var perfMetricsSetting = PerfMetricsSetting{
@@ -35,6 +46,10 @@ var perfMetricsSetting = PerfMetricsSetting{
 	PublishedPromptTokenLimit: 8000,
 	PublishedNote:             "",
 	PublishedMinSamples:       20,
+
+	PublishedTpsFactor:  1,
+	PublishedTpsFloor:   0,
+	PublishedTpsCeiling: 0,
 }
 
 const (
@@ -74,6 +89,31 @@ func MinSamples() int {
 // Note returns the operator-written scope sentence, empty when unset.
 func Note() string {
 	return perfMetricsSetting.PublishedNote
+}
+
+// TpsFactor is the multiplier applied to the published throughput. A value at or
+// below zero keeps the measurement unchanged.
+func TpsFactor() float64 {
+	if perfMetricsSetting.PublishedTpsFactor <= 0 {
+		return 1
+	}
+	return perfMetricsSetting.PublishedTpsFactor
+}
+
+// TpsFloor is the smallest throughput published for a model. Zero disables it.
+func TpsFloor() float64 {
+	if perfMetricsSetting.PublishedTpsFloor < 0 {
+		return 0
+	}
+	return perfMetricsSetting.PublishedTpsFloor
+}
+
+// TpsCeiling bounds the adjusted throughput. Zero disables the bound.
+func TpsCeiling() float64 {
+	if perfMetricsSetting.PublishedTpsCeiling < 0 {
+		return 0
+	}
+	return perfMetricsSetting.PublishedTpsCeiling
 }
 
 func GetBucketSeconds() int64 {

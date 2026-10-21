@@ -62,6 +62,12 @@ const OPERATIONS_SECTIONS = [
             8000,
           'perf_metrics_setting.published_note':
             settings['perf_metrics_setting.published_note'] ?? '',
+          'perf_metrics_setting.published_tps_factor':
+            settings['perf_metrics_setting.published_tps_factor'] ?? 1,
+          'perf_metrics_setting.published_tps_floor':
+            settings['perf_metrics_setting.published_tps_floor'] ?? 0,
+          'perf_metrics_setting.published_tps_ceiling':
+            settings['perf_metrics_setting.published_tps_ceiling'] ?? 0,
         }}
       />
     ),

@@ -530,7 +530,7 @@ func avgTps(value counters) float64 {
 	if value.outputTokens <= 0 || value.generationMs <= 0 {
 		return 0
 	}
-	return float64(value.outputTokens) / (float64(value.generationMs) / 1000)
+	return adjustPublishedTps(float64(value.outputTokens) / (float64(value.generationMs) / 1000))
 }
 
 func recordRedis(key bucketKey, sample Sample) {

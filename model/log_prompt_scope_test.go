@@ -32,16 +32,20 @@ func TestSumPromptScopedStatsFiltersByInputSize(t *testing.T) {
 	db := setupPromptScopeLogDB(t)
 	hour := int64(1_800_000_000)
 	rows := []Log{
-		// 3 short requests: 2s + 4s + 6s total, first tokens 0.5s + 1s + 1.5s.
-		{Type: LogTypeConsume, CreatedAt: hour + 60, ModelName: "short-model", PromptTokens: 800, CompletionTokens: 100, UseTime: 2, Other: `{"frt":500}`},
-		{Type: LogTypeConsume, CreatedAt: hour + 120, ModelName: "short-model", PromptTokens: 4000, CompletionTokens: 200, UseTime: 4, Other: `{"frt":1000}`},
-		{Type: LogTypeConsume, CreatedAt: hour + 180, ModelName: "short-model", PromptTokens: 8000, CompletionTokens: 300, UseTime: 6, Other: `{"frt":1500}`},
+		// 3 short streamed requests: 2s + 4s + 6s total, first tokens 0.5s + 1s + 1.5s.
+		{Type: LogTypeConsume, CreatedAt: hour + 60, ModelName: "short-model", PromptTokens: 800, CompletionTokens: 100, UseTime: 2, IsStream: true, Other: `{"frt":500}`},
+		{Type: LogTypeConsume, CreatedAt: hour + 120, ModelName: "short-model", PromptTokens: 4000, CompletionTokens: 200, UseTime: 4, IsStream: true, Other: `{"frt":1000}`},
+		{Type: LogTypeConsume, CreatedAt: hour + 180, ModelName: "short-model", PromptTokens: 8000, CompletionTokens: 300, UseTime: 6, IsStream: true, Other: `{"frt":1500}`},
 		// Outside the ceiling, a top-up, an error log and a payload without frt.
-		{Type: LogTypeConsume, CreatedAt: hour + 240, ModelName: "short-model", PromptTokens: 8001, CompletionTokens: 900, UseTime: 30, Other: `{"frt":20000}`},
-		{Type: LogTypeConsume, CreatedAt: hour + 300, ModelName: "long-model", PromptTokens: 200000, CompletionTokens: 500, UseTime: 40, Other: `{"frt":11000}`},
+		{Type: LogTypeConsume, CreatedAt: hour + 240, ModelName: "short-model", PromptTokens: 8001, CompletionTokens: 900, UseTime: 30, IsStream: true, Other: `{"frt":20000}`},
+		{Type: LogTypeConsume, CreatedAt: hour + 300, ModelName: "long-model", PromptTokens: 200000, CompletionTokens: 500, UseTime: 40, IsStream: true, Other: `{"frt":11000}`},
 		{Type: LogTypeTopup, CreatedAt: hour + 360, ModelName: "short-model", PromptTokens: 10, UseTime: 1},
 		{Type: LogTypeError, CreatedAt: hour + 420, ModelName: "short-model", PromptTokens: 10, UseTime: 0},
-		{Type: LogTypeConsume, CreatedAt: hour + 480, ModelName: "short-model", PromptTokens: 100, CompletionTokens: 50, UseTime: 3, Other: `{"frt":-1000}`},
+		{Type: LogTypeConsume, CreatedAt: hour + 480, ModelName: "short-model", PromptTokens: 100, CompletionTokens: 50, UseTime: 3, IsStream: true, Other: `{"frt":-1000}`},
+		// A request the client did not stream: it carries no first-token latency, so
+		// its 20s must stay out of the generation window while still counting toward
+		// latency and volume.
+		{Type: LogTypeConsume, CreatedAt: hour + 540, ModelName: "short-model", PromptTokens: 200, CompletionTokens: 1000, UseTime: 20, Other: `{"frt":-1000}`},
 	}
 	require.NoError(t, db.Create(&rows).Error)
 
@@ -51,11 +55,13 @@ func TestSumPromptScopedStatsFiltersByInputSize(t *testing.T) {
 
 	short := stats[0]
 	assert.Equal(t, "short-model", short.Key)
-	assert.EqualValues(t, 4, short.RequestCount, "three in-scope requests plus the one without frt")
-	assert.EqualValues(t, 15000, short.TotalUseTimeMs, "2s + 4s + 6s + 3s")
-	assert.EqualValues(t, 650, short.CompletionTokens)
+	assert.EqualValues(t, 5, short.RequestCount, "four in-scope requests plus the one without frt")
+	assert.EqualValues(t, 35000, short.TotalUseTimeMs, "2s + 4s + 6s + 3s + 20s")
+	assert.EqualValues(t, 1650, short.CompletionTokens)
 	assert.EqualValues(t, 3000, short.TtftSumMs, "500ms + 1000ms + 1500ms")
 	assert.EqualValues(t, 3, short.TtftCount, "the -1000 sentinel is not a measurement")
+	assert.EqualValues(t, 9000, short.StreamGenerationMs, "1.5s + 3s + 4.5s, none of the non-stream 20s")
+	assert.EqualValues(t, 600, short.StreamCompletionTokens, "the non-stream 1000 tokens stay out of the speed ratio")
 }
 
 func TestSumPromptScopedStatsNarrowsToRequestedModel(t *testing.T) {

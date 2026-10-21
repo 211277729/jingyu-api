@@ -12,6 +12,7 @@ import (
 	"github.com/QuantumNous/new-api/model"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relaykit/types"
+	"github.com/QuantumNous/new-api/setting/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -352,15 +353,19 @@ func TestApplySummaryScopePublishesScopedSpeedOnly(t *testing.T) {
 		Models: []ModelSummary{
 			{ModelName: "busy-model", AvgLatencyMs: 12000, SuccessRate: 98, AvgTps: 30, RequestCount: 200},
 			{ModelName: "quiet-model", AvgLatencyMs: 9000, SuccessRate: 100, AvgTps: 50, RequestCount: 3},
+			{ModelName: "plain-model", AvgLatencyMs: 7000, SuccessRate: 100, AvgTps: 15, RequestCount: 40},
 		},
 		RecentSuccessSeries: map[string][]SuccessRatePoint{"busy-model": {{Ts: 1, SuccessRate: 98}}},
 	}
 	stats := []model.PromptScopedStat{
-		// 60 requests, 600s of total time, of which 100s were first-token latency,
-		// and 30000 completion tokens.
-		{Key: "busy-model", RequestCount: 60, TotalUseTimeMs: 600000, CompletionTokens: 30000, TtftSumMs: 100000, TtftCount: 60},
+		// 60 requests over 600s, of which 100s were first-token latency. Only 55 of
+		// them streamed, and their generation window is 250s for 30000 tokens.
+		{Key: "busy-model", RequestCount: 60, TotalUseTimeMs: 600000, CompletionTokens: 30000, TtftSumMs: 100000, TtftCount: 55, StreamGenerationMs: 250000, StreamCompletionTokens: 30000},
 		// Below the sample floor: keeps the full-population number.
-		{Key: "quiet-model", RequestCount: 2, TotalUseTimeMs: 8000, CompletionTokens: 100, TtftSumMs: 3000, TtftCount: 2},
+		{Key: "quiet-model", RequestCount: 2, TotalUseTimeMs: 8000, CompletionTokens: 100, TtftSumMs: 3000, TtftCount: 2, StreamGenerationMs: 4000, StreamCompletionTokens: 100},
+		// Every in-scope request was non-streamed, so it has no measured
+		// generation window and must keep the full-population throughput.
+		{Key: "plain-model", RequestCount: 40, TotalUseTimeMs: 200000, CompletionTokens: 9000},
 	}
 
 	scoped := ApplySummaryScope(full, stats, 20, BuildScope("short", 8000, "标准对话"))
@@ -371,17 +376,20 @@ func TestApplySummaryScopePublishesScopedSpeedOnly(t *testing.T) {
 	assert.Equal(t, "标准对话", scoped.MetricsScope.Note)
 
 	assert.EqualValues(t, 10000, scoped.Models[0].AvgLatencyMs, "600000ms over 60 requests")
-	assert.InDelta(t, 60.0, scoped.Models[0].AvgTps, 0.01, "30000 tokens over the 500s generation window")
+	assert.InDelta(t, 120.0, scoped.Models[0].AvgTps, 0.01, "30000 tokens over the 250s streamed generation window")
 	assert.EqualValues(t, 98, scoped.Models[0].SuccessRate, "success rate keeps the full population")
 	assert.EqualValues(t, 200, scoped.Models[0].RequestCount, "request count keeps the full population")
 	assert.Equal(t, full.RecentSuccessSeries, scoped.RecentSuccessSeries)
 
 	assert.EqualValues(t, 9000, scoped.Models[1].AvgLatencyMs, "a model below the sample floor falls back")
 
+	assert.EqualValues(t, 5000, scoped.Models[2].AvgLatencyMs, "scoped latency still covers non-streamed requests")
+	assert.EqualValues(t, 15, scoped.Models[2].AvgTps, "no streamed sample keeps the full-population throughput")
+
 	// The site-wide summary covers every scoped sample, including models that fell
 	// back to the full population on their own card.
-	assert.EqualValues(t, 9806, scoped.Summary.AvgLatencyMs, "608000ms over 62 requests")
-	assert.InDelta(t, 59.6, scoped.Summary.AvgTps, 0.01, "30100 tokens over the 505s generation window")
+	assert.EqualValues(t, 7921, scoped.Summary.AvgLatencyMs, "808000ms over 102 requests")
+	assert.InDelta(t, 118.5, scoped.Summary.AvgTps, 0.01, "30100 tokens over the 254s streamed generation window")
 
 	assert.Nil(t, ApplySummaryScope(full, stats, 20, nil).MetricsScope, "an unset scope keeps the full population")
 	assert.Empty(t, ApplySummaryScope(full, nil, 20, BuildScope("short", 8000, "")).MetricsScope, "no scoped samples keeps the full population")
@@ -401,10 +409,10 @@ func TestApplyQueryScopeOverridesGroupsAndHourlySeries(t *testing.T) {
 		},
 	}
 	groupStats := []model.PromptScopedStat{
-		{Key: "default", RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40},
+		{Key: "default", RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40, StreamGenerationMs: 144000, StreamCompletionTokens: 12000},
 	}
 	hourStats := []model.PromptScopedStat{
-		{BucketTs: 7200, RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40},
+		{BucketTs: 7200, RequestCount: 40, TotalUseTimeMs: 240000, CompletionTokens: 12000, TtftSumMs: 96000, TtftCount: 40, StreamGenerationMs: 144000, StreamCompletionTokens: 12000},
 	}
 
 	scoped := ApplyQueryScope(full, groupStats, hourStats, 20, BuildScope("short", 8000, ""))
@@ -422,4 +430,41 @@ func TestApplyQueryScopeOverridesGroupsAndHourlySeries(t *testing.T) {
 
 	assert.EqualValues(t, 6000, scoped.Summary.AvgLatencyMs)
 	assert.Nil(t, ApplyQueryScope(full, groupStats, hourStats, 20, nil).MetricsScope)
+}
+
+func TestPublishedTpsAdjustmentAppliesDisplaySettings(t *testing.T) {
+	previous := config.GlobalConfig.ExportAllConfigs()
+	t.Cleanup(func() { require.NoError(t, config.GlobalConfig.LoadFromDB(previous)) })
+
+	// 323 completion tokens over a 2s streamed generation window: 161.5 t/s.
+	stat := model.PromptScopedStat{RequestCount: 20, TotalUseTimeMs: 100000, StreamGenerationMs: 2000, StreamCompletionTokens: 323}
+
+	_, measured := scopedSpeed(stat)
+	assert.InDelta(t, 161.5, measured, 0.01, "the settings default to publishing the measurement")
+
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"perf_metrics_setting.published_tps_factor": "1.4",
+	}))
+	_, boosted := scopedSpeed(stat)
+	assert.InDelta(t, 226.1, boosted, 0.01, "a factor lifts the published speed without touching the samples")
+
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"perf_metrics_setting.published_tps_factor": "1",
+		"perf_metrics_setting.published_tps_floor":  "240",
+	}))
+	_, floored := scopedSpeed(stat)
+	assert.InDelta(t, 240.0, floored, 0.01, "a floor holds a slower measurement at the published minimum")
+
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"perf_metrics_setting.published_tps_factor":  "2",
+		"perf_metrics_setting.published_tps_floor":   "0",
+		"perf_metrics_setting.published_tps_ceiling": "250",
+	}))
+	_, capped := scopedSpeed(stat)
+	assert.InDelta(t, 250.0, capped, 0.01, "a ceiling rejects the over-boosted number")
+
+	// A model without a measured streamed sample stays at zero, so the caller keeps
+	// the full-population speed instead of publishing the floor for it.
+	_, empty := scopedSpeed(model.PromptScopedStat{RequestCount: 20, TotalUseTimeMs: 100000})
+	assert.Zero(t, empty)
 }
