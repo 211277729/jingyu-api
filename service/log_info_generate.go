@@ -96,12 +96,26 @@ func AppendRelayLogAdminInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 	}
 }
 
+// appendEffectiveGroupRatioAdminInfo records the ratio actually charged when it
+// differs from the configured one. Nesting it under admin_info keeps it out of
+// every non-admin log projection, so operators can reconcile charges without
+// exposing the billing markup to users.
+func appendEffectiveGroupRatioAdminInfo(charged, display float64, other *model.LogOther) {
+	if other == nil {
+		return
+	}
+	if display > 0 && charged != display {
+		other.SetAdmin("effective_group_ratio", charged)
+	}
+}
+
 func GenerateTextOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, modelRatio, groupRatio, completionRatio float64,
 	cacheTokens int, cacheRatio float64, modelPrice float64, userGroupRatio float64) *model.LogOther {
 	MarkRequestPolicySuccess(ctx, relayInfo.StreamStatus)
 	other := model.NewLogOther()
 	other.SetPublic("model_ratio", modelRatio)
 	other.SetPublic("group_ratio", groupRatio)
+	appendEffectiveGroupRatioAdminInfo(relayInfo.PriceData.GroupRatioInfo.GroupRatio, relayInfo.PriceData.GroupRatioInfo.DisplayGroupRatio, other)
 	other.SetPublic("completion_ratio", completionRatio)
 	other.SetPublic("cache_tokens", cacheTokens)
 	other.SetPublic("cache_ratio", cacheRatio)
@@ -320,7 +334,8 @@ func GenerateClaudeOtherInfo(ctx *gin.Context, relayInfo *relaycommon.RelayInfo,
 func GenerateMjOtherInfo(relayInfo *relaycommon.RelayInfo, priceData hosttypes.PriceData) *model.LogOther {
 	other := model.NewLogOther()
 	other.SetPublic("model_price", priceData.ModelPrice)
-	other.SetPublic("group_ratio", priceData.GroupRatioInfo.GroupRatio)
+	other.SetPublic("group_ratio", priceData.GroupRatioInfo.DisplayRatio())
+	appendEffectiveGroupRatioAdminInfo(priceData.GroupRatioInfo.GroupRatio, priceData.GroupRatioInfo.DisplayGroupRatio, other)
 	if priceData.GroupRatioInfo.HasSpecialRatio {
 		other.SetPublic("user_group_ratio", priceData.GroupRatioInfo.GroupSpecialRatio)
 	}

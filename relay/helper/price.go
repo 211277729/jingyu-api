@@ -34,11 +34,13 @@ func modelPriceNotConfiguredError(c *gin.Context, modelName string, userId int) 
 // https://docs.claude.com/en/docs/build-with-claude/prompt-caching#1-hour-cache-duration
 const claudeCacheCreation1hMultiplier = 6 / 3.75
 
-// HandleGroupRatio checks for "auto_group" in the context and updates the group ratio and relayInfo.UsingGroup if present
+// HandleGroupRatio checks for "auto_group" in the context and updates the group ratio and relayInfo.UsingGroup if present.
+// GroupRatio is the ratio actually charged; DisplayGroupRatio keeps the unmarked-up configured value for user-facing views.
 func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) hosttypes.GroupRatioInfo {
 	groupRatioInfo := hosttypes.GroupRatioInfo{
 		GroupRatio:        1.0, // default ratio
 		GroupSpecialRatio: -1,
+		DisplayGroupRatio: 1.0,
 	}
 
 	// check auto group
@@ -58,6 +60,13 @@ func HandleGroupRatio(ctx *gin.Context, relayInfo *relaycommon.RelayInfo) hostty
 	} else {
 		// normal group ratio
 		groupRatioInfo.GroupRatio = ratio_setting.GetGroupRatio(relayInfo.UsingGroup)
+	}
+	groupRatioInfo.DisplayGroupRatio = groupRatioInfo.GroupRatio
+
+	// The hidden markup only multiplies the charged ratio. It stays out of
+	// DisplayGroupRatio so user-facing pricing never reveals it.
+	if markup := operation_setting.GetHiddenMarkup(); markup != 1 {
+		groupRatioInfo.GroupRatio *= markup
 	}
 
 	return groupRatioInfo

@@ -121,7 +121,6 @@ func ChargeViolationFeeIfNeeded(ctx *gin.Context, relayInfo *relaycommon.RelayIn
 	if feeQuota <= 0 {
 		return false
 	}
-
 	if err := PostConsumeQuota(relayInfo, feeQuota, 0, true); err != nil {
 		logger.LogError(ctx, common.LogText("failed to charge violation fee: %s", err.Error()))
 		return false
@@ -140,7 +139,7 @@ func ChargeViolationFeeIfNeeded(ctx *gin.Context, relayInfo *relaycommon.RelayIn
 		"violation_fee_code":   string(types.ErrorCodeViolationFeeGrokCSAM),
 		"fee_quota":            feeQuota,
 		"base_amount":          settings.ViolationDeductionAmount,
-		"group_ratio":          groupRatio,
+		"group_ratio":          relayInfo.PriceData.GroupRatioInfo.DisplayRatio(),
 		"status_code":          apiErr.StatusCode,
 		"upstream_error_type":  oai.Type,
 		"upstream_error_code":  fmt.Sprintf("%v", oai.Code),

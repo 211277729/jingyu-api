@@ -17,6 +17,7 @@ import (
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
+	"github.com/QuantumNous/new-api/setting/config"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/types"
 	"github.com/gin-gonic/gin"
@@ -1029,6 +1030,43 @@ func TestRefundTaskQuota_FundingFailureKeepsAccountingAndPendingMarker(t *testin
 // ===========================================================================
 // RecalculateTaskQuota tests
 // ===========================================================================
+
+// The asynchronous token recalc must charge the marked-up ratio while its
+// user-visible reason text keeps the configured ratio.
+func TestRecalculateTaskQuotaByTokensHidesMarkupInReason(t *testing.T) {
+	saved := map[string]string{}
+	require.NoError(t, config.GlobalConfig.SaveToDB(func(key, value string) error {
+		saved[key] = value
+		return nil
+	}))
+	t.Cleanup(func() { require.NoError(t, config.GlobalConfig.LoadFromDB(saved)) })
+	previousRatios := ratio_setting.ModelRatio2JSONString()
+	require.NoError(t, ratio_setting.UpdateModelRatioByJSONString(`{"test-model":1}`))
+	t.Cleanup(func() {
+		require.NoError(t, ratio_setting.UpdateModelRatioByJSONString(previousRatios))
+	})
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"group_ratio_setting.group_ratio": `{"default":1}`,
+		"hidden_markup_setting.markup":    `1.2`,
+	}))
+
+	truncate(t)
+	const userID, tokenID, channelID = 61, 61, 61
+	seedUser(t, userID, 10_000)
+	seedToken(t, tokenID, userID, "sk-hidden-markup", 8_000)
+	seedChannel(t, channelID)
+	task := makeTask(userID, channelID, 100, tokenID, BillingSourceWallet, 0)
+
+	require.True(t, RecalculateTaskQuotaByTokens(context.Background(), task, 100))
+
+	// 100 tokens * modelRatio 1 * charged groupRatio 1.2.
+	assert.Equal(t, 120, task.Quota)
+
+	log := getLastLog(t)
+	require.NotNil(t, log)
+	assert.Contains(t, log.Content, "group ratio 1.00")
+	assert.NotContains(t, log.Content, "group ratio 1.20")
+}
 
 func TestRecalculate_PositiveDelta(t *testing.T) {
 	truncate(t)

@@ -16,6 +16,7 @@ import (
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relaykit/dto"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/types"
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,8 @@ func LogTaskConsumption(c *gin.Context, info *relaycommon.RelayInfo, task *model
 	if info.PriceData.ModelRatio > 0 {
 		other.SetPublic("model_ratio", info.PriceData.ModelRatio)
 	}
-	other.SetPublic("group_ratio", info.PriceData.GroupRatioInfo.GroupRatio)
+	other.SetPublic("group_ratio", info.PriceData.GroupRatioInfo.DisplayRatio())
+	appendEffectiveGroupRatioAdminInfo(info.PriceData.GroupRatioInfo.GroupRatio, info.PriceData.GroupRatioInfo.DisplayGroupRatio, other)
 	if info.PriceData.GroupRatioInfo.HasSpecialRatio {
 		other.SetPublic("user_group_ratio", info.PriceData.GroupRatioInfo.GroupSpecialRatio)
 	}
@@ -144,6 +146,15 @@ func taskAdjustTokenQuota(ctx context.Context, task *model.Task, delta int) {
 	}
 }
 
+// taskBillingDisplayGroupRatio returns the group ratio shown in logs. Older
+// tasks have no DisplayGroupRatio, so a zero value falls back to GroupRatio.
+func taskBillingDisplayGroupRatio(bc *model.TaskBillingContext) float64 {
+	if bc.DisplayGroupRatio > 0 {
+		return bc.DisplayGroupRatio
+	}
+	return bc.GroupRatio
+}
+
 // taskBillingOther 从 task 的 BillingContext 构建日志 Other 字段。
 func taskBillingOther(task *model.Task) *model.LogOther {
 	other := model.NewLogOther()
@@ -154,7 +165,8 @@ func taskBillingOther(task *model.Task) *model.LogOther {
 		if bc.ModelRatio > 0 {
 			other.SetPublic("model_ratio", bc.ModelRatio)
 		}
-		other.SetPublic("group_ratio", bc.GroupRatio)
+		other.SetPublic("group_ratio", taskBillingDisplayGroupRatio(bc))
+		appendEffectiveGroupRatioAdminInfo(bc.GroupRatio, bc.DisplayGroupRatio, other)
 		if priceData := taskBillingContextPriceData(bc); priceData != nil {
 			for k, v := range priceData.OtherRatios() {
 				if !other.SetPublic(k, v) {
@@ -414,6 +426,10 @@ func RecalculateTaskQuotaByTokens(ctx context.Context, task *model.Task, totalTo
 	} else {
 		finalGroupRatio = groupRatio
 	}
+	// The reason text is user-visible, so it keeps the unmarked-up ratio while
+	// the charge below applies the billing-side hidden markup.
+	displayGroupRatio := finalGroupRatio
+	finalGroupRatio *= operation_setting.GetHiddenMarkup()
 
 	// 计算 OtherRatios 乘积（视频折扣、时长等）
 	otherMultiplier := 1.0
@@ -427,7 +443,7 @@ func RecalculateTaskQuotaByTokens(ctx context.Context, task *model.Task, totalTo
 	reason := common.NewMessage("Recalculated from tokens: tokens {{tokens}}, model ratio {{model_ratio}}, group ratio {{group_ratio}}, other multiplier {{other_multiplier}}", map[string]any{
 		"tokens":           totalTokens,
 		"model_ratio":      fmt.Sprintf("%.2f", modelRatio),
-		"group_ratio":      fmt.Sprintf("%.2f", finalGroupRatio),
+		"group_ratio":      fmt.Sprintf("%.2f", displayGroupRatio),
 		"other_multiplier": fmt.Sprintf("%.4f", otherMultiplier),
 	})
 	RecalculateTaskQuota(ctx, task, actualQuota, reason, clamp)

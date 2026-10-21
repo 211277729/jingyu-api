@@ -146,6 +146,9 @@ export interface LogOtherData {
     }
     // Reject / intercept reason (admin only)
     reject_reason?: string
+    // Ratio actually charged when a billing markup applies. Admin-only so the
+    // markup never reaches a user's own log projection.
+    effective_group_ratio?: number
     task_plugin?: TaskPluginInfo
   }
   root_info?: {

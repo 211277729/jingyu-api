@@ -14,6 +14,7 @@ import (
 	"github.com/QuantumNous/new-api/pkg/billingexpr"
 	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relaykit/dto"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	"github.com/QuantumNous/new-api/types"
 
@@ -119,6 +120,9 @@ func PreWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, usag
 	if ok {
 		actualGroupRatio = userGroupRatio
 	}
+	// Mirror settlement, which charges the marked-up ratio, so the reservation
+	// never under-holds and lets a request run past the wallet balance.
+	actualGroupRatio *= operation_setting.GetHiddenMarkup()
 
 	quotaInfo := QuotaInfo{
 		InputDetails: TokenDetails{
@@ -181,6 +185,7 @@ func PostWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 
 	modelRatio := relayInfo.PriceData.ModelRatio
 	groupRatio := relayInfo.PriceData.GroupRatioInfo.GroupRatio
+	displayGroupRatio := relayInfo.PriceData.GroupRatioInfo.DisplayRatio()
 	modelPrice := relayInfo.PriceData.ModelPrice
 	usePrice := relayInfo.PriceData.UsePrice
 
@@ -213,12 +218,12 @@ func PostWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 			"completion_ratio":       fmt.Sprintf("%.2f", completionRatio.InexactFloat64()),
 			"audio_ratio":            fmt.Sprintf("%.2f", audioRatio.InexactFloat64()),
 			"audio_completion_ratio": fmt.Sprintf("%.2f", audioCompletionRatio.InexactFloat64()),
-			"group_ratio":            fmt.Sprintf("%.2f", groupRatio),
+			"group_ratio":            fmt.Sprintf("%.2f", displayGroupRatio),
 		}))
 	} else {
 		logContent = append(logContent, common.NewMessage("Model price {{model_price}}, group ratio {{group_ratio}}", map[string]any{
 			"model_price": fmt.Sprintf("%.2f", modelPrice),
-			"group_ratio": fmt.Sprintf("%.2f", groupRatio),
+			"group_ratio": fmt.Sprintf("%.2f", displayGroupRatio),
 		}))
 	}
 
@@ -241,7 +246,7 @@ func PostWssConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, mod
 
 	logModel := modelName
 	logContent = append(logContent, extraContent...)
-	other := GenerateWssOtherInfo(ctx, relayInfo, usage, modelRatio, groupRatio,
+	other := GenerateWssOtherInfo(ctx, relayInfo, usage, modelRatio, displayGroupRatio,
 		completionRatio.InexactFloat64(), audioRatio.InexactFloat64(), audioCompletionRatio.InexactFloat64(), modelPrice, relayInfo.PriceData.GroupRatioInfo.GroupSpecialRatio)
 	if tieredResult != nil {
 		InjectTieredBillingInfo(other, relayInfo, tieredResult)
@@ -320,6 +325,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, u
 
 	modelRatio := relayInfo.PriceData.ModelRatio
 	groupRatio := relayInfo.PriceData.GroupRatioInfo.GroupRatio
+	displayGroupRatio := relayInfo.PriceData.GroupRatioInfo.DisplayRatio()
 	modelPrice := relayInfo.PriceData.ModelPrice
 	usePrice := relayInfo.PriceData.UsePrice
 
@@ -352,12 +358,12 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, u
 			"completion_ratio":       fmt.Sprintf("%.2f", completionRatio.InexactFloat64()),
 			"audio_ratio":            fmt.Sprintf("%.2f", audioRatio.InexactFloat64()),
 			"audio_completion_ratio": fmt.Sprintf("%.2f", audioCompletionRatio.InexactFloat64()),
-			"group_ratio":            fmt.Sprintf("%.2f", groupRatio),
+			"group_ratio":            fmt.Sprintf("%.2f", displayGroupRatio),
 		}))
 	} else {
 		logContent = append(logContent, common.NewMessage("Model price {{model_price}}, group ratio {{group_ratio}}", map[string]any{
 			"model_price": fmt.Sprintf("%.2f", modelPrice),
-			"group_ratio": fmt.Sprintf("%.2f", groupRatio),
+			"group_ratio": fmt.Sprintf("%.2f", displayGroupRatio),
 		}))
 	}
 
@@ -380,7 +386,7 @@ func PostAudioConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, u
 
 	logModel := billingModelName
 	logContent = append(logContent, extraContent...)
-	other := GenerateAudioOtherInfo(ctx, relayInfo, usage, modelRatio, groupRatio,
+	other := GenerateAudioOtherInfo(ctx, relayInfo, usage, modelRatio, displayGroupRatio,
 		completionRatio.InexactFloat64(), audioRatio.InexactFloat64(), audioCompletionRatio.InexactFloat64(), modelPrice, relayInfo.PriceData.GroupRatioInfo.GroupSpecialRatio)
 	if tieredResult != nil {
 		InjectTieredBillingInfo(other, relayInfo, tieredResult)

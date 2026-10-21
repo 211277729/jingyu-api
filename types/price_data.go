@@ -8,9 +8,25 @@ import (
 )
 
 type GroupRatioInfo struct {
-	GroupRatio        float64
+	// GroupRatio 是最终计费采用的倍率，已包含计费处附加的隐藏加价。
+	GroupRatio float64
+	// DisplayGroupRatio 是未加价的配置倍率，只用于面向用户的展示，
+	// 让隐藏加价不出现在定价页、可用分组和用量日志里。零值表示调用方
+	// 未经 HandleGroupRatio 构造，展示时回退到 GroupRatio。
+	DisplayGroupRatio float64
+	// GroupSpecialRatio 与 HasSpecialRatio 描述用户专属倍率，仅用于展示，
+	// 不参与隐藏加价。
 	GroupSpecialRatio float64
 	HasSpecialRatio   bool
+}
+
+// DisplayRatio 返回面向用户展示的倍率：优先用未加价的 DisplayGroupRatio，
+// 未经 HandleGroupRatio 构造时回退到计费倍率。
+func (g GroupRatioInfo) DisplayRatio() float64 {
+	if g.DisplayGroupRatio > 0 {
+		return g.DisplayGroupRatio
+	}
+	return g.GroupRatio
 }
 
 type PriceData struct {
@@ -108,5 +124,5 @@ func isValidOtherRatio(ratio float64) bool {
 }
 
 func (p *PriceData) ToSetting() string {
-	return fmt.Sprintf("ModelPrice: %f, ModelRatio: %f, CompletionRatio: %f, CacheRatio: %f, GroupRatio: %f, UsePrice: %t, CacheCreationRatio: %f, CacheCreation5mRatio: %f, CacheCreation1hRatio: %f, QuotaToPreConsume: %d, ImageRatio: %f, AudioRatio: %f, AudioCompletionRatio: %f", p.ModelPrice, p.ModelRatio, p.CompletionRatio, p.CacheRatio, p.GroupRatioInfo.GroupRatio, p.UsePrice, p.CacheCreationRatio, p.CacheCreation5mRatio, p.CacheCreation1hRatio, p.QuotaToPreConsume, p.ImageRatio, p.AudioRatio, p.AudioCompletionRatio)
+	return fmt.Sprintf("ModelPrice: %f, ModelRatio: %f, CompletionRatio: %f, CacheRatio: %f, GroupRatio: %f, UsePrice: %t, CacheCreationRatio: %f, CacheCreation5mRatio: %f, CacheCreation1hRatio: %f, QuotaToPreConsume: %d, ImageRatio: %f, AudioRatio: %f, AudioCompletionRatio: %f, DisplayGroupRatio: %f", p.ModelPrice, p.ModelRatio, p.CompletionRatio, p.CacheRatio, p.GroupRatioInfo.GroupRatio, p.UsePrice, p.CacheCreationRatio, p.CacheCreation5mRatio, p.CacheCreation1hRatio, p.QuotaToPreConsume, p.ImageRatio, p.AudioRatio, p.AudioCompletionRatio, p.GroupRatioInfo.DisplayGroupRatio)
 }

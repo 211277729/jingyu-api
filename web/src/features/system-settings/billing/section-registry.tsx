@@ -71,6 +71,9 @@ const BILLING_SECTIONS = [
             enable_free_model_pre_consume:
               settings['quota_setting.enable_free_model_pre_consume'],
           },
+          hidden_markup_setting: {
+            markup: settings['hidden_markup_setting.markup'] ?? 1,
+          },
         }}
         complianceConfirmed={
           (settings['payment_setting.compliance_confirmed'] ?? false) &&

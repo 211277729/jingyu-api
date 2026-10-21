@@ -36,23 +36,27 @@ func appendToolSurchargeLogInfo(other *model.LogOther, items []ToolSurchargeItem
 }
 
 type textQuotaSummary struct {
-	PromptTokens           int
-	CompletionTokens       int
-	TotalTokens            int
-	CacheTokens            int
-	CacheCreationTokens    int
-	CacheCreationTokens5m  int
-	CacheCreationTokens1h  int
-	ImageTokens            int
-	AudioTokens            int
-	ModelName              string
-	TokenName              string
-	UseTimeSeconds         int64
-	CompletionRatio        float64
-	CacheRatio             float64
-	ImageRatio             float64
-	ModelRatio             float64
-	GroupRatio             float64
+	PromptTokens          int
+	CompletionTokens      int
+	TotalTokens           int
+	CacheTokens           int
+	CacheCreationTokens   int
+	CacheCreationTokens5m int
+	CacheCreationTokens1h int
+	ImageTokens           int
+	AudioTokens           int
+	ModelName             string
+	TokenName             string
+	UseTimeSeconds        int64
+	CompletionRatio       float64
+	CacheRatio            float64
+	ImageRatio            float64
+	ModelRatio            float64
+	GroupRatio            float64
+	// DisplayGroupRatio is the unmarked-up configured group ratio used by
+	// user-facing log rendering; the charged GroupRatio may include the
+	// billing-side hidden markup.
+	DisplayGroupRatio      float64
 	ModelPrice             float64
 	CacheCreationRatio     float64
 	CacheCreationRatio5m   float64
@@ -234,6 +238,7 @@ func calculateTextQuotaSummary(ctx *gin.Context, relayInfo *relaycommon.RelayInf
 		ImageRatio:           relayInfo.PriceData.ImageRatio,
 		ModelRatio:           relayInfo.PriceData.ModelRatio,
 		GroupRatio:           relayInfo.PriceData.GroupRatioInfo.GroupRatio,
+		DisplayGroupRatio:    relayInfo.PriceData.GroupRatioInfo.DisplayRatio(),
 		ModelPrice:           relayInfo.PriceData.ModelPrice,
 		CacheCreationRatio:   relayInfo.PriceData.CacheCreationRatio,
 		CacheCreationRatio5m: relayInfo.PriceData.CacheCreation5mRatio,
@@ -470,7 +475,7 @@ func PostTextConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, us
 	var other *model.LogOther
 	if summary.IsClaudeUsageSemantic {
 		other = GenerateClaudeOtherInfo(ctx, relayInfo,
-			summary.ModelRatio, summary.GroupRatio, summary.CompletionRatio,
+			summary.ModelRatio, summary.DisplayGroupRatio, summary.CompletionRatio,
 			summary.CacheTokens, summary.CacheRatio,
 			summary.CacheCreationTokens, summary.CacheCreationRatio,
 			summary.CacheCreationTokens5m, summary.CacheCreationRatio5m,
@@ -478,7 +483,7 @@ func PostTextConsumeQuota(ctx *gin.Context, relayInfo *relaycommon.RelayInfo, us
 			summary.ModelPrice, relayInfo.PriceData.GroupRatioInfo.GroupSpecialRatio)
 		other.SetPublic("usage_semantic", "anthropic")
 	} else {
-		other = GenerateTextOtherInfo(ctx, relayInfo, summary.ModelRatio, summary.GroupRatio, summary.CompletionRatio, summary.CacheTokens, summary.CacheRatio, summary.ModelPrice, relayInfo.PriceData.GroupRatioInfo.GroupSpecialRatio)
+		other = GenerateTextOtherInfo(ctx, relayInfo, summary.ModelRatio, summary.DisplayGroupRatio, summary.CompletionRatio, summary.CacheTokens, summary.CacheRatio, summary.ModelPrice, relayInfo.PriceData.GroupRatioInfo.GroupSpecialRatio)
 	}
 	appendUsageBillingPathForLog(other, common.GetContextKeyBool(ctx, constant.ContextKeyLocalCountTokens), originUsage)
 	if adminRejectReason != "" {

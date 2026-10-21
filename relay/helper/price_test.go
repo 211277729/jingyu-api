@@ -745,3 +745,94 @@ func (s *priceTestReservation) Refund(*gin.Context)      {}
 func (s *priceTestReservation) NeedsRefund() bool        { return false }
 func (s *priceTestReservation) GetPreConsumedQuota() int { return s.held }
 func (s *priceTestReservation) Reserve(quota int) error  { s.held = max(s.held, quota); return nil }
+
+// The hidden markup must multiply the charged ratio only. User-facing views
+// keep reading DisplayGroupRatio, so the surcharge never surfaces in pricing
+// pages, usable-group listings, or usage logs.
+func TestHiddenMarkupChargesWithoutExposing(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	saved := map[string]string{}
+	require.NoError(t, config.GlobalConfig.SaveToDB(func(key, value string) error {
+		saved[key] = value
+		return nil
+	}))
+	t.Cleanup(func() {
+		require.NoError(t, config.GlobalConfig.LoadFromDB(saved))
+	})
+
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"group_ratio_setting.group_ratio":       `{"default":1,"vip":2}`,
+		"group_ratio_setting.group_group_ratio": `{"vip":{"default":0.5}}`,
+		"hidden_markup_setting.markup":          `1.2`,
+	}))
+
+	for _, tc := range []struct {
+		name             string
+		userGroup        string
+		usingGroup       string
+		wantCharged      float64
+		wantDisplay      float64
+		wantSpecialRatio float64
+	}{
+		{"plain group", "default", "default", 1.2, 1, -1},
+		{"second group", "default", "vip", 2.4, 2, -1},
+		{"user exclusive ratio", "vip", "default", 0.6, 0.5, 0.5},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+			ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+			info := &relaycommon.RelayInfo{UserGroup: tc.userGroup, UsingGroup: tc.usingGroup}
+
+			groupRatioInfo := HandleGroupRatio(ctx, info)
+
+			assert.Equal(t, tc.wantCharged, groupRatioInfo.GroupRatio, "charged ratio includes the markup")
+			assert.Equal(t, tc.wantDisplay, groupRatioInfo.DisplayGroupRatio, "display ratio stays unmarked up")
+			assert.Equal(t, tc.wantDisplay, groupRatioInfo.DisplayRatio())
+			assert.Equal(t, tc.wantSpecialRatio, groupRatioInfo.GroupSpecialRatio)
+			assert.Equal(t, tc.wantSpecialRatio != -1, groupRatioInfo.HasSpecialRatio)
+		})
+	}
+}
+
+// A markup of exactly 1 (including the default and zero values) must not alter
+// any existing behavior, and non-finite values degrade to no markup.
+func TestHiddenMarkupDefaultIsNoop(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	saved := map[string]string{}
+	require.NoError(t, config.GlobalConfig.SaveToDB(func(key, value string) error {
+		saved[key] = value
+		return nil
+	}))
+	t.Cleanup(func() {
+		require.NoError(t, config.GlobalConfig.LoadFromDB(saved))
+	})
+
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"group_ratio_setting.group_ratio": `{"default":1.5}`,
+	}))
+
+	for _, tc := range []struct {
+		name   string
+		markup string
+	}{
+		{"default", "1"},
+		{"zero", "0"},
+		{"non finite", "NaN"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+				"hidden_markup_setting.markup": tc.markup,
+			}))
+			ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+			ctx.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+			info := &relaycommon.RelayInfo{UserGroup: "default", UsingGroup: "default"}
+
+			groupRatioInfo := HandleGroupRatio(ctx, info)
+
+			assert.Equal(t, 1.5, groupRatioInfo.GroupRatio)
+			assert.Equal(t, 1.5, groupRatioInfo.DisplayGroupRatio)
+		})
+	}
+}

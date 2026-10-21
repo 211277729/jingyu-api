@@ -240,6 +240,16 @@ function BillingBreakdown(props: {
     })
   }
 
+  // Operators reconcile real charges from this admin-only ratio; users never
+  // receive it because admin_info is stripped from their log projection.
+  const chargedGR = other.admin_info?.effective_group_ratio
+  if (isAdmin && chargedGR != null && Number.isFinite(chargedGR)) {
+    rows.push({
+      label: t('Effective Group Ratio'),
+      value: `${formatRatio(chargedGR)}x`,
+    })
+  }
+
   if (!isTieredExpr && isClaude && hasAnyCacheTokens(other)) {
     if (other.cache_ratio != null && other.cache_ratio !== 1) {
       rows.push({

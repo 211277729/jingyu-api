@@ -40,6 +40,8 @@ func GetPricing(c *gin.Context) {
 	userId, exists := c.Get("id")
 	usableGroup := map[string]string{}
 	groupRatio := map[string]float64{}
+	// User-facing pricing must show the configured group ratio, never the
+	// billing-side hidden markup.
 	maps.Copy(groupRatio, ratio_setting.GetGroupRatioCopy())
 	var group string
 	if exists {

@@ -66,6 +66,7 @@ const defaultModelSettings: ModelSettings = {
   'group_ratio_setting.group_special_usable_group': '{}',
   'model_deployment.ionet.api_key': '',
   'model_deployment.ionet.enabled': false,
+  'hidden_markup_setting.markup': 1,
 }
 
 export function ModelSettings() {

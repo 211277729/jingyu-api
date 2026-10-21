@@ -50,6 +50,9 @@ function Fixture() {
               trust_quota_usd: 10,
               pre_consume_multiplier: 1,
             },
+            hidden_markup_setting: {
+              markup: 1,
+            },
           }}
         />
       </SettingsPageProvider>
@@ -145,3 +148,49 @@ test.each(['', '-1'])(
     expect(api.put).not.toHaveBeenCalled()
   }
 )
+
+// The billing markup is the only user-facing control for the hidden surcharge.
+// It must persist as a plain number so the backend stores "1.2" and charges the
+// marked-up ratio without exposing it anywhere users can see.
+test('markup saves as a number and accepts decimals above one', async () => {
+  await renderSettings()
+  const input = screen.getByRole('spinbutton', { name: 'Billing markup' })
+  expect(input).toHaveValue(1)
+  fireEvent.change(input, { target: { value: '1.25' } })
+  fireEvent.blur(input)
+  expect(input).toHaveValue(1.25)
+  fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+  await waitFor(() =>
+    expect(api.put).toHaveBeenCalledWith('/api/option/', {
+      key: 'hidden_markup_setting.markup',
+      value: 1.25,
+    })
+  )
+})
+
+// A markup below one is a discount, not a surcharge; it is still a valid value
+// and must persist as a number.
+test('markup below one saves as a discount multiplier', async () => {
+  await renderSettings()
+  const input = screen.getByRole('spinbutton', { name: 'Billing markup' })
+  expect(input).toHaveValue(1)
+  fireEvent.change(input, { target: { value: '0.8' } })
+  fireEvent.blur(input)
+  expect(input).toHaveValue(0.8)
+  fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+  await waitFor(() =>
+    expect(api.put).toHaveBeenCalledWith('/api/option/', {
+      key: 'hidden_markup_setting.markup',
+      value: 0.8,
+    })
+  )
+})
+
+test.each(['-0.5'])('invalid markup "%s" prevents saving', async (value) => {
+  await renderSettings()
+  const input = screen.getByRole('spinbutton', { name: 'Billing markup' })
+  fireEvent.change(input, { target: { value } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+  await waitFor(() => expect(input).toHaveAttribute('aria-invalid', 'true'))
+  expect(api.put).not.toHaveBeenCalled()
+})

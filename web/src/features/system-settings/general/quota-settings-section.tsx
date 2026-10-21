@@ -70,6 +70,11 @@ const quotaSchema = z.object({
       .number({ error: () => i18next.t('Please enter a valid number') })
       .positive({ error: () => i18next.t('Must be greater than 0') }),
   }),
+  hidden_markup_setting: z.object({
+    markup: z.coerce
+      .number({ error: () => i18next.t('Please enter a valid number') })
+      .min(0, { error: () => i18next.t('Must be greater than or equal to 0') }),
+  }),
 })
 
 type QuotaFormValues = z.infer<typeof quotaSchema>
@@ -83,7 +88,6 @@ type QuotaSettingsSectionProps = {
   defaultValues: QuotaFormValues
   complianceConfirmed?: boolean
 }
-
 export function QuotaSettingsSection({
   defaultValues,
   complianceConfirmed = true,
@@ -217,6 +221,34 @@ export function QuotaSettingsSection({
                   <FormDescription>
                     {t(
                       'Reserve the estimated input cost multiplied by this value, without estimating output tokens. Defaults to 1; positive decimals such as 0.5 and 1.5 are supported. Final charges use actual usage. Per-request and task prices are unaffected.'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='hidden_markup_setting.markup'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Billing markup')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step='any'
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t(
+                      'Extra multiplier applied only when quota is deducted. It multiplies the effective group ratio, so 1.2 charges 20% more while every user-facing price, group ratio, and usage log still shows the configured value. Set to 1 to disable.'
                     )}
                   </FormDescription>
                   <FormMessage />

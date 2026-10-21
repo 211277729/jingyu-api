@@ -16,7 +16,9 @@ import (
 	relayconstant "github.com/QuantumNous/new-api/relay/constant"
 	"github.com/QuantumNous/new-api/relaykit/dto"
 	"github.com/QuantumNous/new-api/relaykit/types"
+	"github.com/QuantumNous/new-api/setting/config"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
+	"github.com/QuantumNous/new-api/setting/ratio_setting"
 	hosttypes "github.com/QuantumNous/new-api/types"
 
 	"github.com/gin-gonic/gin"
@@ -1581,4 +1583,74 @@ func TestPostTextConsumeQuotaLogsMissingUsageAsStructuredContent(t *testing.T) {
 	assert.Equal(t, []any{
 		map[string]any{"key": "Upstream returned no usage, so nothing was charged (possibly an upstream timeout)"},
 	}, other["content_parts"])
+}
+
+// The billing-side hidden markup multiplies the charged group ratio, while the
+// consume log keeps the configured ratio so users cannot see the surcharge.
+func TestHiddenMarkupChargesTextQuotaButLogsConfiguredRatio(t *testing.T) {
+	saved := map[string]string{}
+	require.NoError(t, config.GlobalConfig.SaveToDB(func(key, value string) error {
+		saved[key] = value
+		return nil
+	}))
+	t.Cleanup(func() {
+		require.NoError(t, config.GlobalConfig.LoadFromDB(saved))
+	})
+	require.NoError(t, config.GlobalConfig.LoadFromDB(map[string]string{
+		"group_ratio_setting.group_ratio": `{"default":1}`,
+		"hidden_markup_setting.markup":    `1.2`,
+	}))
+	require.NoError(t, ratio_setting.UpdateModelRatioByJSONString(`{"hidden-markup-model":1}`))
+	t.Cleanup(func() {
+		require.NoError(t, ratio_setting.UpdateModelRatioByJSONString(`{}`))
+	})
+	// Isolate the reservation multiplier: sibling tests overwrite it and this
+	// case asserts settlement, not reservation.
+	previousMultiplier := operation_setting.GetQuotaSetting().PreConsumeMultiplier
+	operation_setting.GetQuotaSetting().PreConsumeMultiplier = 1
+	t.Cleanup(func() {
+		operation_setting.GetQuotaSetting().PreConsumeMultiplier = previousMultiplier
+	})
+
+	truncate(t)
+	const userID, channelID = 63, 63
+	seedUser(t, userID, 1_000_000)
+	seedChannel(t, channelID)
+	gin.SetMode(gin.TestMode)
+	ctx, _ := gin.CreateTestContext(httptest.NewRecorder())
+	ctx.Request = httptest.NewRequest("POST", "/v1/chat/completions", nil)
+	info := &relaycommon.RelayInfo{
+		UserId:          userID,
+		OriginModelName: "hidden-markup-model",
+		UsingGroup:      "default",
+		UserGroup:       "default",
+		StartTime:       time.Now(),
+		ChannelMeta:     &relaycommon.ChannelMeta{ChannelId: channelID},
+		PriceData: hosttypes.PriceData{
+			ModelRatio:      1,
+			CompletionRatio: 1,
+			GroupRatioInfo:  hosttypes.GroupRatioInfo{GroupRatio: 1.2, DisplayGroupRatio: 1},
+		},
+	}
+
+	usage := &dto.Usage{PromptTokens: 1000, CompletionTokens: 100, TotalTokens: 1100}
+	summary := calculateTextQuotaSummary(ctx, info, usage)
+	// (1000 + 100) tokens * modelRatio 1 * charged groupRatio 1.2.
+	assert.Equal(t, 1320, summary.Quota, "settlement charges the marked-up ratio")
+	assert.Equal(t, 1.0, summary.DisplayGroupRatio, "log keeps the unmarked-up ratio")
+
+	PostTextConsumeQuota(ctx, info, usage, nil)
+
+	log := getLastLog(t)
+	require.NotNil(t, log)
+	assert.Equal(t, 1320, log.Quota)
+	var other map[string]any
+	require.NoError(t, common.UnmarshalJsonStr(log.Other, &other))
+	assert.Equal(t, 1.0, other["group_ratio"])
+
+	// The charged ratio stays available to operators under admin_info, which is
+	// stripped from every non-admin log projection.
+	adminInfo, ok := other["admin_info"].(map[string]any)
+	require.True(t, ok, "admin_info must carry the charged ratio for reconciliation")
+	assert.Equal(t, 1.2, adminInfo["effective_group_ratio"])
 }

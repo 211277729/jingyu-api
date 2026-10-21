@@ -268,6 +268,7 @@ export type ModelSettings = {
   'group_ratio_setting.group_special_usable_group': string
   'model_deployment.ionet.api_key': string
   'model_deployment.ionet.enabled': boolean
+  'hidden_markup_setting.markup': number
 }
 
 export type BillingSettings = {
@@ -278,6 +279,7 @@ export type BillingSettings = {
   'quota_setting.enable_free_model_pre_consume': boolean
   'quota_setting.trust_quota_usd': number
   'quota_setting.pre_consume_multiplier': number
+  'hidden_markup_setting.markup': number
   QuotaPerUnit: number
   USDExchangeRate: number
   'general_setting.quota_display_type': string
