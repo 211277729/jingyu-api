@@ -779,7 +779,7 @@
     "Average latency": "Latence moyenne",
     "Latency and throughput on the model square use this request population.": "La latence et le débit affichés utilisent cette population de requêtes.",
     "Published latency scope": "Périmètre de latence publié",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "La latence et le débit portent sur les conversations standard (entrée ≤ {{limit}} tokens) · 24 dernières heures",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "La latence porte sur les conversations standard (entrée ≤ {{limit}} tokens) · 24 dernières heures",
     "Standard chat requests": "Conversations standard",
     "Standard chat input token limit": "Limite de tokens d'entrée (conversation standard)",
     "Published scope note": "Note de périmètre publiée",

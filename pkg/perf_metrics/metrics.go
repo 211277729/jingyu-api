@@ -51,21 +51,23 @@ func RecordRelayResult(ctx context.Context, info *relaycommon.RelayInfo, apiErr 
 	}
 	latencyMs := now.Sub(info.StartTime).Milliseconds()
 	generationMs := latencyMs
+	generationMeasured := false
 	if hasTtft {
-		generationMs = now.Sub(info.FirstResponseTime).Milliseconds()
-	}
-	if generationMs <= 0 {
-		generationMs = latencyMs
+		if measured := now.Sub(info.FirstResponseTime).Milliseconds(); measured > 0 {
+			generationMs = measured
+			generationMeasured = true
+		}
 	}
 	Record(Sample{
-		Model:        info.OriginModelName,
-		Group:        info.UsingGroup,
-		LatencyMs:    latencyMs,
-		TtftMs:       ttftMs,
-		HasTtft:      hasTtft,
-		Success:      outcome == OutcomeSuccess,
-		OutputTokens: info.PerformanceOutputTokens,
-		GenerationMs: generationMs,
+		Model:              info.OriginModelName,
+		Group:              info.UsingGroup,
+		LatencyMs:          latencyMs,
+		TtftMs:             ttftMs,
+		HasTtft:            hasTtft,
+		Success:            outcome == OutcomeSuccess,
+		OutputTokens:       info.PerformanceOutputTokens,
+		GenerationMs:       generationMs,
+		GenerationMeasured: generationMeasured,
 	})
 }
 
@@ -99,6 +101,7 @@ func RecordTaskResult(task *model.Task, result *relaycommon.TaskInfo) {
 		if tokens > 0 && genStart > 0 && endTs > genStart {
 			sample.OutputTokens = tokens
 			sample.GenerationMs = (endTs - genStart) * 1000
+			sample.GenerationMeasured = true
 		}
 	}
 	Record(sample)
@@ -280,7 +283,7 @@ func QuerySummaryAll(hours int, groups []string, recentModels ...string) (Summar
 		successRate := float64(total.successCount) / float64(total.requestCount) * 100
 		avgTps := 0.0
 		if total.generationMs > 0 {
-			avgTps = float64(total.outputTokens) / (float64(total.generationMs) / 1000.0)
+			avgTps = adjustPublishedTps(float64(total.outputTokens) / (float64(total.generationMs) / 1000.0))
 		}
 		models = append(models, ModelSummary{
 			ModelName:           name,
@@ -553,7 +556,9 @@ func recordRedis(key bucketKey, sample Sample) {
 		pipe.HIncrBy(ctx, redisKey, "ttft", sample.TtftMs)
 		pipe.HIncrBy(ctx, redisKey, "ttft_n", 1)
 	}
-	if sample.OutputTokens > 0 && sample.GenerationMs > 0 {
+	// The Redis bucket must count the same samples as the in-memory bucket, so
+	// the current hour reads the same speed as the flushed hours.
+	if sample.Success && sample.GenerationMeasured && sample.OutputTokens > 0 && sample.GenerationMs > 0 {
 		pipe.HIncrBy(ctx, redisKey, "out", sample.OutputTokens)
 		pipe.HIncrBy(ctx, redisKey, "gen_ms", sample.GenerationMs)
 	}

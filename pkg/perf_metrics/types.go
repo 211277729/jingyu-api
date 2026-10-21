@@ -16,6 +16,11 @@ type Sample struct {
 	Success      bool
 	OutputTokens int64
 	GenerationMs int64
+	// GenerationMeasured states that GenerationMs covers the answer generation
+	// only. A non-streamed relay request has no such window, because its
+	// duration covers the whole round trip including the first token, while an
+	// async task reports the whole run it took to produce its output.
+	GenerationMeasured bool
 }
 
 type QueryParams struct {
@@ -127,7 +132,11 @@ func (b *atomicBucket) add(sample Sample) {
 		b.ttftSumMs.Add(sample.TtftMs)
 		b.ttftCount.Add(1)
 	}
-	if sample.OutputTokens > 0 && sample.GenerationMs > 0 {
+	// Only a successful request with a measured generation window contributes
+	// to the published speed. A non-streamed request never reported a first
+	// token, so its duration covers the whole round trip and would publish a far
+	// lower speed than the model actually delivers.
+	if sample.Success && sample.GenerationMeasured && sample.OutputTokens > 0 && sample.GenerationMs > 0 {
 		b.outputTokens.Add(sample.OutputTokens)
 		b.generationMs.Add(sample.GenerationMs)
 	}

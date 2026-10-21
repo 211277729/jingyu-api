@@ -779,7 +779,7 @@
     "Average latency": "Average latency",
     "Latency and throughput on the model square use this request population.": "Latency and throughput on the model square use this request population.",
     "Published latency scope": "Published latency scope",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours",
     "Standard chat requests": "Standard chat requests",
     "Standard chat input token limit": "Standard chat input token limit",
     "Published scope note": "Published scope note",

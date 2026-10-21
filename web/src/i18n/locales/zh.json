@@ -779,7 +779,7 @@
     "Average latency": "平均延迟",
     "Latency and throughput on the model square use this request population.": "模型广场展示的延迟与速度按这里选定的请求范围统计。",
     "Published latency scope": "对外延迟口径",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "延迟与速度按标准对话统计（输入 ≤{{limit}} tokens）· 近 24 小时",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "延迟按标准对话统计（输入 ≤{{limit}} tokens）· 近 24 小时",
     "Standard chat requests": "标准对话",
     "Standard chat input token limit": "标准对话输入 token 上限",
     "Published scope note": "对外口径说明",

@@ -779,7 +779,7 @@
     "Average latency": "Độ trễ trung bình",
     "Latency and throughput on the model square use this request population.": "Độ trễ và tốc độ hiển thị trên chợ mô hình được tính theo phạm vi yêu cầu chọn ở đây.",
     "Published latency scope": "Phạm vi độ trễ công bố",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Độ trễ và tốc độ tính theo hội thoại tiêu chuẩn (đầu vào ≤{{limit}} token) · 24 giờ qua",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Độ trễ tính theo hội thoại tiêu chuẩn (đầu vào ≤{{limit}} token) · 24 giờ qua",
     "Standard chat requests": "Hội thoại tiêu chuẩn",
     "Standard chat input token limit": "Giới hạn token đầu vào cho hội thoại tiêu chuẩn",
     "Published scope note": "Ghi chú phạm vi công bố",

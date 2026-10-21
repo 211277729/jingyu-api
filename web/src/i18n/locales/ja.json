@@ -779,7 +779,7 @@
     "Average latency": "平均レイテンシ",
     "Latency and throughput on the model square use this request population.": "モデル広場に表示するレイテンシと速度は、ここで選んだリクエスト範囲で集計します。",
     "Published latency scope": "公開するレイテンシの範囲",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "レイテンシと速度は標準的な対話（入力 ≤{{limit}} トークン）· 直近24時間の統計です",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "レイテンシは標準的な対話（入力 ≤{{limit}} トークン）· 直近24時間の統計です",
     "Standard chat requests": "標準的な対話",
     "Standard chat input token limit": "標準対話の入力トークン上限",
     "Published scope note": "公開範囲の注記",

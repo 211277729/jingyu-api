@@ -23,10 +23,12 @@ import { expect, it } from 'vitest'
 import { MetricsScopeNote } from '../components/metrics-scope-note'
 
 it('states the scope when the published numbers cover a subset', () => {
-  render(<MetricsScopeNote scope={{ mode: 'short', prompt_token_limit: 8000 }} />)
+  render(
+    <MetricsScopeNote scope={{ mode: 'short', prompt_token_limit: 8000 }} />
+  )
 
   const expected = i18next.t(
-    'Latency and throughput cover standard chat requests (input \u2264{{limit}} tokens) \u00b7 last 24 hours',
+    'Latency covers standard chat requests (input \u2264{{limit}} tokens) \u00b7 last 24 hours',
     { limit: 8000 }
   )
   expect(screen.getByText(expected)).toBeInTheDocument()

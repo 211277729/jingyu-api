@@ -779,7 +779,7 @@
     "Average latency": "Средняя задержка",
     "Latency and throughput on the model square use this request population.": "Задержка и скорость на витрине моделей считаются по этой выборке запросов.",
     "Published latency scope": "Публикуемый охват задержки",
-    "Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Задержка и скорость рассчитаны по стандартным диалогам (вход ≤{{limit}} токенов) · за последние 24 часа",
+    "Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours": "Задержка рассчитана по стандартным диалогам (вход ≤{{limit}} токенов) · за последние 24 часа",
     "Standard chat requests": "Стандартные диалоги",
     "Standard chat input token limit": "Лимит входных токенов (стандартный диалог)",
     "Published scope note": "Примечание к публикуемому охвату",

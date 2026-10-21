@@ -23,20 +23,17 @@ const (
 // the configured token ceiling. Time values are milliseconds; Key holds the model
 // or group name and BucketTs the hour start of the "hour" dimension.
 //
-// StreamGenerationMs and StreamCompletionTokens cover only the streamed samples
-// whose first-token latency was measured, so their ratio is a real generation
-// speed. TotalUseTimeMs and CompletionTokens keep the whole in-scope population
-// for latency and volume.
+// The scope carries latency only. The published throughput keeps the full
+// population, because a short-prompt request answers far fewer tokens than the
+// long requests that make up the real traffic, and its tokens-per-second ratio
+// would publish a speed the model never reaches.
 type PromptScopedStat struct {
-	Key                    string `gorm:"column:stat_key"`
-	BucketTs               int64  `gorm:"column:bucket_ts"`
-	RequestCount           int64  `gorm:"column:request_count"`
-	TotalUseTimeMs         int64  `gorm:"column:total_use_time_ms"`
-	CompletionTokens       int64  `gorm:"column:completion_tokens"`
-	TtftSumMs              int64  `gorm:"column:ttft_sum_ms"`
-	TtftCount              int64  `gorm:"column:ttft_count"`
-	StreamGenerationMs     int64  `gorm:"column:stream_generation_ms"`
-	StreamCompletionTokens int64  `gorm:"column:stream_completion_tokens"`
+	Key            string `gorm:"column:stat_key"`
+	BucketTs       int64  `gorm:"column:bucket_ts"`
+	RequestCount   int64  `gorm:"column:request_count"`
+	TotalUseTimeMs int64  `gorm:"column:total_use_time_ms"`
+	TtftSumMs      int64  `gorm:"column:ttft_sum_ms"`
+	TtftCount      int64  `gorm:"column:ttft_count"`
 }
 
 // promptScopedGroupExpr returns the grouped expression for one dimension. The hour
@@ -94,26 +91,15 @@ func SumPromptScopedStats(sinceTs int64, promptTokenLimit int, dimension PromptS
 		keySelect = "'' AS stat_key, " + groupExpr + " AS bucket_ts"
 	}
 
-	// A non-stream request never logs a first-token latency, so its whole duration
-	// would count as generation time. Requiring a streamed sample with a measured
-	// first token and a positive window keeps the speed denominator honest.
-	streamTrue := "1"
-	if common.LogDatabaseType() == common.DatabaseTypePostgreSQL {
-		streamTrue = "true"
-	}
 	ttft := "(" + ttftExpr + ")"
-	streamSample := "is_stream = " + streamTrue + " AND " + ttft + " > 0 AND use_time * 1000 > " + ttft
 
 	stats := make([]PromptScopedStat, 0)
 	query := LOG_DB.Table("logs").
 		Select(keySelect+
 			", COUNT(*) AS request_count"+
 			", COALESCE(SUM(use_time), 0) * 1000 AS total_use_time_ms"+
-			", COALESCE(SUM(completion_tokens), 0) AS completion_tokens"+
 			", COALESCE(SUM(CASE WHEN "+ttft+" > 0 THEN "+ttft+" ELSE 0 END), 0) AS ttft_sum_ms"+
-			", COALESCE(SUM(CASE WHEN "+ttft+" > 0 THEN 1 ELSE 0 END), 0) AS ttft_count"+
-			", COALESCE(SUM(CASE WHEN "+streamSample+" THEN use_time * 1000 - "+ttft+" ELSE 0 END), 0) AS stream_generation_ms"+
-			", COALESCE(SUM(CASE WHEN "+streamSample+" THEN completion_tokens ELSE 0 END), 0) AS stream_completion_tokens").
+			", COALESCE(SUM(CASE WHEN "+ttft+" > 0 THEN 1 ELSE 0 END), 0) AS ttft_count").
 		Where("type = ?", LogTypeConsume).
 		Where("created_at >= ?", sinceTs).
 		Where("prompt_tokens <= ?", promptTokenLimit).

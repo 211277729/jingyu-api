@@ -43,8 +43,8 @@ func TestSumPromptScopedStatsFiltersByInputSize(t *testing.T) {
 		{Type: LogTypeError, CreatedAt: hour + 420, ModelName: "short-model", PromptTokens: 10, UseTime: 0},
 		{Type: LogTypeConsume, CreatedAt: hour + 480, ModelName: "short-model", PromptTokens: 100, CompletionTokens: 50, UseTime: 3, IsStream: true, Other: `{"frt":-1000}`},
 		// A request the client did not stream: it carries no first-token latency, so
-		// its 20s must stay out of the generation window while still counting toward
-		// latency and volume.
+		// it must stay out of the first-token statistics while still counting
+		// toward latency and request count.
 		{Type: LogTypeConsume, CreatedAt: hour + 540, ModelName: "short-model", PromptTokens: 200, CompletionTokens: 1000, UseTime: 20, Other: `{"frt":-1000}`},
 	}
 	require.NoError(t, db.Create(&rows).Error)
@@ -57,11 +57,8 @@ func TestSumPromptScopedStatsFiltersByInputSize(t *testing.T) {
 	assert.Equal(t, "short-model", short.Key)
 	assert.EqualValues(t, 5, short.RequestCount, "four in-scope requests plus the one without frt")
 	assert.EqualValues(t, 35000, short.TotalUseTimeMs, "2s + 4s + 6s + 3s + 20s")
-	assert.EqualValues(t, 1650, short.CompletionTokens)
 	assert.EqualValues(t, 3000, short.TtftSumMs, "500ms + 1000ms + 1500ms")
 	assert.EqualValues(t, 3, short.TtftCount, "the -1000 sentinel is not a measurement")
-	assert.EqualValues(t, 9000, short.StreamGenerationMs, "1.5s + 3s + 4.5s, none of the non-stream 20s")
-	assert.EqualValues(t, 600, short.StreamCompletionTokens, "the non-stream 1000 tokens stay out of the speed ratio")
 }
 
 func TestSumPromptScopedStatsNarrowsToRequestedModel(t *testing.T) {

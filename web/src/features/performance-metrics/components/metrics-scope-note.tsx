@@ -45,7 +45,7 @@ export function MetricsScopeNote(props: {
     return (
       <p className={cn('text-muted-foreground text-xs', props.className)}>
         {t(
-          'Latency and throughput cover standard chat requests (input ≤{{limit}} tokens) · last 24 hours',
+          'Latency covers standard chat requests (input ≤{{limit}} tokens) · last 24 hours',
           { limit: props.scope.prompt_token_limit }
         )}
       </p>

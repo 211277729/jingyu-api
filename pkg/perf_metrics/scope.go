@@ -41,20 +41,19 @@ func adjustPublishedTps(measured float64) float64 {
 	return math.Round(adjusted*100) / 100
 }
 
-// scopedSpeed derives the published latency and throughput of one aggregated row.
-// Latency covers the whole in-scope population, while throughput only uses the
-// streamed samples: a non-stream request has no measurable first token, so mixing
-// it in would count its full duration as generation time and publish a speed far
-// below what the model actually delivers.
-func scopedSpeed(stat model.PromptScopedStat) (latencyMs int64, tps float64) {
+// scopedLatency derives the published latency of one aggregated row.
+//
+// The scope deliberately covers latency only. Throughput must keep the
+// full-population measurement: a short-prompt request returns far fewer output
+// tokens per request, so its tokens-per-second figure sits well below the speed
+// the model delivers under real traffic. Restricting the published speed to the
+// same population therefore publishes the speed of a small request population
+// instead of the speed of the model.
+func scopedLatency(stat model.PromptScopedStat) int64 {
 	if stat.RequestCount <= 0 {
-		return 0, 0
+		return 0
 	}
-	latencyMs = stat.TotalUseTimeMs / stat.RequestCount
-	if stat.StreamGenerationMs > 0 {
-		tps = adjustPublishedTps(float64(stat.StreamCompletionTokens) / (float64(stat.StreamGenerationMs) / 1000))
-	}
-	return latencyMs, tps
+	return stat.TotalUseTimeMs / stat.RequestCount
 }
 
 func scopedTotals(stats []model.PromptScopedStat) model.PromptScopedStat {
@@ -62,19 +61,17 @@ func scopedTotals(stats []model.PromptScopedStat) model.PromptScopedStat {
 	for _, stat := range stats {
 		total.RequestCount += stat.RequestCount
 		total.TotalUseTimeMs += stat.TotalUseTimeMs
-		total.CompletionTokens += stat.CompletionTokens
 		total.TtftSumMs += stat.TtftSumMs
 		total.TtftCount += stat.TtftCount
-		total.StreamGenerationMs += stat.StreamGenerationMs
-		total.StreamCompletionTokens += stat.StreamCompletionTokens
 	}
 	return total
 }
 
-// ApplySummaryScope replaces the published speed numbers of every model that has
-// enough scoped samples. Success rate, request counts and the hourly success
-// series keep the full population: error logs carry no input size, so scoping
-// them would silently drop failures.
+// ApplySummaryScope replaces the published latency of every model that has
+// enough scoped samples. Throughput, success rate, request counts and the
+// hourly success series keep the full population: error logs carry no input
+// size, so scoping them would silently drop failures, and the scoped
+// population answers far fewer tokens per request than the real traffic.
 func ApplySummaryScope(result SummaryAllResult, stats []model.PromptScopedStat, minSamples int, scope *PublishedScope) SummaryAllResult {
 	if scope == nil || len(stats) == 0 {
 		return result
@@ -88,27 +85,18 @@ func ApplySummaryScope(result SummaryAllResult, stats []model.PromptScopedStat, 
 		if !ok || stat.RequestCount < int64(minSamples) {
 			continue
 		}
-		latencyMs, tps := scopedSpeed(stat)
-		result.Models[i].AvgLatencyMs = latencyMs
-		// No streamed sample means no measurable generation speed. Keep the
-		// full-population value instead of publishing a zero.
-		if tps > 0 {
-			result.Models[i].AvgTps = tps
-		}
+		result.Models[i].AvgLatencyMs = scopedLatency(stat)
 	}
-	totalLatency, totalTps := scopedSpeed(scopedTotals(stats))
 	if result.Summary != nil {
-		result.Summary.AvgLatencyMs = totalLatency
-		if totalTps > 0 {
-			result.Summary.AvgTps = totalTps
-		}
+		result.Summary.AvgLatencyMs = scopedLatency(scopedTotals(stats))
 	}
 	result.MetricsScope = scope
 	return result
 }
 
 // ApplyQueryScope applies the same override to one model's detail view: the
-// summary, every group row and the hourly latency series.
+// summary, every group row and the hourly latency series. The published
+// throughput keeps the full-population measurement in every view.
 func ApplyQueryScope(result QueryResult, groupStats, hourStats []model.PromptScopedStat, minSamples int, scope *PublishedScope) QueryResult {
 	if scope == nil {
 		return result
@@ -122,11 +110,7 @@ func ApplyQueryScope(result QueryResult, groupStats, hourStats []model.PromptSco
 		if !ok || stat.RequestCount < int64(minSamples) {
 			continue
 		}
-		latencyMs, tps := scopedSpeed(stat)
-		result.Groups[i].AvgLatencyMs = latencyMs
-		if tps > 0 {
-			result.Groups[i].AvgTps = tps
-		}
+		result.Groups[i].AvgLatencyMs = scopedLatency(stat)
 		if stat.TtftCount > 0 {
 			result.Groups[i].AvgTtftMs = stat.TtftSumMs / stat.TtftCount
 		}
@@ -142,11 +126,7 @@ func ApplyQueryScope(result QueryResult, groupStats, hourStats []model.PromptSco
 		if !ok {
 			continue
 		}
-		latencyMs, tps := scopedSpeed(stat)
-		point.AvgLatencyMs = latencyMs
-		if tps > 0 {
-			point.AvgTps = tps
-		}
+		point.AvgLatencyMs = scopedLatency(stat)
 		if stat.TtftCount > 0 {
 			point.AvgTtftMs = stat.TtftSumMs / stat.TtftCount
 		}
@@ -157,11 +137,7 @@ func ApplyQueryScope(result QueryResult, groupStats, hourStats []model.PromptSco
 	}
 
 	if total := scopedTotals(hourStats); total.RequestCount > 0 && result.Summary != nil {
-		latencyMs, tps := scopedSpeed(total)
-		result.Summary.AvgLatencyMs = latencyMs
-		if tps > 0 {
-			result.Summary.AvgTps = tps
-		}
+		result.Summary.AvgLatencyMs = scopedLatency(total)
 	}
 	result.MetricsScope = scope
 	return result

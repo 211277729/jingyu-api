@@ -2,7 +2,7 @@
 
 > 记录模型广场/模型详情页对外展示的延迟、吞吐、成功率的口径设计、实现位置、已知限制，以及后续要改的项（成功率按档、速度口径再调整）。
 >
-> 最后更新：2026-10-18
+> 最后更新：2026-10-22
 
 ## 一、背景
 
@@ -29,14 +29,27 @@
 | 展示数字 | 口径 | 取值来源 |
 | --- | --- | --- |
 | 模型广场卡片：延迟 `avg_latency_ms` | 档内 | `logs` 现算 |
-| 模型广场卡片：吞吐 `avg_tps` | 档内 | `logs` 现算 |
+| 模型广场卡片：吞吐 `avg_tps` | **全量**（仅成功且测到首字的流式请求） | `perf_metrics` |
 | 模型广场卡片：成功率 `success_rate` | **全量** | `perf_metrics` |
-| 模型详情：延迟 / 吞吐 / 首字 `avg_ttft_ms` | 档内 | `logs` 现算 |
-| 模型详情：分组行（延迟/吞吐/首字） | 档内（样本不足回落全量） | `logs` 现算 |
+| 模型详情：延迟 / 首字 `avg_ttft_ms` | 档内 | `logs` 现算 |
+| 模型详情：吞吐 `avg_tps` | **全量**（仅成功且测到首字的流式请求） | `perf_metrics` |
+| 模型详情：分组行（延迟 / 首字） | 档内（样本不足回落全量） | `logs` 现算 |
+| 模型详情：分组行吞吐 | **全量** | `perf_metrics` |
 | 模型详情：延迟趋势图 | 档内（无样本的小时被丢弃） | `logs` 现算 |
 | 模型详情：成功率（汇总/分组/趋势） | **全量** | `perf_metrics` |
 
 **为什么成功率没按档**：失败请求写在错误日志（`type=5`）里，而错误日志在写入时没有记录输入规模（`logs.prompt_tokens = 0`）。若强行套用档位过滤，会把失败请求全部排除，导致成功率虚高。见"五、待办"。
+
+**为什么吞吐不按档（2026-10-22 修正）**：档内是"标准对话"（≤8K 输入）的小请求，而真实流量是 agent 的长上下文请求（13–28 万 token）。小请求每次只吐几百 token，首字后的固定开销（收尾、缓冲、结算）被摊到很少的 token 上，**测出来的 t/s 天然只有大请求的一半左右**。实测对照（2026-10-21 线上库，24 小时窗口）：
+
+| 模型 | 档内样本数 | 档内 t/s | 全量 t/s |
+| --- | --- | --- | --- |
+| `deepseek/deepseek-v4.1-flash` | 44 | 66.61 | 185.80 |
+| `deepseek/deepseek-v4-pro` | 8 | 82.91 | 102.19 |
+
+所以吞吐改回全量口径：延迟仍按档（长上下文的首字等待确实会让新用户看到 10–20 秒），速度按真实流量给。
+
+**吞吐的样本条件**：`perf_metrics` 只累计**成功且测到首字的流式请求**。非流式请求没有首字，其耗时覆盖整个来回（含首字等待），混进来会把速度整体压低。
 
 ## 四、实现位置
 
@@ -44,7 +57,7 @@
 | --- | --- |
 | `setting/perf_metrics_setting/config.go` | 4 个配置项、`PublishedScope()` / `MinSamples()` / `Note()` |
 | `model/log_prompt_scope.go` | 从 `logs` 现算的聚合：按模型 / 按分组 / 按小时；含跨库的 `frt` 取值（PostgreSQL / MySQL / SQLite 三分支 + `{%` 守卫） |
-| `pkg/perf_metrics/scope.go` | 把档内速度覆盖到发布结果；`metrics_scope` 随响应返回 |
+| `pkg/perf_metrics/scope.go` | 把档内延迟覆盖到发布结果（吞吐保持全量）；`metrics_scope` 随响应返回 |
 | `pkg/perf_metrics/types.go` | `MetricsScope`、`QueryResult.MetricsScope`、`SummaryAllResult.MetricsScope` |
 | `controller/perf_metrics.go` | 两个接口按同一口径；5 分钟进程内缓存（公开页面不扫日志窗口） |
 | `web/src/features/performance-metrics/components/metrics-scope-note.tsx` | 口径说明组件（模型广场、模型详情共用） |
@@ -74,7 +87,7 @@
 
 ### 5.2 速度口径可能再调整（待定）
 
-当前延迟 = 平均整条请求耗时（`logs.use_time`），吞吐 = 输出 token /（总耗时 − 首字耗时）。后续可能改成：
+当前延迟 = 档内平均整条请求耗时（`logs.use_time`），吞吐 = 全量成功流式请求的输出 token ÷ 生成窗口（毫秒）。后续可能改成：
 
 - 用 **P50/中位数** 代替均值（均值受长尾影响大，高峰期一个 47s 的请求就能拉高一个小时的数字）；
 - 区分"首字速度"和"生成速度"两个指标分开展示；
@@ -107,6 +120,19 @@ GROUP BY 1;
 
 接口侧对照：`GET /api/perf-metrics/summary?hours=24` 的 `data.metrics_scope` 应等于配置的档位，且 `data.summary.avg_latency_ms` 应与上面 `short` 行的 `avg_latency_ms` 一致（样本量足够时）。
 
+对外吞吐来自预聚合表，不受档位限制：
+
+```sql
+SELECT model_name,
+       SUM(output_tokens) AS out_tok,
+       SUM(generation_ms) AS gen_ms,
+       ROUND(SUM(output_tokens)::numeric / NULLIF(SUM(generation_ms) / 1000.0, 0), 2) AS tps
+FROM perf_metrics
+WHERE bucket_ts >= (SELECT MAX(bucket_ts) FROM perf_metrics) - 86400
+GROUP BY model_name
+ORDER BY tps DESC;
+```
+
 实测参考（2026-10-18，200 小时窗口）：
 
 | 口径 | 样本数 | 平均延迟 |
@@ -117,5 +143,5 @@ GROUP BY 1;
 ## 七、复现/回归测试
 
 - `model/log_prompt_scope_test.go`：SQLite 真引擎验证过滤条件、`frt` 取值、小时桶、按模型收窄。
-- `pkg/perf_metrics/metrics_test.go`：档内速度覆盖、样本不足回落、成功率保持全量。
+- `pkg/perf_metrics/metrics_test.go`：档内延迟覆盖、吞吐保持全量、样本不足回落、成功率保持全量、吞吐桶只计成功且测到首字的流式请求。
 - `web/src/features/performance-metrics/__tests__/metrics-scope-note.test.tsx`：说明文案的渲染与布局缩进。
