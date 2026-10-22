@@ -143,6 +143,7 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
         是为了新建环境或清空页脚配置时不会丢掉这条许可要求的声明。
         同行的源码链接用于满足 AGPLv3 第 13 条的源码提供义务；放在同一行是为了
         不给页脚多加一行。可以调小、调淡，但不能隐藏——第 13 条要求 "prominently offer"。
+        该链接刻意做成低对比度、无 hover 反馈、默认光标，只保留可点击跳转本身。
       */}
       <span className='block'>
         Frontend design and development by New API contributors.
@@ -151,7 +152,7 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
           href='https://github.com/211277729/jingyu-api'
           target='_blank'
           rel='noopener noreferrer'
-          className='hover:text-foreground transition-colors'
+          className='text-muted-foreground/30 cursor-default'
         >
           {t('Source code')}
         </a>

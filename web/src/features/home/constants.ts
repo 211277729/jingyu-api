@@ -20,10 +20,14 @@ For commercial licensing, please contact support@quantumnous.com
  * Home page constants
  * All hardcoded data for home page sections
  */
-import { type TFunction } from 'i18next'
+import type { TFunction } from 'i18next'
 
 // Layout - Main base classes
 export const MAIN_BASE_CLASSES = 'bg-background text-foreground w-full'
+
+// Brand name injected into home page copy. Kept as a plain constant instead of
+// an i18n value so the brand reads the same in every locale.
+export const HOME_BRAND_NAME = '鲸鱼 AI'
 
 // Hero section - AI Applications (Left side)
 export const AI_APPLICATIONS = [

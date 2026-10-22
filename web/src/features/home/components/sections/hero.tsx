@@ -25,6 +25,7 @@ import { useStatus } from '@/hooks/use-status'
 import { resolveDocsTarget } from '@/lib/docs-link'
 import { getLobeIcon } from '@/lib/lobe-icon'
 
+import { HOME_BRAND_NAME } from '../../constants'
 import { HeroTerminalDemo } from '../hero-terminal-demo'
 
 interface HeroProps {
@@ -179,7 +180,8 @@ export function Hero(props: HeroProps) {
               </span>
               <p className='text-muted-foreground/60 text-xs leading-relaxed'>
                 {t(
-                  'Supports one-click configuration and perfectly adapts to NewAPI multi-protocol configuration.'
+                  'Supports one-click configuration and perfectly adapts to {{brand}} multi-protocol configuration.',
+                  { brand: HOME_BRAND_NAME }
                 )}
               </p>
             </div>
