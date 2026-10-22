@@ -694,9 +694,7 @@ export function buildSettingJSON(formData: ChannelFormValues): string {
       ? parseModelPatterns(formData.pad_reasoning_content_models)
       : undefined,
     proxy: formData.proxy?.trim() || '',
-    pass_through_body_enabled:
-      formData.type !== CHANNEL_TYPE_ADVANCED_CUSTOM &&
-      formData.pass_through_body_enabled === true,
+    pass_through_body_enabled: formData.pass_through_body_enabled === true,
     responses_websocket_enabled:
       supportsResponsesWebSocket(formData.type) &&
       formData.responses_websocket_enabled === true,
