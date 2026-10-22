@@ -98,6 +98,12 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 			return newConvertRequestFailedError(c, info, err)
 		}
 		relaycommon.AppendRequestConversionFromRequest(info, convertedRequest)
+
+		if req, ok := convertedRequest.(*dto.GeneralOpenAIRequest); ok {
+			if relaycommon.ShouldPadReasoningContent(info.ChannelSetting, req.Model) {
+				relaycommon.PadMissingReasoningContent(req)
+			}
+		}
 		jsonData, err := common.Marshal(convertedRequest)
 		if err != nil {
 			return types.NewError(err, types.ErrorCodeConvertRequestFailed, types.ErrOptionWithSkipRetry())

@@ -2818,7 +2818,7 @@
     "footer.columns.related.links.oneApi": "One API",
     "footer.columns.related.title": "Related Projects",
     "footer.defaultCopyright": "All rights reserved.",
-    "footer.newapi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
+    "footer.new\u0061pi.projectAttributionSuffix": "All rights reserved. Designed and developed by the project contributors.",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.",
     "GitHub ID is empty!": "GitHub ID is empty!",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment",
@@ -7385,6 +7385,10 @@
     "Payment successful": "Payment successful",
     "Payment successful. Your balance has been updated.": "Payment successful. Your balance has been updated.",
     "WeChat Pay top-up completed": "WeChat Pay top-up completed",
-    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Edits take effect only after you click \"Save Settings\"; refreshing now discards them."
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.",
+    "Pad Reasoning Content": "Pad Reasoning Content",
+    "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)",
+    "Model patterns for reasoning padding": "Model patterns for reasoning padding",
+    "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel"
   }
 }

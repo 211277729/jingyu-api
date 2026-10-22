@@ -2818,7 +2818,7 @@
     "footer.columns.related.links.oneApi": "Один API",
     "footer.columns.related.title": "Связанные проекты",
     "footer.defaultCopyright": "Все права защищены.",
-    "footer.newapi.projectAttributionSuffix": "Все права защищены. Разработано участниками проекта.",
+    "footer.new\u0061pi.projectAttributionSuffix": "Все права защищены. Разработано участниками проекта.",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "Для расширенных пользовательских каналов это действует только для маршрутов /v1/responses без преобразования протокола.",
     "GitHub ID is empty!": "GitHub ID не указан!",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Для каналов, добавленных после 10 мая 2025 г., не нужно удалять \".\" из имён моделей при развёртывании",
@@ -7385,6 +7385,10 @@
     "Payment successful": "Платёж выполнен",
     "Payment successful. Your balance has been updated.": "Платёж выполнен. Баланс обновлён.",
     "WeChat Pay top-up completed": "Пополнение WeChat Pay завершено",
-    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Изменения вступят в силу только после нажатия «Save Settings»; обновление страницы их отменит."
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Изменения вступят в силу только после нажатия «Save Settings»; обновление страницы их отменит.",
+    "Pad Reasoning Content": "Дозаполнить reasoning_content",
+    "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Дозаполняет отсутствующий reasoning_content в истории ассистента для провайдеров режима размышления, отклоняющих запросы с инструментами без него (стиль DeepSeek)",
+    "Model patterns for reasoning padding": "Шаблоны моделей для дозаполнения reasoning",
+    "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Шаблоны через запятую, сверяемые с именем модели на стороне провайдера; поддерживаются * и ?, пусто — для всех моделей канала"
   }
 }

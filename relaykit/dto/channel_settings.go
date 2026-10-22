@@ -12,14 +12,25 @@ import (
 )
 
 type ChannelSettings struct {
-	TaskPluginKey             string `json:"task_plugin_key,omitempty"`
-	ForceFormat               bool   `json:"force_format,omitempty"`
-	ThinkingToContent         bool   `json:"thinking_to_content,omitempty"`
-	Proxy                     string `json:"proxy"`
-	PassThroughBodyEnabled    bool   `json:"pass_through_body_enabled,omitempty"`
-	ResponsesWebSocketEnabled bool   `json:"responses_websocket_enabled,omitempty"`
-	SystemPrompt              string `json:"system_prompt,omitempty"`
-	SystemPromptOverride      bool   `json:"system_prompt_override,omitempty"`
+	TaskPluginKey     string `json:"task_plugin_key,omitempty"`
+	ForceFormat       bool   `json:"force_format,omitempty"`
+	ThinkingToContent bool   `json:"thinking_to_content,omitempty"`
+	// PadReasoningContent enables padding `reasoning_content: ""` onto assistant
+	// history messages for thinking-mode upstreams (DeepSeek style) that reject
+	// tool-call requests when any assistant turn lacks the field. Padding only
+	// runs when the outbound request carries tools and fills messages that are
+	// missing the field; existing values pass through untouched.
+	PadReasoningContent bool `json:"pad_reasoning_content,omitempty"`
+	// PadReasoningContentModels restricts padding to models whose upstream name
+	// matches at least one pattern. Patterns support `*` and `?` globs and are
+	// case-insensitive (for example `*deepseek*`). An empty list applies the
+	// padding to every model served by the channel.
+	PadReasoningContentModels []string `json:"pad_reasoning_content_models,omitempty"`
+	Proxy                     string   `json:"proxy"`
+	PassThroughBodyEnabled    bool     `json:"pass_through_body_enabled,omitempty"`
+	ResponsesWebSocketEnabled bool     `json:"responses_websocket_enabled,omitempty"`
+	SystemPrompt              string   `json:"system_prompt,omitempty"`
+	SystemPromptOverride      bool     `json:"system_prompt_override,omitempty"`
 	// TaskExtendPluginKeys lists the task plugins a New API channel (type 60)
 	// is extended with. The upstream gateway may host many plugins, so the
 	// channel serves every listed plugin's models while the request still pins

@@ -298,6 +298,8 @@ const SENSITIVE_FORM_FIELDS = [
   'azure_responses_version',
   'force_format',
   'thinking_to_content',
+  'pad_reasoning_content',
+  'pad_reasoning_content_models',
   'proxy',
   'http_protocol',
   'http2_connection_shards',
@@ -1923,6 +1925,58 @@ export function ChannelMutateDrawer({
         </FormItem>
       )}
     />
+  )
+
+  const reasoningPadFields = (
+    <>
+      <FormField
+        control={form.control}
+        name='pad_reasoning_content'
+        render={({ field }) => (
+          <FormItem className='flex items-center justify-between px-4 py-3'>
+            <div className='space-y-0.5'>
+              <FormLabel>{t('Pad Reasoning Content')}</FormLabel>
+              <FormDescription>
+                {t(
+                  'Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)'
+                )}
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                disabled={sensitiveLocked}
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      {form.watch('pad_reasoning_content') && (
+        <FormField
+          control={form.control}
+          name='pad_reasoning_content_models'
+          render={({ field }) => (
+            <FormItem className='px-4'>
+              <FormLabel>{t('Model patterns for reasoning padding')}</FormLabel>
+              <FormControl>
+                <Input
+                  disabled={sensitiveLocked}
+                  placeholder='*deepseek*, deepseek-v4*'
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                {t(
+                  'Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel'
+                )}
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
+    </>
   )
 
   const taskPollingFields = (
@@ -4758,6 +4812,7 @@ export function ChannelMutateDrawer({
                 {formatFields}
                 {ollamaOpenAIChatFields}
                 {thinkingFields}
+                {reasoningPadFields}
                 {currentType !== CHANNEL_TYPE_ADVANCED_CUSTOM &&
                   passthroughFields}
                 {systemPromptFields}

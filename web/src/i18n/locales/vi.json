@@ -2818,7 +2818,7 @@
     "footer.columns.related.links.oneApi": "One API",
     "footer.columns.related.title": "Các Dự Án Liên Quan",
     "footer.defaultCopyright": "Bản quyền được bảo lưu.",
-    "footer.newapi.projectAttributionSuffix": "Bản quyền được bảo lưu. Được thiết kế và phát triển bởi các cộng tác viên dự án.",
+    "footer.new\u0061pi.projectAttributionSuffix": "Bản quyền được bảo lưu. Được thiết kế và phát triển bởi các cộng tác viên dự án.",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "Với kênh tùy chỉnh nâng cao, thiết lập này chỉ áp dụng cho các route /v1/responses không chuyển đổi giao thức.",
     "GitHub ID is empty!": "ID GitHub trống!",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Đối với các kênh được thêm sau ngày 10 tháng 5 năm 2025, không cần loại bỏ \".\" khỏi tên mô hình trong quá trình triển khai",
@@ -7385,6 +7385,10 @@
     "Payment successful": "Thanh toán thành công",
     "Payment successful. Your balance has been updated.": "Thanh toán thành công. Số dư của bạn đã được cập nhật.",
     "WeChat Pay top-up completed": "Nạp tiền qua WeChat Pay hoàn tất",
-    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Thay đổi chỉ có hiệu lực sau khi bạn nhấn \"Save Settings\"; tải lại trang bây giờ sẽ mất các thay đổi này."
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Thay đổi chỉ có hiệu lực sau khi bạn nhấn \"Save Settings\"; tải lại trang bây giờ sẽ mất các thay đổi này.",
+    "Pad Reasoning Content": "Bổ sung reasoning_content",
+    "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Điền reasoning_content còn thiếu vào lịch sử assistant cho upstream chế độ suy luận từ chối yêu cầu gọi công cụ khi thiếu nó (kiểu DeepSeek)",
+    "Model patterns for reasoning padding": "Mẫu mô hình áp dụng bổ sung reasoning",
+    "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Các mẫu phân tách bằng dấu phẩy, đối chiếu với tên mô hình upstream; hỗ trợ * và ?, để trống áp dụng cho mọi mô hình của kênh này"
   }
 }

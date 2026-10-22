@@ -2818,7 +2818,7 @@
     "footer.columns.related.links.oneApi": "One API",
     "footer.columns.related.title": "Projets liés",
     "footer.defaultCopyright": "Tous droits réservés.",
-    "footer.newapi.projectAttributionSuffix": "Tous droits réservés. Conçu et développé par les contributeurs du projet.",
+    "footer.new\u0061pi.projectAttributionSuffix": "Tous droits réservés. Conçu et développé par les contributeurs du projet.",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "Pour les canaux personnalisés avancés, ceci ne s’applique qu’aux routes /v1/responses sans conversion de protocole.",
     "GitHub ID is empty!": "L’ID GitHub est vide !",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "Pour les canaux ajoutés après le 10 mai 2025, pas besoin de supprimer \".\" des noms de modèles lors du déploiement",
@@ -7385,6 +7385,10 @@
     "Payment successful": "Paiement réussi",
     "Payment successful. Your balance has been updated.": "Paiement réussi. Votre solde a été mis à jour.",
     "WeChat Pay top-up completed": "Recharge WeChat Pay terminée",
-    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Les modifications ne prennent effet qu’après avoir cliqué sur « Save Settings » ; actualiser maintenant les annule."
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "Les modifications ne prennent effet qu’après avoir cliqué sur « Save Settings » ; actualiser maintenant les annule.",
+    "Pad Reasoning Content": "Compléter le reasoning_content",
+    "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Complète le reasoning_content manquant de l'historique assistant pour les fournisseurs en mode réflexion qui rejettent les requêtes d'appel d'outils sans lui (style DeepSeek)",
+    "Model patterns for reasoning padding": "Modèles concernés par le complément de reasoning",
+    "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Motifs séparés par des virgules comparés au nom du modèle amont ; prend en charge * et ?, vide applique à tous les modèles de ce canal"
   }
 }

@@ -263,6 +263,8 @@ export const channelFormSchema = z
     // Channel extra settings (stored in setting JSON, not sent directly)
     force_format: z.boolean().optional(),
     thinking_to_content: z.boolean().optional(),
+    pad_reasoning_content: z.boolean().optional(),
+    pad_reasoning_content_models: z.string().optional(),
     proxy: z
       .string()
       .optional()
@@ -460,6 +462,8 @@ export const CHANNEL_FORM_DEFAULT_VALUES: ChannelFormValues = {
   // Channel extra settings
   force_format: false,
   thinking_to_content: false,
+  pad_reasoning_content: false,
+  pad_reasoning_content_models: '',
   proxy: '',
   http_protocol: HTTP_PROTOCOL_AUTO,
   http2_connection_shards: 1,
@@ -507,6 +511,8 @@ export function transformChannelToFormDefaults(
     task_extend_plugin_keys: [] as string[],
     force_format: false,
     thinking_to_content: false,
+    pad_reasoning_content: false,
+    pad_reasoning_content_models: '',
     proxy: '',
     http_protocol: HTTP_PROTOCOL_AUTO as 'auto' | 'http1',
     http2_connection_shards: 1,
@@ -529,6 +535,12 @@ export function transformChannelToFormDefaults(
         task_extend_plugin_keys: readTaskExtendPluginKeys(channel.type, parsed),
         force_format: parsed.force_format || false,
         thinking_to_content: parsed.thinking_to_content || false,
+        pad_reasoning_content: parsed.pad_reasoning_content || false,
+        pad_reasoning_content_models: Array.isArray(
+          parsed.pad_reasoning_content_models
+        )
+          ? parsed.pad_reasoning_content_models.join(',')
+          : '',
         proxy: parsed.proxy || '',
         http_protocol: protocol,
         http2_connection_shards: protocol === HTTP_PROTOCOL_HTTP1 ? 1 : shards,
@@ -656,6 +668,14 @@ export function transformChannelToFormDefaults(
 /**
  * Build the setting JSON string from form extra settings
  */
+function parseModelPatterns(raw: string | undefined): string[] | undefined {
+  const patterns = raw
+    ?.split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  return patterns && patterns.length > 0 ? patterns : undefined
+}
+
 export function buildSettingJSON(formData: ChannelFormValues): string {
   const settingObj: Record<string, unknown> = {
     task_plugin_key:
@@ -669,6 +689,10 @@ export function buildSettingJSON(formData: ChannelFormValues): string {
         : undefined,
     force_format: formData.force_format || false,
     thinking_to_content: formData.thinking_to_content || false,
+    pad_reasoning_content: formData.pad_reasoning_content || false,
+    pad_reasoning_content_models: formData.pad_reasoning_content
+      ? parseModelPatterns(formData.pad_reasoning_content_models)
+      : undefined,
     proxy: formData.proxy?.trim() || '',
     pass_through_body_enabled:
       formData.type !== CHANNEL_TYPE_ADVANCED_CUSTOM &&

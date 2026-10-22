@@ -1505,6 +1505,69 @@ test('request processing configuration does not mark the network category as con
   ).not.toHaveAccessibleName(/Configured/)
 })
 
+test('reasoning padding persists the switch and model patterns through the setting JSON', async () => {
+  editingChannel = {
+    ...editingChannel,
+    setting:
+      '{"pad_reasoning_content":true,"pad_reasoning_content_models":["*deepseek*","deepseek-v4*"]}',
+  }
+  const put = vi
+    .spyOn(api, 'put')
+    .mockResolvedValue({ data: { success: true } })
+  const user = userEvent.setup()
+  render(<ConfigurationHarness currentRow={editingChannel} />)
+  await screen.findByDisplayValue('Existing channel')
+  await user.click(screen.getByRole('tab', { name: /Request & Response/ }))
+  const toggle = screen.getByRole('switch', { name: 'Pad Reasoning Content' })
+  expect(toggle).toBeChecked()
+  const patterns = screen.getByLabelText('Model patterns for reasoning padding')
+  expect(patterns).toHaveValue('*deepseek*,deepseek-v4*')
+  fireEvent.change(patterns, {
+    target: { value: '*deepseek*, deepseek-v4* , ' },
+  })
+  await user.click(toggle)
+  await user.click(toggle)
+  await user.click(screen.getByRole('button', { name: 'Update Channel' }))
+  await waitFor(() => expect(put).toHaveBeenCalled())
+  const payload = put.mock.calls[0]?.[1] as { setting: string }
+  const parsed = JSON.parse(payload.setting)
+  expect(parsed.pad_reasoning_content).toBe(true)
+  expect(parsed.pad_reasoning_content_models).toEqual([
+    '*deepseek*',
+    'deepseek-v4*',
+  ])
+})
+
+test('disabling reasoning padding removes the model patterns field and stops persisting both values', async () => {
+  editingChannel = {
+    ...editingChannel,
+    setting:
+      '{"pad_reasoning_content":true,"pad_reasoning_content_models":["*deepseek*"]}',
+  }
+  const put = vi
+    .spyOn(api, 'put')
+    .mockResolvedValue({ data: { success: true } })
+  const user = userEvent.setup()
+  render(<ConfigurationHarness currentRow={editingChannel} />)
+  await screen.findByDisplayValue('Existing channel')
+  await user.click(screen.getByRole('tab', { name: /Request & Response/ }))
+  const toggle = screen.getByRole('switch', { name: 'Pad Reasoning Content' })
+  expect(
+    screen.getByLabelText('Model patterns for reasoning padding')
+  ).toBeVisible()
+  await user.click(toggle)
+  expect(toggle).not.toBeChecked()
+  expect(
+    screen.queryByLabelText('Model patterns for reasoning padding')
+  ).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Update Channel' }))
+  await waitFor(() => expect(put).toHaveBeenCalled())
+  const payload = put.mock.calls[0]?.[1] as { setting: string }
+  const parsed = JSON.parse(payload.setting)
+  expect(parsed.pad_reasoning_content).toBe(false)
+  expect(parsed).not.toHaveProperty('pad_reasoning_content_models')
+})
+
 test.each([1, 57, 58, 59, 60])(
   'provider %s marks a saved Responses WebSocket setting in Request & Response and clears the mark when disabled',
   async (type) => {

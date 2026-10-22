@@ -108,6 +108,20 @@ func TextHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *types
 			}
 		}
 		requestBody = common.NewReplayableBodyReader(storage)
+		if rawBody, bErr := storage.Bytes(); bErr == nil {
+			padded, changed, padErr := relaycommon.PadReasoningContentForJSON(info.ChannelSetting, rawBody)
+			if padErr != nil {
+				return types.NewError(padErr, types.ErrorCodeConvertRequestFailed, types.ErrOptionWithSkipRetry())
+			}
+			if changed {
+				padBody, padCloser, newErr := relaycommon.NewOutboundJSONBody(padded)
+				if newErr != nil {
+					return types.NewError(newErr, types.ErrorCodeConvertRequestFailed, types.ErrOptionWithSkipRetry())
+				}
+				defer padCloser.Close()
+				requestBody = padBody
+			}
+		}
 	} else {
 		convertedRequest, err := adaptor.ConvertOpenAIRequest(c, info, request)
 		if err != nil {
@@ -117,6 +131,9 @@ func TextHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *types
 
 		if req, ok := convertedRequest.(*dto.GeneralOpenAIRequest); ok {
 			applySystemPromptIfNeeded(c, info, req)
+			if relaycommon.ShouldPadReasoningContent(info.ChannelSetting, req.Model) {
+				relaycommon.PadMissingReasoningContent(req)
+			}
 		}
 
 		jsonData, err := common.Marshal(convertedRequest)

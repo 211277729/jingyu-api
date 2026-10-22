@@ -2818,7 +2818,7 @@
     "footer.columns.related.links.oneApi": "1つのAPI",
     "footer.columns.related.title": "関連プロジェクト",
     "footer.defaultCopyright": "すべての権利を留保します。",
-    "footer.newapi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
+    "footer.new\u0061pi.projectAttributionSuffix": "すべての権利を留保します。プロジェクトコントリビューターにより設計・開発されています。",
     "For advanced custom channels this applies only to /v1/responses routes without protocol conversion.": "高度なカスタムチャネルでは、プロトコル変換を行わない /v1/responses ルートにのみ適用されます。",
     "GitHub ID is empty!": "GitHub ID が空です！",
     "For channels added after May 10, 2025, no need to remove \".\" from model names during deployment": "2025 年 5 月 10 日以降に追加されたチャネルの場合、デプロイ時にモデル名から「.」を削除する必要はありません",
@@ -7385,6 +7385,10 @@
     "Payment successful": "支払いが完了しました",
     "Payment successful. Your balance has been updated.": "支払いが完了しました。残高が更新されました。",
     "WeChat Pay top-up completed": "WeChat Payでのチャージが完了しました",
-    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "変更は「Save Settings」をクリックするまで反映されません。今更新すると変更は失われます。"
+    "Edits take effect only after you click \"Save Settings\"; refreshing now discards them.": "変更は「Save Settings」をクリックするまで反映されません。今更新すると変更は失われます。",
+    "Pad Reasoning Content": "reasoning_content を補完",
+    "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "思考モードの上流のため、ツール呼び出しを含むリクエストで reasoning_content が欠けた assistant 履歴を補完します（DeepSeek 系）",
+    "Model patterns for reasoning padding": "補完を適用するモデルパターン",
+    "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "上流モデル名に対してカンマ区切りのパターンで一致判定（* と ? をサポート）。空欄の場合はこのチャネルの全モデルに適用"
   }
 }
