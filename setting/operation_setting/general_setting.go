@@ -24,7 +24,9 @@ type GeneralSetting struct {
 
 // 默认配置
 var generalSetting = GeneralSetting{
-	DocsLink:                   "https://docs.newapi.pro",
+	// 默认留空：首页与导航里的「文档」回落到站内对接指南 /docs，
+	// 不再把本站用户导向上游文档站。管理员可在后台填写自己的文档地址。
+	DocsLink:                   "",
 	PingIntervalEnabled:        false,
 	PingIntervalSeconds:        60,
 	QuotaDisplayType:           QuotaDisplayTypeUSD,

@@ -69,4 +69,16 @@ describe('resolveDocsTarget', () => {
       external: false,
     })
   })
+
+  it('treats the legacy upstream docs host as unset', () => {
+    for (const value of [
+      'https://docs.newapi.pro',
+      'https://docs.newapi.pro/installation/',
+    ]) {
+      expect(resolveDocsTarget(value)).toEqual({
+        href: BUILT_IN_DOCS_PATH,
+        external: false,
+      })
+    }
+  })
 })
