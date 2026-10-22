@@ -101,10 +101,80 @@ function RootComponent() {
         <>
           <ReactQueryDevtools buttonPosition='bottom-left' />
           <TanStackRouterDevtools position='bottom-right' />
+          <DevtoolsCloseFix />
         </>
       )}
     </ThemeCustomizationProvider>
   )
+}
+
+// 开发模式专用补丁：devtools 面板用 Solid 实现，靠 document 级委托响应面板内点击；
+// 真实鼠标操作时 mousedown / mouseup 的命中目标在面板上下边缘常不一致，click 被浏览器
+// 合成到共同祖先上，面板收不到自己的「× 收起」「顶部 logo」等点击，表现为关不掉。
+// pointerdown 的命中目标始终准确，这里在 pointerup 后检测两端目标是否漂移，漂移时以
+// mousedown 时的目标元素补发一次 click。仅修补面板区域（router + query），不渲染内容。
+function DevtoolsCloseFix() {
+  useEffect(() => {
+    const devtoolsRootQuery = '.TanStackRouterDevtools, .tsqd-parent-container'
+    let downTarget: Element | null = null
+
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target
+      downTarget =
+        target instanceof Element && target.closest(devtoolsRootQuery)
+          ? target
+          : null
+    }
+
+    const onPointerUp = (event: PointerEvent) => {
+      const target = event.target
+      const drifted =
+        downTarget?.isConnected &&
+        target instanceof Element &&
+        !downTarget.contains(target) &&
+        !target.contains(downTarget)
+      if (downTarget && drifted) {
+        downTarget.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: event.clientX,
+            clientY: event.clientY,
+          }),
+        )
+      }
+      downTarget = null
+    }
+
+    // 清理历史遗留的「卡在打开」状态；正常开合写入的 false 不受影响
+    if (localStorage.getItem('tanstackRouterDevtoolsOpen') === 'true') {
+      localStorage.removeItem('tanstackRouterDevtoolsOpen')
+    }
+
+    // 面板关闭走 0.4s 整宽下滑动画，观感上「抬一下、占满全宽才收走」；这里直接禁掉
+    // 该过渡，让开合瞬时完成（拖拽调高不受影响，拖拽本身就不走这个过渡）。
+    let styleElement = document.querySelector<HTMLStyleElement>(
+      '#devtools-close-fix-style',
+    )
+    if (!styleElement) {
+      styleElement = document.createElement('style')
+      styleElement.id = 'devtools-close-fix-style'
+      styleElement.textContent = `
+        .TanStackRouterDevtoolsPanel { transition: none !important; }
+      `
+      document.head.appendChild(styleElement)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown, true)
+    document.addEventListener('pointerup', onPointerUp, true)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true)
+      document.removeEventListener('pointerup', onPointerUp, true)
+      styleElement?.remove()
+    }
+  }, [])
+
+  return null
 }
 
 // 同一页面会话内避免重复检查；刷新后重新校验当前服务实例。
