@@ -24,6 +24,11 @@ For commercial licensing, please contact support@quantumnous.com
 export const DEFAULT_SYSTEM_NAME = 'New API'
 export const DEFAULT_LOGO = '/logo.png'
 
+// The AGPLv3 section 13 source offer points here. Kept in one place so the
+// footer entry and the licence page can never disagree about it.
+export const SOURCE_REPOSITORY_URL = 'https://github.com/211277729/jingyu-api'
+export const AGPL_LICENSE_URL = 'https://www.gnu.org/licenses/agpl-3.0.html'
+
 // LocalStorage Keys
 export const STORAGE_KEYS = {
   SYSTEM_NAME: 'system_name',

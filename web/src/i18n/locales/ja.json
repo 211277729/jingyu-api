@@ -5908,7 +5908,7 @@
     "Sort Order": "並び順",
     "Sort priority": "並び順の優先度",
     "Source": "ソース",
-    "Source code": "ソースコード",
+    "Source repository": "ソースリポジトリ",
     "Source diff": "ソース差分",
     "Source Endpoint": "ソースエンドポイント",
     "Source Field": "コピー元フィールド",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "思考モードの上流のため、ツール呼び出しを含むリクエストで reasoning_content が欠けた assistant 履歴を補完します（DeepSeek 系）",
     "Model patterns for reasoning padding": "補完を適用するモデルパターン",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "上流モデル名に対してカンマ区切りのパターンで一致判定（* と ? をサポート）。空欄の場合はこのチャネルの全モデルに適用"
-  }
+,
+    "License & source": "ライセンスとソース",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "本サイトは New API を改変して運用しており、AGPLv3 第 13 条に基づき利用者に対応するソースを提供します。",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "ここで提供するソースは本サイトが現在稼働している版です。リポジトリに一時的にアクセスできない場合は、本サイトに掲載の連絡手段から対応するソースをご請求ください。"  }
 }

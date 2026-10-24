@@ -5908,7 +5908,7 @@
     "Sort Order": "Порядок сортировки",
     "Sort priority": "Приоритет сортировки",
     "Source": "Источник",
-    "Source code": "Исходный код",
+    "Source repository": "Репозиторий исходного кода",
     "Source diff": "Различия исходного кода",
     "Source Endpoint": "Исходная точка",
     "Source Field": "Исходное поле",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Дозаполняет отсутствующий reasoning_content в истории ассистента для провайдеров режима размышления, отклоняющих запросы с инструментами без него (стиль DeepSeek)",
     "Model patterns for reasoning padding": "Шаблоны моделей для дозаполнения reasoning",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Шаблоны через запятую, сверяемые с именем модели на стороне провайдера; поддерживаются * и ?, пусто — для всех моделей канала"
-  }
+,
+    "License & source": "Лицензия и исходный код",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "Сайт работает на изменённой версии New API и предоставляет пользователям соответствующий исходный код в соответствии со статьёй 13 AGPLv3.",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "Предлагаемый здесь исходный код соответствует версии, которая сейчас работает на сайте. Если репозиторий недоступен, запросите соответствующий исходный код через указанный на сайте канал связи."  }
 }

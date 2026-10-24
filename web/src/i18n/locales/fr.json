@@ -5908,7 +5908,7 @@
     "Sort Order": "Ordre de tri",
     "Sort priority": "Priorité de tri",
     "Source": "Source",
-    "Source code": "Code source",
+    "Source repository": "Dépôt du code source",
     "Source diff": "Différence du code source",
     "Source Endpoint": "Point source",
     "Source Field": "Champ source",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Complète le reasoning_content manquant de l'historique assistant pour les fournisseurs en mode réflexion qui rejettent les requêtes d'appel d'outils sans lui (style DeepSeek)",
     "Model patterns for reasoning padding": "Modèles concernés par le complément de reasoning",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Motifs séparés par des virgules comparés au nom du modèle amont ; prend en charge * et ?, vide applique à tous les modèles de ce canal"
-  }
+,
+    "License & source": "Licence et code source",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "Ce site exécute une version modifiée de New API et fournit à ses utilisateurs le code source correspondant, comme l'exige l'article 13 de l'AGPLv3.",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "Le code source proposé ici correspond à la version actuellement exécutée sur ce site. Si le dépôt est indisponible, demandez le code source correspondant via le canal de contact publié sur ce site."  }
 }

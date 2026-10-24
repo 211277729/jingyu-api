@@ -5908,7 +5908,7 @@
     "Sort Order": "Sort Order",
     "Sort priority": "Sort priority",
     "Source": "Source",
-    "Source code": "Source code",
+    "Source repository": "Source repository",
     "Source diff": "Source diff",
     "Source Endpoint": "Source Endpoint",
     "Source Field": "Source Field",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)",
     "Model patterns for reasoning padding": "Model patterns for reasoning padding",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel"
-  }
+,
+    "License & source": "License & source",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site."  }
 }

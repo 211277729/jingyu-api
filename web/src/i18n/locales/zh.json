@@ -5908,7 +5908,7 @@
     "Sort Order": "排序",
     "Sort priority": "排序优先级",
     "Source": "来源",
-    "Source code": "源代码",
+    "Source repository": "源码仓库",
     "Source diff": "源码差异",
     "Source Endpoint": "来源端点",
     "Source Field": "来源字段",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "为思考模式上游补全 assistant 历史消息中缺失的 reasoning_content，避免带工具调用的多轮请求被拒绝（DeepSeek 类上游）",
     "Model patterns for reasoning padding": "补全生效的模型匹配",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "逗号分隔的匹配模式，按上游模型名匹配，支持 * 和 ?；留空表示对本渠道所有模型生效"
-  }
+,
+    "License & source": "许可与源码",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "本站基于 New API 修改后运行，并按 AGPLv3 第 13 条向使用者提供对应的源码。",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "此处提供的源码即本站当前运行的版本。若仓库暂时无法访问，可通过本站公示的联系方式索取对应源码。"  }
 }

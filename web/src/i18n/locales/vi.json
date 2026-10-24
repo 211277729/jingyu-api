@@ -5908,7 +5908,7 @@
     "Sort Order": "Thứ tự sắp xếp",
     "Sort priority": "Ưu tiên sắp xếp",
     "Source": "Nguồn",
-    "Source code": "Mã nguồn",
+    "Source repository": "Kho mã nguồn",
     "Source diff": "So sánh mã nguồn",
     "Source Endpoint": "Điểm nguồn",
     "Source Field": "Trường nguồn",
@@ -7468,5 +7468,8 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Điền reasoning_content còn thiếu vào lịch sử assistant cho upstream chế độ suy luận từ chối yêu cầu gọi công cụ khi thiếu nó (kiểu DeepSeek)",
     "Model patterns for reasoning padding": "Mẫu mô hình áp dụng bổ sung reasoning",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Các mẫu phân tách bằng dấu phẩy, đối chiếu với tên mô hình upstream; hỗ trợ * và ?, để trống áp dụng cho mọi mô hình của kênh này"
-  }
+,
+    "License & source": "Giấy phép và mã nguồn",
+    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "Trang này chạy phiên bản New API đã được sửa đổi và cung cấp mã nguồn tương ứng cho người dùng theo yêu cầu của mục 13 AGPLv3.",
+    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "Mã nguồn tại đây là phiên bản trang này đang chạy. Nếu kho lưu trữ tạm thời không truy cập được, hãy yêu cầu mã nguồn tương ứng qua kênh liên hệ được công bố trên trang."  }
 }

@@ -141,21 +141,17 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
         AGPLv3 第 7(b) 条附加条款要求修改版逐字保留下面这句英文（见仓库根 NOTICE）。
         必须保持英文原文，不走 i18n，也不要删改。放在代码里而不是后台配置，
         是为了新建环境或清空页脚配置时不会丢掉这条许可要求的声明。
-        同行的源码链接用于满足 AGPLv3 第 13 条的源码提供义务；放在同一行是为了
+        行尾的入口用于满足 AGPLv3 第 13 条的源码提供义务；放在同一行是为了
         不给页脚多加一行。可以调小、调淡，但不能隐藏——第 13 条要求 "prominently offer"。
-        该链接刻意做成低对比度、无 hover 反馈、默认光标，只保留可点击跳转本身。
+        该入口刻意做成低对比度、无 hover 反馈、默认光标，只保留可点击跳转本身，
+        且指向站内 /source 许可页而不是直接外链仓库，避免源码成为页面上的显眼出口。
       */}
       <span className='block'>
         Frontend design and development by New API contributors.
         {' · '}
-        <a
-          href='https://github.com/211277729/jingyu-api'
-          target='_blank'
-          rel='noopener noreferrer'
-          className='text-muted-foreground/30 cursor-default'
-        >
-          {t('Source code')}
-        </a>
+        <Link to='/source' className='text-muted-foreground/30 cursor-default'>
+          {t('License & source')}
+        </Link>
       </span>
     </span>
   )
@@ -292,14 +288,14 @@ export function Footer(props: FooterProps) {
           {/* Links columns */}
           {isDemoSiteMode && (
             <div className='grid grid-cols-3 gap-8 md:gap-16'>
-              {displayColumns.map((column, index) => (
-                <div key={index}>
+              {displayColumns.map((column) => (
+                <div key={column.title}>
                   <p className='text-muted-foreground/50 mb-3 text-xs font-medium tracking-wider uppercase'>
                     {t(column.title)}
                   </p>
                   <ul className='space-y-2.5'>
-                    {column.links.map((link, linkIndex) => (
-                      <li key={linkIndex}>
+                    {column.links.map((link) => (
+                      <li key={link.href}>
                         <FooterLinkItem link={link} />
                       </li>
                     ))}
