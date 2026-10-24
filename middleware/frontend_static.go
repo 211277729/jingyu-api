@@ -48,6 +48,21 @@ func pickResponseEncoding(acceptEncoding, urlPath string, excluded bool) string 
 	return ""
 }
 
+// cacheControlFor returns the Cache-Control value for one frontend path.
+//
+// Files under /static/ carry a content hash in their file name, so a given URL
+// never changes content and can be cached for a year: a new build produces new
+// URLs. index.html is the opposite — it is the file that points at those
+// hashed URLs, so caching it would keep browsers requesting chunks that a later
+// deployment deleted. Other assets (favicon, an admin-uploaded logo) keep the
+// default revalidation behaviour.
+func cacheControlFor(urlPath string) string {
+	if strings.HasPrefix(urlPath, "/static/") {
+		return "public, max-age=31536000, immutable"
+	}
+	return "no-cache"
+}
+
 // ServeFrontendFiles serves files from the embedded frontend build. Clients
 // without a supported encoding, the image types the gzip middleware skips,
 // directories, and the index.html redirect keep using http.FileServer.
@@ -60,6 +75,10 @@ func ServeFrontendFiles(frontendFS static.ServeFileSystem) gin.HandlerFunc {
 			return
 		}
 		c.Abort()
+		// Set on both response paths: a client that does not advertise brotli or
+		// gzip falls through to http.FileServer below and still needs both headers.
+		c.Writer.Header().Set("Cache-Control", cacheControlFor(urlPath))
+		c.Writer.Header().Set("Vary", "Accept-Encoding")
 		encoding := pickResponseEncoding(
 			c.GetHeader("Accept-Encoding"),
 			urlPath,

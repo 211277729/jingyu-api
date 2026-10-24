@@ -131,3 +131,33 @@ func TestServeFrontendFilesCompressesEachFileOnce(t *testing.T) {
 	assert.Equal(t, http.StatusTeapot, missing.Code)
 	assert.Equal(t, "fallback", missing.Body.String())
 }
+
+func TestServeFrontendFilesCachesHashedAssetsForAYearButRevalidatesEntryPoints(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	frontendDir := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(frontendDir, "static", "js"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(frontendDir, "static", "js", "index.abc123.js"), []byte("export const a=1;"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(frontendDir, "logo.png"), []byte("\x89PNG\r\n\x1a\n"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(frontendDir, "index.html"), []byte("<html></html>"), 0o644))
+	frontendFS := &countingFrontendFS{ServeFileSystem: static.LocalFile(frontendDir, false)}
+
+	router := gin.New()
+	router.NoRoute(ServeFrontendFiles(frontendFS), func(c *gin.Context) {
+		c.String(http.StatusTeapot, "fallback")
+	})
+
+	// Compressed and uncompressed responses must agree: a shared cache keyed only
+	// on the URL must never mix a brotli body with a plain one.
+	uncompressed := performFrontendRequest(router, http.MethodGet, "/static/js/index.abc123.js", "")
+	compressed := performFrontendRequest(router, http.MethodGet, "/static/js/index.abc123.js", "br")
+	for _, response := range []*httptest.ResponseRecorder{uncompressed, compressed} {
+		assert.Equal(t, http.StatusOK, response.Code)
+		assert.Equal(t, "public, max-age=31536000, immutable", response.Header().Get("Cache-Control"))
+		assert.Equal(t, "Accept-Encoding", response.Header().Get("Vary"))
+	}
+
+	for _, target := range []string{"/logo.png", "/index.html"} {
+		response := performFrontendRequest(router, http.MethodGet, target, "")
+		assert.Equal(t, "no-cache", response.Header().Get("Cache-Control"), target)
+	}
+}
