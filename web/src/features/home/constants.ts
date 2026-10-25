@@ -61,6 +61,86 @@ export const GATEWAY_FEATURES = [
   'Pass-Through',
 ] as const
 
+// Agent applications section - the desktop, terminal and IDE agents that point
+// at this gateway. `categoryKey` is an i18n key rendered with `t()`; `iconName`
+// is resolved through `getLobeIcon`, and an unknown name degrades to an initial
+// badge. `href` is optional: an agent without an official site stays a card
+// instead of becoming a dead link.
+export const AGENT_APPLICATIONS = [
+  {
+    name: 'Claude Code',
+    iconName: 'ClaudeCode.Color',
+    categoryKey: 'Coding',
+    href: 'https://www.anthropic.com/claude-code',
+  },
+  {
+    name: 'Codex',
+    iconName: 'Codex.Color',
+    categoryKey: 'Coding',
+    href: 'https://openai.com/codex',
+  },
+  {
+    name: 'Cline',
+    iconName: 'Cline',
+    categoryKey: 'Coding',
+    href: 'https://cline.bot',
+  },
+  {
+    name: 'Cursor',
+    iconName: 'Cursor',
+    categoryKey: 'Coding',
+    href: 'https://cursor.com',
+  },
+  {
+    name: 'OpenCode',
+    iconName: 'OpenCode',
+    categoryKey: 'Coding',
+    href: 'https://opencode.ai',
+  },
+  {
+    name: 'Cherry Studio',
+    iconName: 'CherryStudio.Color',
+    categoryKey: 'Office',
+    href: 'https://cherry-ai.com',
+  },
+  {
+    name: 'WorkBuddy',
+    iconName: 'WorkBuddy',
+    categoryKey: 'Office',
+    href: 'https://www.codebuddy.cn/work/',
+  },
+  {
+    name: 'DeepSeek',
+    iconName: 'DeepSeek.Color',
+    categoryKey: 'Research',
+    href: 'https://www.deepseek.com',
+  },
+  {
+    name: 'OpenClaw',
+    iconName: 'OpenClaw.Color',
+    categoryKey: 'Research',
+    href: 'https://openclaw.ai',
+  },
+  {
+    name: 'Hermes Agent',
+    iconName: 'HermesAgent',
+    categoryKey: 'Research',
+    href: '',
+  },
+  {
+    name: 'Lovable',
+    iconName: 'Lovable.Color',
+    categoryKey: 'Design',
+    href: 'https://lovable.dev',
+  },
+  {
+    name: 'V0',
+    iconName: 'V0',
+    categoryKey: 'Design',
+    href: 'https://v0.app',
+  },
+] as const
+
 // Stats section - Default statistics
 export const DEFAULT_STATS = [
   {

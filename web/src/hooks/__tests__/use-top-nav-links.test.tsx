@@ -71,3 +71,61 @@ describe('Docs navigation entry', () => {
     expect(docsEntry({ HeaderNavModules: '{"docs":false}' })).toBeUndefined()
   })
 })
+
+function navEntry(status: Record<string, unknown>): TopNavLink | undefined {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  client.setQueryData(['status'], status)
+
+  function Wrapper(props: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={client}>
+        {props.children}
+      </QueryClientProvider>
+    )
+  }
+
+  const { result } = renderHook(() => useTopNavLinks(), { wrapper: Wrapper })
+  return result.current.find((link) => link.title === 'AI Navigation')
+}
+
+describe('AI navigation entry', () => {
+  it('links to the directory by default', () => {
+    expect(navEntry({})).toMatchObject({ href: '/nav' })
+  })
+
+  it('sits right after the home link', () => {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    })
+    client.setQueryData(['status'], {})
+
+    function Wrapper(props: { children: ReactNode }) {
+      return (
+        <QueryClientProvider client={client}>
+          {props.children}
+        </QueryClientProvider>
+      )
+    }
+
+    const { result } = renderHook(() => useTopNavLinks(), { wrapper: Wrapper })
+    const titles = result.current.map((link) => link.title)
+
+    expect(titles.slice(0, 3)).toEqual(['Home', 'AI Navigation', 'Console'])
+  })
+
+  it('omits the entry when the admin disabled it', () => {
+    expect(
+      navEntry({ HeaderNavModules: '{"nav":{"enabled":false}}' })
+    ).toBeUndefined()
+  })
+
+  it('marks the entry as auth-gated when the admin requires login', () => {
+    expect(
+      navEntry({
+        HeaderNavModules: '{"nav":{"enabled":true,"requireAuth":true}}',
+      })
+    ).toMatchObject({ href: '/nav', requiresAuth: true })
+  })
+})

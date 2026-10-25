@@ -32,6 +32,7 @@ import {
 } from 'react'
 
 import sglangLogo from '@/assets/brand-icons/sglang.svg'
+import workbuddyLogo from '@/assets/brand-icons/workbuddy.png'
 import { IconSub2api } from '@/assets/custom/icon-sub2api'
 import { IconWan } from '@/assets/custom/icon-wan'
 
@@ -48,6 +49,16 @@ export const CUSTOM_ICONS: Record<string, ComponentType<{ size?: number }>> = {
   ),
   Sub2API: IconSub2api,
   Wan: IconWan,
+  WorkBuddy: (props) => (
+    <img
+      src={workbuddyLogo}
+      alt=''
+      aria-hidden='true'
+      width={props.size ?? 20}
+      height={props.size ?? 20}
+      className='object-contain'
+    />
+  ),
 }
 
 type ParamFlags =

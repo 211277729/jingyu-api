@@ -40,7 +40,7 @@ import {
 
 export { loadLobeIconCatalog } from './lobe-icon-internal'
 
-const CUSTOM_NAMES = ['SGLang', 'Sub2API', 'Wan'] as const
+const CUSTOM_NAMES = ['SGLang', 'Sub2API', 'Wan', 'WorkBuddy'] as const
 
 function useIconCatalogSubscription() {
   useSyncExternalStore(subscribeCatalog, getIconCatalogSnapshot, () => null)

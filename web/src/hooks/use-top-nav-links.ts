@@ -68,6 +68,13 @@ export function useTopNavLinks(): TopNavLink[] {
     links.push({ title: t('Home'), href: '/' })
   }
 
+  // AI navigation directory
+  const nav = modules?.nav
+  if (nav && typeof nav === 'object' && nav.enabled) {
+    const requiresAuth = nav.requireAuth && !isAuthed
+    links.push({ title: t('AI Navigation'), href: '/nav', requiresAuth })
+  }
+
   // Console -> /dashboard (new console path)
   if (modules?.console !== false) {
     links.push({ title: t('Console'), href: '/dashboard' })

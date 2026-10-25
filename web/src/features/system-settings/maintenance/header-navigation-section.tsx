@@ -55,6 +55,8 @@ const headerNavSchema = z.object({
   pricingRequireAuth: z.boolean(),
   rankingsEnabled: z.boolean(),
   rankingsRequireAuth: z.boolean(),
+  navEnabled: z.boolean(),
+  navRequireAuth: z.boolean(),
   docs: z.boolean(),
   about: z.boolean(),
 })
@@ -89,6 +91,14 @@ const toFormValues = (config: HeaderNavModulesConfig): HeaderNavFormValues => ({
     config.rankings?.requireAuth === undefined
       ? HEADER_NAV_DEFAULT.rankings.requireAuth
       : Boolean(config.rankings.requireAuth),
+  navEnabled:
+    config.nav?.enabled === undefined
+      ? HEADER_NAV_DEFAULT.nav.enabled
+      : Boolean(config.nav.enabled),
+  navRequireAuth:
+    config.nav?.requireAuth === undefined
+      ? HEADER_NAV_DEFAULT.nav.requireAuth
+      : Boolean(config.nav.requireAuth),
   docs:
     config.docs === undefined ? HEADER_NAV_DEFAULT.docs : Boolean(config.docs),
   about:
@@ -130,6 +140,11 @@ export function HeaderNavigationSection({
         ...(config.rankings ?? HEADER_NAV_DEFAULT.rankings),
         enabled: values.rankingsEnabled,
         requireAuth: values.rankingsRequireAuth,
+      },
+      nav: {
+        ...(config.nav ?? HEADER_NAV_DEFAULT.nav),
+        enabled: values.navEnabled,
+        requireAuth: values.navRequireAuth,
       },
     }
 
@@ -178,7 +193,7 @@ export function HeaderNavigationSection({
   const accessModules: Array<{
     enabledKey: keyof HeaderNavFormValues
     requireAuthKey: keyof HeaderNavFormValues
-    requireAuthDependsOn: 'pricingEnabled' | 'rankingsEnabled'
+    requireAuthDependsOn: 'pricingEnabled' | 'rankingsEnabled' | 'navEnabled'
     title: string
     description: string
     requireAuthTitle: string
@@ -204,6 +219,17 @@ export function HeaderNavigationSection({
       requireAuthTitle: t('Require login to view rankings'),
       requireAuthDescription: t(
         'Visitors must authenticate before accessing the rankings page.'
+      ),
+    },
+    {
+      enabledKey: 'navEnabled',
+      requireAuthKey: 'navRequireAuth',
+      requireAuthDependsOn: 'navEnabled',
+      title: t('AI Navigation'),
+      description: t('Public directory of AI tools and communities.'),
+      requireAuthTitle: t('Require login to view the directory'),
+      requireAuthDescription: t(
+        'Visitors must authenticate before accessing the AI navigation page.'
       ),
     },
   ]
