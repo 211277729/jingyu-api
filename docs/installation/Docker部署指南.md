@@ -944,6 +944,16 @@ sudo ss -ulnp | grep ':443'            # 宿主机有没有 UDP 443 监听
 
 修复：在 Caddy 的 compose 里补 `- "443:443/udp"`，`docker compose up -d` 重建容器。证书和配置在卷里不受影响，但**所有站点会中断几秒**，挑低峰做。
 
+**怎么确认 HTTP/3 真的生效**（比读响应头可靠得多）：
+
+| 方式 | 判据 |
+| --- | --- |
+| 浏览器 | F12 → Network → 右键表头勾选 `Protocol`，该列显示 `h3` 才是走 QUIC；显示 `h2` 说明仍在 TCP 上 |
+| 首次刷新 | 通常还是 `h2`——浏览器要先拿到 `Alt-Svc` 才会尝试 QUIC，**再刷新一次**才切到 `h3` |
+| 命令行 | `curl --http3-only -sI https://<域名>/`，必须成功返回。注意 Windows 自带的 curl 用 Schannel 构建、不含 HTTP/3，会直接报不支持 |
+
+`Alt-Svc` 头只代表 Caddy 宣告了 h3，**不代表 UDP 真的通**。两者要分别验证。
+
 ***
 
 ## 六、命令速查
