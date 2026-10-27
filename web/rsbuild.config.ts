@@ -109,6 +109,7 @@ export default defineConfig(({ envMode }) => {
       proxy: devProxy,
     },
     output: {
+      assetPrefix: isProd ? 'https://cdnwb.xiaoyuji.cn/jingyuai-api/' : '/',
       // Production optimizations
       minify: isProd,
       target: 'web',
