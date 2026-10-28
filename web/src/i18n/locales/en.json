@@ -3065,6 +3065,8 @@
     "Hidden from the model square by metadata policy.": "Hidden from the model square by metadata policy.",
     "Hide": "Hide",
     "Hide API key": "Hide API key",
+    "Hide Mapped Model Name": "Hide Mapped Model Name",
+    "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.": "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.",
     "Hide from catalog": "Hide from catalog",
     "Hide from model square": "Hide from model square",
     "Hide redirect panel": "Hide redirect panel",

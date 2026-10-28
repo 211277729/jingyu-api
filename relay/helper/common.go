@@ -12,6 +12,7 @@ import (
 	"github.com/QuantumNous/new-api/logger"
 	"github.com/QuantumNous/new-api/relaykit/dto"
 	"github.com/QuantumNous/new-api/relaykit/types"
+	"github.com/QuantumNous/new-api/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -228,7 +229,7 @@ func ResponseChunkData(c *gin.Context, resp dto.ResponsesStreamResponse, data st
 	if err := event.Render(c.Writer); err != nil {
 		return err
 	}
-	event.Data = fmt.Sprintf("data: %s", data)
+	event.Data = fmt.Sprintf("data: %s", service.MaskMappedResponseModelString(c, data))
 	if err := event.Render(c.Writer); err != nil {
 		return err
 	}
@@ -244,7 +245,7 @@ func StringData(c *gin.Context, str string) error {
 		return fmt.Errorf("request context done: %w", c.Request.Context().Err())
 	}
 
-	c.Render(-1, common.CustomEvent{Data: "data: " + str})
+	c.Render(-1, common.CustomEvent{Data: "data: " + service.MaskMappedResponseModelString(c, str)})
 	return FlushWriter(c)
 }
 

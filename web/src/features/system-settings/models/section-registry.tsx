@@ -58,6 +58,8 @@ const MODELS_SECTIONS = [
               settings['general_setting.ping_interval_enabled'],
             ping_interval_seconds:
               settings['general_setting.ping_interval_seconds'],
+            hide_mapped_model_name:
+              settings['general_setting.hide_mapped_model_name'],
           },
         }}
       />

@@ -96,6 +96,7 @@ const schema = z.object({
   general_setting: z.object({
     ping_interval_enabled: z.boolean(),
     ping_interval_seconds: z.coerce.number().min(1),
+    hide_mapped_model_name: z.boolean(),
   }),
 })
 
@@ -108,6 +109,7 @@ type FlatGlobalModelSettings = {
   'global.chat_completions_to_responses_policy': string
   'general_setting.ping_interval_enabled': boolean
   'general_setting.ping_interval_seconds': number
+  'general_setting.hide_mapped_model_name': boolean
 }
 
 const flattenGlobalValues = (
@@ -127,6 +129,8 @@ const flattenGlobalValues = (
     values.general_setting.ping_interval_enabled,
   'general_setting.ping_interval_seconds':
     values.general_setting.ping_interval_seconds,
+  'general_setting.hide_mapped_model_name':
+    values.general_setting.hide_mapped_model_name,
 })
 
 function normalizeJsonText(value: string, fallback: string) {
@@ -371,6 +375,29 @@ export function GlobalSettingsCard({ defaultValues }: GlobalSettingsCardProps) {
                 </FormDescription>
                 <FormMessage />
               </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='general_setting.hide_mapped_model_name'
+            render={({ field }) => (
+              <SettingsSwitchItem>
+                <SettingsSwitchContent>
+                  <FormLabel>{t('Hide Mapped Model Name')}</FormLabel>
+                  <FormDescription>
+                    {t(
+                      'When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.'
+                    )}
+                  </FormDescription>
+                </SettingsSwitchContent>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </SettingsSwitchItem>
             )}
           />
         </SettingsForm>

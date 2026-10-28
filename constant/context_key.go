@@ -85,4 +85,8 @@ const (
 	ContextKeyTokenAuditParams ContextKey = "token_audit_params"
 	// ContextKeyTokenAuditSucceeded disambiguates token responses that exceed the audit buffer.
 	ContextKeyTokenAuditSucceeded ContextKey = "token_audit_succeeded"
+
+	// ContextKeyRelayInfo 挂载本次请求的 *relaycommon.RelayInfo，供响应收口
+	// 处（SSE/非流式回写）读取模型映射状态。由 genBaseRelayInfo 写入。
+	ContextKeyRelayInfo ContextKey = "relay_info"
 )

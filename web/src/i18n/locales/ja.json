@@ -3065,6 +3065,8 @@
     "Hidden from the model square by metadata policy.": "メタデータ設定によりモデル一覧で非表示になっています。",
     "Hide": "非表示にする",
     "Hide API key": "APIキーを非表示",
+    "Hide Mapped Model Name": "マッピング後のモデル名を隠す",
+    "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.": "チャネルのモデルマッピングが適用された場合、APIレスポンス内のモデル名をリクエストされたモデル名に書き換え、上流のルーティングをクライアントに知られないようにします。実際の上流モデル名は管理者の使用ログでのみ確認できます。",
     "Hide from catalog": "カタログから非表示",
     "Hide from model square": "モデル広場で非表示",
     "Hide redirect panel": "リダイレクトパネルを隠す",

@@ -673,6 +673,9 @@ func genBaseRelayInfo(c *gin.Context, request dto.Request) *RelayInfo {
 		info.UserSetting = userSetting
 	}
 
+	// 挂到 context 供响应收口处（SSE 帧 / 非流式回写）读取模型映射状态。
+	common.SetContextKey(c, constant.ContextKeyRelayInfo, info)
+
 	return info
 }
 

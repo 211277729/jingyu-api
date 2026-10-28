@@ -20,6 +20,10 @@ type GeneralSetting struct {
 	CustomCurrencySymbol string `json:"custom_currency_symbol"`
 	// 自定义货币与美元汇率（1 USD = X Custom）
 	CustomCurrencyExchangeRate float64 `json:"custom_currency_exchange_rate"`
+	// HideMappedModelName 隐藏模型映射：开启后，命中渠道模型映射的请求
+	// 其返回给客户端的响应 JSON 里 model/modelVersion 字段会被改写为请求模型名，
+	// 上游真实路由仅保留在管理员使用日志的 admin_info 中。
+	HideMappedModelName bool `json:"hide_mapped_model_name"`
 }
 
 // 默认配置
@@ -32,6 +36,8 @@ var generalSetting = GeneralSetting{
 	QuotaDisplayType:           QuotaDisplayTypeUSD,
 	CustomCurrencySymbol:       "¤",
 	CustomCurrencyExchangeRate: 1.0,
+	// 默认开启：模型映射属于路由细节，客户端不应从响应体回推出上游模型。
+	HideMappedModelName: true,
 }
 
 func init() {

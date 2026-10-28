@@ -3065,6 +3065,8 @@
     "Hidden from the model square by metadata policy.": "Модель скрыта из каталога настройками метаданных.",
     "Hide": "Скрыть",
     "Hide API key": "Скрыть API ключ",
+    "Hide Mapped Model Name": "Скрывать имя сопоставленной модели",
+    "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.": "Когда применяется сопоставление моделей канала, имя модели в ответах API заменяется на запрошенную, чтобы клиенты не могли узнать маршрутизацию к вышестоящему провайдеру. Реальное имя видно только администраторам в журнале использования.",
     "Hide from catalog": "Скрыть из каталога",
     "Hide from model square": "Скрыть в каталоге моделей",
     "Hide redirect panel": "Скрыть панель перенаправлений",

@@ -3065,6 +3065,8 @@
     "Hidden from the model square by metadata policy.": "已通过元数据策略在模型广场隐藏。",
     "Hide": "隐藏",
     "Hide API key": "隐藏 API 密钥",
+    "Hide Mapped Model Name": "隐藏映射后的模型名",
+    "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.": "当渠道命中模型映射时，把 API 响应里的模型名改写为请求模型名，防止客户端推知上游路由；真实上游模型仅管理员使用日志可见。",
     "Hide from catalog": "从目录隐藏",
     "Hide from model square": "从模型广场隐藏",
     "Hide redirect panel": "收起重定向面板",

@@ -3065,6 +3065,8 @@
     "Hidden from the model square by metadata policy.": "Masqué dans le catalogue par la politique de métadonnées.",
     "Hide": "Masquer",
     "Hide API key": "Masquer la clé API",
+    "Hide Mapped Model Name": "Masquer le nom du modèle mappé",
+    "When a channel model mapping applies, rewrite the model name in API responses to the requested model so clients cannot learn the upstream routing. The real upstream name remains visible in admin usage logs.": "Lorsqu'un mappage de modèle de canal s'applique, le nom du modèle dans les réponses de l'API est réécrit avec le modèle demandé afin que les clients ne puissent pas connaître le routage amont. Le nom amont réel reste visible dans les journaux d'utilisation des administrateurs.",
     "Hide from catalog": "Masquer du catalogue",
     "Hide from model square": "Masquer dans la galerie",
     "Hide redirect panel": "Masquer le panneau de redirection",
