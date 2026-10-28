@@ -64,7 +64,11 @@ function makeLog(other: LogOtherData): UsageLog {
   }
 }
 
-function renderDetails(other: LogOtherData, promptTokens = 0): QueryClient {
+function renderDetails(
+  other: LogOtherData,
+  promptTokens = 0,
+  isAdmin = false
+): QueryClient {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   })
@@ -80,7 +84,7 @@ function renderDetails(other: LogOtherData, promptTokens = 0): QueryClient {
     <QueryClientProvider client={queryClient}>
       <DetailsDialog
         log={{ ...makeLog(other), prompt_tokens: promptTokens }}
-        isAdmin={false}
+        isAdmin={isAdmin}
         isRoot={false}
         open
         onOpenChange={() => undefined}
@@ -94,19 +98,53 @@ function rowValue(label: string): string | null {
   return screen.getByText(label).nextElementSibling?.textContent ?? null
 }
 
-test('shows the recorded request and response models in log details', () => {
-  const queryClient = renderDetails({
-    response_model: {
-      requested_model: 'requested-model',
-      upstream_model: 'mapped-model',
-      returned_model: 'unexpected-model',
+test('shows the recorded request and response models in admin log details', () => {
+  const queryClient = renderDetails(
+    {
+      admin_info: {
+        response_model: {
+          requested_model: 'requested-model',
+          upstream_model: 'mapped-model',
+          returned_model: 'unexpected-model',
+        },
+      },
     },
-  })
+    0,
+    true
+  )
   expect(screen.getByText('Response model: unexpected-model')).toBeVisible()
   expect(rowValue('Request Model')).toBe('requested-model')
   expect(rowValue('Upstream Model')).toBe('mapped-model')
   expect(screen.getByText('unexpected-model')).toBeVisible()
   queryClient.clear()
+})
+
+test('hides model mapping and response observations from non-admin viewers', () => {
+  for (const other of [
+    {
+      admin_info: {
+        is_model_mapped: true,
+        upstream_model_name: 'mapped-model',
+      },
+    },
+    {
+      // legacy rows kept the fields at the public top level
+      is_model_mapped: true,
+      upstream_model_name: 'mapped-model',
+      response_model: {
+        requested_model: 'requested-model',
+        upstream_model: 'mapped-model',
+        returned_model: 'unexpected-model',
+      },
+    },
+  ] as LogOtherData[]) {
+    const queryClient = renderDetails(other)
+    expect(screen.queryByText('Response Model')).toBeNull()
+    expect(screen.queryByText('Model Mapping')).toBeNull()
+    expect(screen.queryByText('mapped-model')).toBeNull()
+    expect(screen.queryByText('unexpected-model')).toBeNull()
+    queryClient.clear()
+  }
 })
 
 test('splits OpenAI cache writes into 30-minute and 12-hour rows with their prices', () => {

@@ -556,6 +556,17 @@ export function DetailsDialog(props: DetailsDialogProps) {
   const showAdminIp =
     !!props.log.ip && (showTiming || (props.isAdmin && isTopup))
   const adminInfo = other?.admin_info
+  // 模型映射/响应模型观测是 admin_info 下的管理数据；仅管理员视图展示。
+  // 清理前的历史日志把字段放在顶层 public，管理员视图兜底读取。
+  const responseModelObservation =
+    adminInfo?.response_model ?? (props.isAdmin ? other?.response_model : undefined)
+  const mappedUpstreamModel = (() => {
+    if (!props.isAdmin) return undefined
+    if (adminInfo?.response_model) return undefined
+    if (adminInfo?.is_model_mapped === true) return adminInfo.upstream_model_name
+    if (other?.is_model_mapped === true) return other?.upstream_model_name
+    return undefined
+  })()
   const topupAuditFields =
     isTopup && props.isAdmin && adminInfo
       ? ([
@@ -1192,28 +1203,26 @@ export function DetailsDialog(props: DetailsDialogProps) {
           />
         )}
 
-        {other?.response_model && (
+        {responseModelObservation && (
           <DetailSection label={t('Response Model')}>
-            <ResponseModelDetails observation={other.response_model} />
+            <ResponseModelDetails observation={responseModelObservation} />
           </DetailSection>
         )}
         {/* Model mapping for logs without response observations */}
-        {!other?.response_model &&
-          other?.is_model_mapped &&
-          other?.upstream_model_name && (
-            <DetailSection label={t('Model Mapping')}>
-              <DetailRow
-                label={t('Request Model')}
-                value={props.log.model_name}
-                mono
-              />
-              <DetailRow
-                label={t('Actual Model')}
-                value={other.upstream_model_name}
-                mono
-              />
-            </DetailSection>
-          )}
+        {mappedUpstreamModel && (
+          <DetailSection label={t('Model Mapping')}>
+            <DetailRow
+              label={t('Request Model')}
+              value={props.log.model_name}
+              mono
+            />
+            <DetailRow
+              label={t('Actual Model')}
+              value={mappedUpstreamModel}
+              mono
+            />
+          </DetailSection>
+        )}
 
         {/* Token breakdown (for consume/error types with token data) */}
         {isDisplayableType(props.log.type) && other && (

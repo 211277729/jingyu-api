@@ -22,7 +22,7 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table'
-import { render, screen, within, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, within, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
 
@@ -30,6 +30,8 @@ import { usageLogSchema, type UsageLog } from '../../data/schema'
 import { useCommonLogsColumns } from '../columns/common-logs-columns'
 import { UsageLogsMobileList } from '../usage-logs-mobile-card'
 import { UsageLogsProvider, useUsageLogsContext } from '../usage-logs-provider'
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 const longName = 'enterprise-production-failover-2026-without-any-short-alias'
 const log = usageLogSchema.parse({
@@ -84,6 +86,13 @@ function Fixture(props: {
 }
 
 function renderLogs(props: Parameters<typeof Fixture>[0] = {}) {
+  useAuthStore
+    .getState()
+    .auth.setUser({
+      id: 1,
+      username: 'production-admin',
+      role: (props.admin ?? true) ? ROLE.ADMIN : ROLE.USER,
+    })
   return render(
     <QueryClientProvider
       client={
@@ -104,10 +113,12 @@ it('shows model mismatch evidence when tapping the mobile model badge', async ()
       {
         ...log,
         other: JSON.stringify({
-          response_model: {
-            requested_model: longName,
-            upstream_model: 'mapped-model',
-            returned_model: 'unexpected-model',
+          admin_info: {
+            response_model: {
+              requested_model: longName,
+              upstream_model: 'mapped-model',
+              returned_model: 'unexpected-model',
+            },
           },
         }),
       },
@@ -161,10 +172,12 @@ it.each([false, true])(
           ...log,
           other: observed
             ? JSON.stringify({
-                response_model: {
-                  requested_model: longName,
-                  upstream_model: longName,
-                  returned_model: longName,
+                admin_info: {
+                  response_model: {
+                    requested_model: longName,
+                    upstream_model: longName,
+                    returned_model: longName,
+                  },
                 },
               })
             : log.other,
@@ -310,9 +323,11 @@ it('shows mapped model names in full when inspecting a mobile model badge', asyn
       {
         ...log,
         other: JSON.stringify({
-          is_model_mapped: true,
-          upstream_model_name:
-            'provider-production-mapped-model-with-a-long-name',
+          admin_info: {
+            is_model_mapped: true,
+            upstream_model_name:
+              'provider-production-mapped-model-with-a-long-name',
+          },
         }),
       },
     ],
@@ -325,6 +340,34 @@ it('shows mapped model names in full when inspecting a mobile model badge', asyn
       'provider-production-mapped-model-with-a-long-name'
     )
   ).toBeVisible()
+})
+
+it('hides mapping and response observations from non-admin viewers', () => {
+  for (const mapping of [
+    {
+      admin_info: {
+        is_model_mapped: true,
+        upstream_model_name: 'provider-production-mapped-model',
+      },
+    },
+    {
+      // legacy rows kept the fields at the public top level
+      is_model_mapped: true,
+      upstream_model_name: 'provider-production-mapped-model',
+    },
+  ]) {
+    renderLogs({
+      admin: false,
+      logs: [{ ...log, other: JSON.stringify(mapping) }],
+    })
+    expect(
+      screen.getByRole('button', { name: `Model: ${longName}` })
+    ).toBeVisible()
+    expect(
+      screen.queryByText('provider-production-mapped-model')
+    ).not.toBeInTheDocument()
+    cleanup()
+  }
 })
 
 it('shows loading placeholders without displaying stale log fields', () => {

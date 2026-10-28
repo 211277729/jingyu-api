@@ -108,6 +108,13 @@ export const USAGE_BILLING_PATH = {
 export type UsageBillingPath =
   (typeof USAGE_BILLING_PATH)[keyof typeof USAGE_BILLING_PATH]
 
+/** Upstream-declared model observation recorded for one relay request. */
+export interface ResponseModelObservation {
+  requested_model: string
+  upstream_model: string
+  returned_model: string
+}
+
 export interface ToolSurchargeItem {
   name: string
   count: number
@@ -150,6 +157,13 @@ export interface LogOtherData {
     // markup never reaches a user's own log projection.
     effective_group_ratio?: number
     task_plugin?: TaskPluginInfo
+    // Model routing/mapping diagnostics (admin only): the upstream model the
+    // request was actually routed to after channel model mapping.
+    is_model_mapped?: boolean
+    upstream_model_name?: string
+    // Diagnostic only. Whether the names disagree is derived in the UI via
+    // isResponseModelMismatch so old rows follow the current comparison rule.
+    response_model?: ResponseModelObservation
   }
   root_info?: {
     task_plugin?: TaskPluginRuntimeInfo
@@ -210,11 +224,9 @@ export interface LogOtherData {
   upstream_model_name?: string
   // Diagnostic only. Whether the names disagree is derived in the UI via
   // isResponseModelMismatch so old rows follow the current comparison rule.
-  response_model?: {
-    requested_model: string
-    upstream_model: string
-    returned_model: string
-  }
+  // Legacy placement: kept only for rows written before the mapping fields
+  // moved under admin_info; existing rows are pruned in the next cleanup.
+  response_model?: ResponseModelObservation
   audio_ratio?: number
   audio_completion_ratio?: number
   frt?: number

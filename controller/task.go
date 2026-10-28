@@ -458,6 +458,14 @@ func tasksToDto(tasks []*model.Task, fillUser bool, viewerRole int) []*dto.TaskD
 			}
 		}
 		item := relay.TaskModel2Dto(task)
+		if viewerRole < common.RoleAdminUser {
+			// 模型映射是路由细节，普通用户的任务 DTO 里剥掉 upstream_model_name，
+			// 只保留 origin_model_name；管理员可见完整 Properties。
+			if props, ok := item.Properties.(model.Properties); ok {
+				props.UpstreamModelName = ""
+				item.Properties = props
+			}
+		}
 		item.LegacyVideoAvailable = legacyVideoAvailable(task)
 		item.ResultDiscarded = task.PrivateData.ResultDiscarded
 		if task.Status == model.TaskStatusSuccess {

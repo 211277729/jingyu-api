@@ -40,7 +40,7 @@ import {
 } from '../lib/utils'
 import { ModelBadge, ResponseModelDetails } from './model-badge'
 import { StreamTpsCell, TimingMetricsCell } from './timing-metrics-cell'
-import { useUsageLogsContext } from './usage-logs-provider'
+import { useLogsViewScope, useUsageLogsContext } from './usage-logs-provider'
 
 type FieldName =
   | 'model'
@@ -63,13 +63,16 @@ export function CommonLogMobileCard<TData>(props: {
   cells: Map<string, Cell<TData, unknown>>
 }) {
   const { t } = useTranslation()
+  const { viewAccess, canManageScope } = useLogsViewScope()
   const context = useUsageLogsContext()
   const [selectedField, setSelectedField] = useState<FieldName | null>(null)
   const log = props.log
   const other = parseLogOther(log.other)
   const displayable = isDisplayableLogType(log.type)
   const timing = isTimingLogType(log.type)
-  const model = formatModelName(log)
+  // model mapping is admin-only data; the admin scope check keys off the
+  // effective view, same rule as the data fetch path.
+  const model = formatModelName(log, canManageScope && viewAccess !== 'self')
   const config = getLogTypeConfig(log.type)
   const group = log.group || other?.group || ''
   const groupRatio =

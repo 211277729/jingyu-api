@@ -234,26 +234,40 @@ export function getResponseTimeColor(
 }
 
 /**
- * Format model name with mapping indicator
+ * Format model name with mapping indicator.
+ *
+ * The mapping fields live under `other.admin_info` (backend strips admin_info
+ * from every non-admin log projection), so mapping info is only ever returned
+ * for admin views. Legacy rows written before the move used the public top
+ * level; admin views fall back to it until those rows are pruned, while
+ * customer views never read either source.
  */
-export function formatModelName(log: UsageLog): {
+export function formatModelName(
+  log: UsageLog,
+  isAdmin = false
+): {
   name: string
   isMapped: boolean
   actualModel?: string
   responseModel?: LogOtherData['response_model']
 } {
   const other = parseLogOther(log.other)
-  const isMapped = !!(
-    other?.is_model_mapped &&
-    other?.upstream_model_name &&
-    other.upstream_model_name !== ''
-  )
+  const admin = other?.admin_info
+  if (!isAdmin) {
+    return { name: log.model_name, isMapped: false }
+  }
 
+  const upstreamName = admin?.upstream_model_name ?? other?.upstream_model_name
+  const isMapped = !!(
+    upstreamName &&
+    (admin?.is_model_mapped ?? other?.is_model_mapped) &&
+    upstreamName !== ''
+  )
   return {
     name: log.model_name,
     isMapped,
-    actualModel: isMapped ? other.upstream_model_name : undefined,
-    responseModel: other?.response_model,
+    actualModel: isMapped ? upstreamName : undefined,
+    responseModel: admin?.response_model ?? other?.response_model,
   }
 }
 
