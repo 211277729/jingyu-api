@@ -177,20 +177,19 @@ export function PromptInputProvider({
   const openRef = useRef<() => void>(() => {})
 
   const add = useCallback((files: File[] | FileList) => {
-    const incoming = Array.from(files)
+    const incoming = [...files]
     if (incoming.length === 0) return
 
-    setAttachements((prev) =>
-      prev.concat(
-        incoming.map((file) => ({
-          id: nanoid(),
-          type: 'file' as const,
-          url: URL.createObjectURL(file),
-          mediaType: file.type,
-          filename: file.name,
-        }))
-      )
-    )
+    setAttachements((prev) => [
+      ...prev,
+      ...incoming.map((file) => ({
+        id: nanoid(),
+        type: 'file' as const,
+        url: URL.createObjectURL(file),
+        mediaType: file.type,
+        filename: file.name,
+      })),
+    ])
   }, [])
 
   const remove = useCallback((id: string) => {
@@ -509,7 +508,7 @@ export const PromptInput = ({
 
   const addLocal = useCallback(
     (fileList: File[] | FileList) => {
-      const incoming = Array.from(fileList)
+      const incoming = [...fileList]
       const accepted = incoming.filter((f) => matchesAccept(f))
       if (incoming.length && accepted.length === 0) {
         onError?.({
@@ -552,7 +551,7 @@ export const PromptInput = ({
             filename: file.name,
           })
         }
-        return prev.concat(next)
+        return [...prev, ...next]
       })
     },
     [matchesAccept, maxFiles, maxFileSize, onError, t]
@@ -691,8 +690,8 @@ export const PromptInput = ({
     const blob = await response.blob()
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result as string)
-      reader.onerror = reject
+      reader.addEventListener('loadend', () => resolve(reader.result as string))
+      reader.addEventListener('error', () => reject(reader.error))
       reader.readAsDataURL(blob)
     })
   }
@@ -760,9 +759,11 @@ export const PromptInput = ({
             controller.textInput.clear()
           }
         }
-      } catch (_error) {
+      } catch {
         // Don't clear on error - user may want to retry
       }
+    }).catch(() => {
+      // Blob conversion failure should not break the submit handler.
     })
   }
 
@@ -843,7 +844,7 @@ export const PromptInputTextarea = ({
       e.preventDefault()
       const lastAttachment =
         attachments.files.length > 0
-          ? attachments.files[attachments.files.length - 1]
+          ? attachments.files.at(-1)
           : undefined
       if (lastAttachment) {
         attachments.remove(lastAttachment.id)
@@ -1138,7 +1139,10 @@ export const PromptInputSpeechButton = ({
       speechRecognition.onresult = (event) => {
         let finalTranscript = ''
 
-        const results = Array.from(event.results)
+        const results: SpeechRecognitionResult[] = []
+        for (let i = 0; i < event.results.length; i++) {
+          results.push(event.results[i])
+        }
 
         for (const result of results) {
           if (result.isFinal) {

@@ -150,9 +150,9 @@ async function writePreviews(rows) {
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  const variant = args.includes('--transparent') ? 'transparent' : 'plated';
-  const wantPreview = args.includes('--preview');
+  const args = new Set(process.argv.slice(2));
+  const variant = args.has('--transparent') ? 'transparent' : 'plated';
+  const wantPreview = args.has('--preview');
 
   if (!existsSync(LOGO)) throw new Error(`找不到 logo：${LOGO}`);
 
@@ -160,7 +160,7 @@ async function main() {
   if (existsSync(OUTPUT)) {
     const stamp = new Date()
       .toISOString()
-      .replace(/[-:]/g, '')
+      .replaceAll(/[-:]/g, '')
       .replace('T', '-')
       .slice(0, 15);
     const backup = path.join(BACKUP_DIR, `favicon-old-${stamp}.ico`);
