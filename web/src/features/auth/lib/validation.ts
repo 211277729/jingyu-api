@@ -68,6 +68,27 @@ export function cleanBackupCode(code: string): string {
 }
 
 // ============================================================================
+// Phone Number Validation
+// ============================================================================
+
+const PHONE_PATTERN = /^1[3-9]\d{9}$/
+const PHONE_COUNTRY_PREFIX = /^(\+?86)/
+
+/**
+ * Strip the +86/86 country prefix and whitespace from a phone input
+ */
+export function normalizePhoneInput(value: string): string {
+  return value.replace(PHONE_COUNTRY_PREFIX, '').replaceAll(/\s/g, '')
+}
+
+/**
+ * Validate a mainland China phone number (accepts +86/86 prefix)
+ */
+export function isValidPhoneInput(value: string): boolean {
+  return PHONE_PATTERN.test(normalizePhoneInput(value))
+}
+
+// ============================================================================
 // Email Validation
 // ============================================================================
 

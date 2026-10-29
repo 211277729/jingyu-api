@@ -47,6 +47,8 @@ export interface UserProfile {
   role: number
   /** Email address */
   email?: string
+  /** Bound phone number (E.164, e.g. +8613812345678) */
+  phone?: string
   /** User group */
   group: string
   /** Current quota balance */

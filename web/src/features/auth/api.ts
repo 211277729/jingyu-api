@@ -283,3 +283,61 @@ export async function bindEmail(
   )
   return res.data
 }
+
+// ----------------------------------------------------------------------------
+// Phone number login / registration
+// ----------------------------------------------------------------------------
+
+export interface PhoneLoginPayload {
+  phone: string
+  code: string
+  turnstile?: string
+}
+
+// Send phone verification code for login / registration
+export async function sendPhoneVerification(
+  phone: string,
+  turnstile?: string
+): Promise<ApiResponse> {
+  const res = await api.get('/api/sms/verification', {
+    params: { phone, turnstile },
+  })
+  return res.data
+}
+
+// Phone verification code login; registers a new account when the phone is unknown
+export async function phoneLogin(
+  payload: PhoneLoginPayload
+): Promise<LoginResponse> {
+  const res = await api.post<LoginResponse>(
+    `/api/user/phone_login?turnstile=${payload.turnstile ?? ''}`,
+    {
+      phone: payload.phone,
+      code: payload.code,
+    },
+    { skipAuthRefresh: true }
+  )
+  return res.data
+}
+
+// Send phone verification code for binding (authenticated)
+export async function sendPhoneBindVerification(
+  phone: string,
+  turnstile?: string
+): Promise<ApiResponse> {
+  const res = await api.post(
+    '/api/user/phone_bind/send',
+    {},
+    { params: { phone, turnstile } }
+  )
+  return res.data
+}
+
+// Bind a phone number to the current account (authenticated)
+export async function phoneBind(payload: {
+  phone: string
+  code: string
+}): Promise<ApiResponse> {
+  const res = await api.post('/api/user/phone_bind', payload)
+  return res.data
+}

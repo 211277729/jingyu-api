@@ -26,6 +26,7 @@ import { useAuthStore } from '@/stores/auth-store'
 
 import { CheckinCalendarCard } from './components/checkin-calendar-card'
 import { LanguagePreferencesCard } from './components/language-preferences-card'
+import { PhoneBindCard } from './components/phone-bind-card'
 import { ProfileHeader } from './components/profile-header'
 import { ProfileSettingsCard } from './components/profile-settings-card'
 import { SidebarModulesCard } from './components/sidebar-modules-card'
@@ -67,6 +68,10 @@ export function Profile() {
                 <LanguagePreferencesCard
                   profile={profile}
                   onProfileUpdate={refreshProfile}
+                />
+                <PhoneBindCard
+                  phone={profile?.phone}
+                  enabled={status?.phone_login === true}
                 />
               </div>
 

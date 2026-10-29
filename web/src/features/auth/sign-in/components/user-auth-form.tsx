@@ -52,6 +52,7 @@ import {
   type PasskeyDomains,
 } from '@/features/auth/passkey/assertion'
 import { PasskeyDomainSelector } from '@/features/auth/passkey/components/passkey-domain-selector'
+import { PhoneLoginForm } from '@/features/auth/sign-in/components/phone-login-form'
 import type { AuthFormProps } from '@/features/auth/types'
 import { useStatus } from '@/hooks/use-status'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -59,6 +60,7 @@ import { isPasskeySupported as detectPasskeySupport } from '@/lib/passkey'
 import { AuthOperationError } from '@/lib/secure-verification'
 import { createServerError } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export function UserAuthForm({
   className,
@@ -67,6 +69,7 @@ export function UserAuthForm({
 }: AuthFormProps) {
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
+  const [loginMode, setLoginMode] = useState<'password' | 'phone'>('password')
   const [wechatCode, setWeChatCode] = useState('')
   const [agreedToLegal, setAgreedToLegal] = useState(false)
   const [passkeySupported, setPasskeySupported] = useState(false)
@@ -91,6 +94,9 @@ export function UserAuthForm({
     (status?.password_login_enabled ??
       status?.data?.password_login_enabled ??
       true) !== false
+  const phoneLoginEnabled = Boolean(
+    status?.phone_login ?? status?.data?.phone_login
+  )
   const passwordLoginEncryptionEnabled =
     (status?.password_login_encryption_enabled ??
       status?.data?.password_login_encryption_enabled ??
@@ -136,6 +142,13 @@ export function UserAuthForm({
       .then(setPasskeySupported)
       .catch(() => setPasskeySupported(false))
   }, [])
+
+  // 管理员关闭了密码登录时，默认切到手机号登录
+  useEffect(() => {
+    if (!passwordLoginEnabled && phoneLoginEnabled) {
+      setLoginMode('phone')
+    }
+  }, [passwordLoginEnabled, phoneLoginEnabled])
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -351,8 +364,28 @@ export function UserAuthForm({
       >
         {hasAlternativeLogin && alternativeLoginMethods}
 
-        {passwordLoginEnabled && (
+        {(passwordLoginEnabled || phoneLoginEnabled) && (
           <>
+            {passwordLoginEnabled && phoneLoginEnabled && (
+              <Tabs
+                value={loginMode}
+                onValueChange={(value) =>
+                  setLoginMode(value as 'password' | 'phone')
+                }
+              >
+                <TabsList className='grid w-full grid-cols-2'>
+                  <TabsTrigger value='password'>
+                    {t('Account login')}
+                  </TabsTrigger>
+                  <TabsTrigger value='phone'>
+                    {t('Phone number login')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+
+            {passwordLoginEnabled && loginMode === 'password' && (
+              <>
             {/* Username Field */}
             <FormField
               control={form.control}
@@ -415,6 +448,17 @@ export function UserAuthForm({
                   onExpire={() => setTurnstileToken('')}
                 />
               </div>
+            )}
+              </>
+            )}
+
+            {phoneLoginEnabled && loginMode === 'phone' && (
+              <PhoneLoginForm
+                redirectTo={redirectTo}
+                legalOk={!requiresLegalConsent || agreedToLegal}
+                legalErrorMessage={legalConsentErrorMessage}
+                loginFailedMessage={loginFailedMessage}
+              />
             )}
           </>
         )}

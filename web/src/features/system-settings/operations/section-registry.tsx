@@ -23,6 +23,7 @@ import { WorkerSettingsSection } from '../integrations/worker-settings-section'
 import { LogSettingsSection } from '../maintenance/log-settings-section'
 import { PerformanceSection } from '../maintenance/performance-section'
 import { UpdateCheckerSection } from '../maintenance/update-checker-section'
+import { SmsSettingsSection } from './sms-settings-section'
 import type { OperationsSettings } from '../types'
 import { createSectionRegistry } from '../utils/section-registry'
 
@@ -106,6 +107,40 @@ const OPERATIONS_SECTIONS = [
           WorkerValidKey: settings.WorkerValidKey,
           WorkerAllowHttpImageRequestEnabled:
             settings.WorkerAllowHttpImageRequestEnabled,
+        }}
+      />
+    ),
+  },
+  {
+    id: 'sms',
+    titleKey: 'SMS Settings',
+    build: (settings: OperationsSettings) => (
+      <SmsSettingsSection
+        defaultValues={{
+          'sms_setting.enabled': settings['sms_setting.enabled'] ?? false,
+          'sms_setting.provider':
+            (settings['sms_setting.provider'] as 'aliyun' | 'tencent' | 'debug') ??
+            'aliyun',
+          'sms_setting.aliyun_access_key_id':
+            settings['sms_setting.aliyun_access_key_id'] ?? '',
+          'sms_setting.aliyun_access_secret':
+            settings['sms_setting.aliyun_access_secret'] ?? '',
+          'sms_setting.aliyun_sign_name':
+            settings['sms_setting.aliyun_sign_name'] ?? '',
+          'sms_setting.aliyun_template_code':
+            settings['sms_setting.aliyun_template_code'] ?? '',
+          'sms_setting.tencent_secret_id':
+            settings['sms_setting.tencent_secret_id'] ?? '',
+          'sms_setting.tencent_secret':
+            settings['sms_setting.tencent_secret'] ?? '',
+          'sms_setting.tencent_sdk_app_id':
+            settings['sms_setting.tencent_sdk_app_id'] ?? '',
+          'sms_setting.tencent_sign_name':
+            settings['sms_setting.tencent_sign_name'] ?? '',
+          'sms_setting.tencent_template_id':
+            settings['sms_setting.tencent_template_id'] ?? '',
+          'sms_setting.tencent_region':
+            settings['sms_setting.tencent_region'] ?? '',
         }}
       />
     ),

@@ -69,6 +69,18 @@ const defaultOperationsSettings: OperationsSettings = {
   'perf_metrics_setting.published_tps_factor': 1,
   'perf_metrics_setting.published_tps_floor': 0,
   'perf_metrics_setting.published_tps_ceiling': 0,
+  'sms_setting.enabled': false,
+  'sms_setting.provider': 'aliyun',
+  'sms_setting.aliyun_access_key_id': '',
+  'sms_setting.aliyun_access_secret': '',
+  'sms_setting.aliyun_sign_name': '',
+  'sms_setting.aliyun_template_code': '',
+  'sms_setting.tencent_secret_id': '',
+  'sms_setting.tencent_secret': '',
+  'sms_setting.tencent_sdk_app_id': '',
+  'sms_setting.tencent_sign_name': '',
+  'sms_setting.tencent_template_id': '',
+  'sms_setting.tencent_region': '',
 }
 
 export function OperationsSettings() {

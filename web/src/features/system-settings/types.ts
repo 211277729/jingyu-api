@@ -420,6 +420,18 @@ export type OperationsSettings = {
   'perf_metrics_setting.published_tps_factor': number
   'perf_metrics_setting.published_tps_floor': number
   'perf_metrics_setting.published_tps_ceiling': number
+  'sms_setting.enabled': boolean
+  'sms_setting.provider': 'aliyun' | 'tencent' | 'debug'
+  'sms_setting.aliyun_access_key_id': string
+  'sms_setting.aliyun_access_secret': string
+  'sms_setting.aliyun_sign_name': string
+  'sms_setting.aliyun_template_code': string
+  'sms_setting.tencent_secret_id': string
+  'sms_setting.tencent_secret': string
+  'sms_setting.tencent_sdk_app_id': string
+  'sms_setting.tencent_sign_name': string
+  'sms_setting.tencent_template_id': string
+  'sms_setting.tencent_region': string
 }
 
 export type SecuritySettings = {
