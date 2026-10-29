@@ -1,7 +1,7 @@
 # 高级自定义渠道改进备忘：/v1/responses 入口支持 Claude 模型（Responses → Anthropic Messages）
 
 > 记录日期：2026-10-22　|　状态：暂不实施，先用 chat 入口分流规则
-> 仓库：jjingyu-api（基于 QuantumNous/new-api）
+> 仓库：jingyu-api（基于 QuantumNous/new-api）
 
 ## 背景与目标
 
@@ -49,7 +49,7 @@
 
 ```powershell
 # relaykit 模块独立性（AGENTS.md 硬约束）
-cd D:\path\to\jjingyu-api\relaykit
+cd D:\path\to\jingyu-api\relaykit
 GOWORK=off go build ./...
 GOWORK=off go test ./relayconvert/...
 
