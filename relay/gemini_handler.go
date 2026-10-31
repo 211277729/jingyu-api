@@ -49,7 +49,16 @@ func GeminiHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 	adaptor.Init(info)
 
 	if info.ChannelSetting.SystemPrompt != "" {
-		if request.SystemInstructions == nil {
+		// Force override discards the user-provided system instructions entirely
+		// and sends only the channel system prompt.
+		if info.ChannelSetting.SystemPromptForceOverride {
+			common.SetContextKey(c, constant.ContextKeySystemPromptOverride, true)
+			request.SystemInstructions = &dto.GeminiChatContent{
+				Parts: []dto.GeminiPart{
+					{Text: info.ChannelSetting.SystemPrompt},
+				},
+			}
+		} else if request.SystemInstructions == nil {
 			request.SystemInstructions = &dto.GeminiChatContent{
 				Parts: []dto.GeminiPart{
 					{Text: info.ChannelSetting.SystemPrompt},

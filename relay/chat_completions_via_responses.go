@@ -29,6 +29,26 @@ func applySystemPromptIfNeeded(c *gin.Context, info *relaycommon.RelayInfo, requ
 
 	systemRole := request.GetSystemRoleName()
 
+	// Force override discards every user-provided system prompt and sends only
+	// the channel system prompt. Tool-loading system messages (see below) are
+	// not system prompts and are preserved.
+	if info.ChannelSetting.SystemPromptForceOverride {
+		common.SetContextKey(c, constant.ContextKeySystemPromptOverride, true)
+		messages := make([]dto.Message, 0, len(request.Messages)+1)
+		messages = append(messages, dto.Message{
+			Role:    systemRole,
+			Content: info.ChannelSetting.SystemPrompt,
+		})
+		for _, message := range request.Messages {
+			if message.Role == systemRole && len(message.Tools) == 0 {
+				continue
+			}
+			messages = append(messages, message)
+		}
+		request.Messages = messages
+		return
+	}
+
 	// A Kimi K3 dynamic tool loading message ({"role":"system","tools":[...]})
 	// declares tools rather than a system prompt and must never receive content.
 	containSystemPrompt := false

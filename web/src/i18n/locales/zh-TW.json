@@ -6136,6 +6136,8 @@
     "System prompt": "系統提示詞",
     "System Prompt": "系統提示詞",
     "System Prompt Concatenation": "系統提示詞連接",
+    "Force System Prompt Override": "系統提示詞強制覆蓋",
+    "Replace the user system prompt entirely with this prompt": "開啟後捨棄用戶請求中的系統提示詞，僅發送本提示詞",
     "System Prompt Override": "系統提示覆蓋",
     "System retry exclusion": "系統禁止重試的情況",
     "System settings": "系統設定",

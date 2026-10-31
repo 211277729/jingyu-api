@@ -308,6 +308,7 @@ const SENSITIVE_FORM_FIELDS = [
   'responses_websocket_enabled',
   'system_prompt',
   'system_prompt_override',
+  'system_prompt_force_override',
   'allow_service_tier',
   'disable_store',
   'allow_safety_identifier',
@@ -1855,6 +1856,30 @@ export function ChannelMutateDrawer({
             <FormLabel>{t('System Prompt Concatenation')}</FormLabel>
             <FormDescription>
               {t('Concatenate channel system prompt with user&apos;s prompt')}
+            </FormDescription>
+          </div>
+          <FormControl>
+            <Switch
+              disabled={sensitiveLocked || form.watch('system_prompt_force_override')}
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+          </FormControl>
+        </FormItem>
+      )}
+    />
+  )
+
+  const systemPromptForceOverrideFields = (
+    <FormField
+      control={form.control}
+      name='system_prompt_force_override'
+      render={({ field }) => (
+        <FormItem className='flex items-center justify-between'>
+          <div className='space-y-0.5'>
+            <FormLabel>{t('Force System Prompt Override')}</FormLabel>
+            <FormDescription>
+              {t('Replace the user system prompt entirely with this prompt')}
             </FormDescription>
           </div>
           <FormControl>
@@ -4816,6 +4841,7 @@ export function ChannelMutateDrawer({
                 {passthroughFields}
                 {systemPromptFields}
                 {systemPromptOverrideFields}
+                {systemPromptForceOverrideFields}
               </fieldset>
             </div>
             {fieldPassthroughFields}

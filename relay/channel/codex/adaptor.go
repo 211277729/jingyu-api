@@ -58,7 +58,15 @@ func (a *Adaptor) ConvertOpenAIResponsesRequest(c *gin.Context, info *relaycommo
 	if info != nil && info.ChannelSetting.SystemPrompt != "" {
 		systemPrompt := info.ChannelSetting.SystemPrompt
 
-		if len(request.Instructions) == 0 {
+		// Force override discards the user-provided instructions entirely and
+		// sends only the channel system prompt.
+		if info.ChannelSetting.SystemPromptForceOverride {
+			if b, err := common.Marshal(systemPrompt); err == nil {
+				request.Instructions = b
+			} else {
+				return nil, err
+			}
+		} else if len(request.Instructions) == 0 {
 			if b, err := common.Marshal(systemPrompt); err == nil {
 				request.Instructions = b
 			} else {

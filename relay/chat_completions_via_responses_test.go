@@ -277,3 +277,80 @@ func TestApplySystemPromptIfNeededSkipsToolLoadingMessages(t *testing.T) {
 		})
 	}
 }
+
+func TestApplySystemPromptIfNeededForceOverride(t *testing.T) {
+	tools := json.RawMessage(`[{"type":"function","function":{"name":"get_current_time","parameters":{"type":"object","properties":{"city":{"type":"string"}}}}}]`)
+	toolLoading := dto.Message{Role: "system", Tools: tools}
+	user := dto.Message{Role: "user", Content: "What time is it in Beijing?"}
+	channelSystem := dto.Message{Role: "system", Content: "Answer in English."}
+
+	tests := []struct {
+		name         string
+		messages     []dto.Message
+		wantMessages []dto.Message
+	}{
+		{
+			name:     "force override discards the user system prompt",
+			messages: []dto.Message{{Role: "system", Content: "You are Kimi."}, user},
+			wantMessages: []dto.Message{
+				channelSystem,
+				user,
+			},
+		},
+		{
+			name:     "force override keeps tool loading messages",
+			messages: []dto.Message{toolLoading, {Role: "system", Content: "You are Kimi."}, user},
+			wantMessages: []dto.Message{
+				channelSystem,
+				toolLoading,
+				user,
+			},
+		},
+		{
+			name:     "force override injects when the request has no system prompt",
+			messages: []dto.Message{toolLoading, user},
+			wantMessages: []dto.Message{
+				channelSystem,
+				toolLoading,
+				user,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			c, _ := gin.CreateTestContext(httptest.NewRecorder())
+			c.Request = httptest.NewRequest(http.MethodPost, "/v1/chat/completions", nil)
+			info := &relaycommon.RelayInfo{
+				ChannelMeta: &relaycommon.ChannelMeta{
+					ChannelSetting: dto.ChannelSettings{
+						SystemPrompt:              "Answer in English.",
+						SystemPromptOverride:      true,
+						SystemPromptForceOverride: true,
+					},
+				},
+			}
+			request := &dto.GeneralOpenAIRequest{
+				Model:    "kimi-k3",
+				Messages: append([]dto.Message(nil), tt.messages...),
+			}
+
+			applySystemPromptIfNeeded(c, info, request)
+
+			require.Len(t, request.Messages, len(tt.wantMessages))
+			for i, want := range tt.wantMessages {
+				got := request.Messages[i]
+				assert.Equal(t, want.Role, got.Role, "message %d role", i)
+				assert.Equal(t, want.Content, got.Content, "message %d content", i)
+				if len(want.Tools) > 0 {
+					assert.JSONEq(t, string(want.Tools), string(got.Tools), "message %d tools", i)
+				} else {
+					assert.Empty(t, got.Tools, "message %d tools", i)
+				}
+			}
+			_, overrideSet := common.GetContextKey(c, constant.ContextKeySystemPromptOverride)
+			assert.True(t, overrideSet)
+		})
+	}
+}

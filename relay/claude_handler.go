@@ -49,7 +49,12 @@ func ClaudeHelper(c *gin.Context, info *relaycommon.RelayInfo) (newAPIError *typ
 	adaptor.Init(info)
 
 	if info.ChannelSetting.SystemPrompt != "" {
-		if request.System == nil {
+		// Force override discards the user-provided system prompt entirely and
+		// sends only the channel system prompt.
+		if info.ChannelSetting.SystemPromptForceOverride {
+			common.SetContextKey(c, constant.ContextKeySystemPromptOverride, true)
+			request.SetStringSystem(info.ChannelSetting.SystemPrompt)
+		} else if request.System == nil {
 			request.SetStringSystem(info.ChannelSetting.SystemPrompt)
 		} else if info.ChannelSetting.SystemPromptOverride {
 			common.SetContextKey(c, constant.ContextKeySystemPromptOverride, true)

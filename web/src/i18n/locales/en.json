@@ -6136,6 +6136,8 @@
     "System prompt": "System prompt",
     "System Prompt": "System Prompt",
     "System Prompt Concatenation": "System Prompt Concatenation",
+    "Force System Prompt Override": "Force System Prompt Override",
+    "Replace the user system prompt entirely with this prompt": "Replace the user system prompt entirely with this prompt",
     "System Prompt Override": "System Prompt Override",
     "System retry exclusion": "System retry exclusion",
     "System settings": "System settings",
