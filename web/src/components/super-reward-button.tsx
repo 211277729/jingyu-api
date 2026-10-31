@@ -38,7 +38,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 
 /**
- * The "Super Rewards" pill shown in the site header.
+ * The "Daily Rewards" pill shown in the site header.
  *
  * A gradient call-to-action that funnels visitors into the two growth
  * loops: daily check-in and the referral program. For guests it sends
@@ -103,9 +103,9 @@ export function SuperRewardButton({ className }: { className?: string }) {
       <span className='pointer-events-none absolute top-1 left-2 size-1 rounded-full bg-white/60' />
       <span className='pointer-events-none absolute right-3 bottom-1 size-1.5 rounded-full bg-white/40' />
       <Gift className='size-3.5' />
-      <span>{t('Super Rewards')}</span>
+      <span>{t('Daily Rewards')}</span>
       {checkinEnabled && !checkinStatusLoading && !checkedToday ? (
-        <span className='bg-background absolute -top-1 -right-1 size-2.5 rounded-full ring-2 ring-red-500' />
+        <span className='bg-red-500 ring-background absolute -top-0.5 -right-1 size-2 rounded-full ring-2' />
       ) : null}
     </Button>
   )

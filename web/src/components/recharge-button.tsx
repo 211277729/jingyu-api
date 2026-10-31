@@ -26,7 +26,7 @@ import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 
 /**
- * The "Recharge | balance" pill shown next to the Super Rewards entry.
+ * The "Recharge | balance" pill shown next to the Daily Rewards entry.
  *
  * Only rendered for signed-in users; clicking it jumps to the wallet
  * page where top-up happens. The balance is a quick glance value from
