@@ -61,7 +61,13 @@ const schema = (t: (key: string) => string) =>
       path: ['maxReward'],
     })
 
-type Values = z.infer<ReturnType<typeof schema>>
+// 表单状态保存原始输入字符串（保证 "0." 之类中途输入不被清除），提交时由 zod 换算为数字
+type FormValues = {
+  enabled: boolean
+  minReward: string | number
+  maxReward: string | number
+}
+type ParsedValues = { enabled: boolean; minReward: number; maxReward: number }
 
 export function CheckinSettingsSection({
   defaultValues,
@@ -75,19 +81,27 @@ export function CheckinSettingsSection({
   const { t } = useTranslation()
   const updateOption = useUpdateOption()
 
-  const form = useForm<Values>({
-    resolver: zodResolver(schema(t)) as unknown as Resolver<Values>,
+  const form = useForm<FormValues, unknown, ParsedValues>({
+    resolver: zodResolver(schema(t)) as unknown as Resolver<
+      FormValues,
+      unknown,
+      ParsedValues
+    >,
     defaultValues: {
       enabled: defaultValues.enabled,
-      minReward: quotaUnitsToDollars(defaultValues.minQuotaUnits),
-      maxReward: quotaUnitsToDollars(defaultValues.maxQuotaUnits),
+      minReward: formatAmountInput(
+        quotaUnitsToDollars(defaultValues.minQuotaUnits)
+      ),
+      maxReward: formatAmountInput(
+        quotaUnitsToDollars(defaultValues.maxQuotaUnits)
+      ),
     },
   })
 
   const { isDirty, isSubmitting } = form.formState
   const enabled = form.watch('enabled')
 
-  async function onSubmit(values: Values) {
+  async function onSubmit(values: ParsedValues) {
     const updates: Array<{ key: string; value: string }> = []
 
     if (values.enabled !== defaultValues.enabled) {
@@ -122,7 +136,11 @@ export function CheckinSettingsSection({
       await updateOption.mutateAsync(update)
     }
 
-    form.reset(values)
+    form.reset({
+      enabled: values.enabled,
+      minReward: formatAmountInput(values.minReward),
+      maxReward: formatAmountInput(values.maxReward),
+    })
   }
 
   return (
@@ -174,7 +192,6 @@ export function CheckinSettingsSection({
                         step={0.01}
                         placeholder={t('0.1')}
                         {...field}
-                        value={formatAmountInput(field.value)}
                       />
                     </FormControl>
                     <FormDescription>
@@ -200,7 +217,6 @@ export function CheckinSettingsSection({
                         step={0.01}
                         placeholder={t('0.5')}
                         {...field}
-                        value={formatAmountInput(field.value)}
                       />
                     </FormControl>
                     <FormDescription>
