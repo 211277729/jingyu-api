@@ -10,9 +10,11 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/constant"
+	appdto "github.com/QuantumNous/new-api/dto"
 	"github.com/QuantumNous/new-api/i18n"
 	"github.com/QuantumNous/new-api/model"
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
+	relaycommon "github.com/QuantumNous/new-api/relay/common"
 	"github.com/QuantumNous/new-api/relaykit/dto"
 	"github.com/QuantumNous/new-api/setting/model_setting"
 	"github.com/gin-gonic/gin"
@@ -361,4 +363,36 @@ func TestSharedEndpointRebindsToBoundNewAPIExtension(t *testing.T) {
 	require.Nil(t, SetupContextForSelectedChannel(c, channel, "task-model"))
 	assert.Equal(t, "alpha", c.GetString("task_plugin_key"), "the first bound candidate executes regardless of the earlier pin")
 	assert.Equal(t, "alpha", c.MustGet(jsplugin.ContextKeyPinnedEndpoint).(jsplugin.PinnedEndpoint).Plugin.Meta.Key)
+}
+
+// TestRelayRequestPathForChannelPlayground guards the playground routing
+// regression: /pg/chat/completions is an internal path that the relay layer
+// normalizes to /v1/chat/completions (relay/common/relay_info.go), and
+// Advanced Custom route tables only declare /v1 endpoints. Without the
+// normalization the request-path filter rejects every type-58 channel and the
+// playground reports "no available channel" for every group.
+func TestRelayRequestPathForChannelPlayground(t *testing.T) {
+	assert.Equal(t, "/v1/chat/completions", relaycommon.RelayRequestPathForChannel("/pg/chat/completions"))
+	assert.Equal(t, "/v1/chat/completions", relaycommon.RelayRequestPathForChannel("/v1/chat/completions"))
+
+	workBuddyLike := &model.Channel{Id: 910001, Type: constant.ChannelTypeAdvancedCustom, Status: common.ChannelStatusEnabled}
+	workBuddyLike.SetOtherSettings(dto.ChannelOtherSettings{
+		AdvancedCustom: &dto.AdvancedCustomConfig{
+			Routes: []dto.AdvancedCustomRoute{{
+				IncomingPath: "/v1/chat/completions",
+			}, {
+				IncomingPath: "/v1/models",
+			}},
+		},
+	})
+
+	rawPlayground := []appdto.ChannelFilter{{Kind: appdto.FilterRequestPath, RequestPath: "/pg/chat/completions"}}
+	ok, kind := model.ChannelSatisfiesFilters(workBuddyLike, "deepseek/deepseek-v4.1-flash", rawPlayground)
+	assert.False(t, ok, "the raw /pg path must not match a /v1 route table")
+	assert.Equal(t, appdto.FilterRequestPath, kind)
+
+	normalized := []appdto.ChannelFilter{{Kind: appdto.FilterRequestPath, RequestPath: relaycommon.RelayRequestPathForChannel("/pg/chat/completions")}}
+	ok, kind = model.ChannelSatisfiesFilters(workBuddyLike, "deepseek/deepseek-v4.1-flash", normalized)
+	assert.True(t, ok, "the normalized path must select the channel")
+	assert.Empty(t, kind)
 }
