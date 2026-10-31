@@ -153,3 +153,51 @@ func TestSessionLimitDoesNotRecordRejectedLoginAsSuccessful(t *testing.T) {
 	require.NoError(t, db.First(&stored, user.Id).Error)
 	assert.Equal(t, previousLastLoginAt, stored.LastLoginAt)
 }
+
+func TestLoginBundleIncludesAffiliateFields(t *testing.T) {
+	previousDB := model.DB
+	previousRedis := common.RedisEnabled
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&model.User{}, &model.UserSession{}, &model.TwoFA{}, &model.PasskeyCredential{}))
+	model.DB = db
+	common.RedisEnabled = false
+	t.Cleanup(func() {
+		model.DB = previousDB
+		common.RedisEnabled = previousRedis
+	})
+
+	user := &model.User{
+		Username: "aff-bundle-user", Password: "unused", Role: common.RoleCommonUser,
+		Status: common.UserStatusEnabled, Group: "default", AuthVersion: 1,
+		AffCode: "afftest", AffCount: 3, AffQuota: 123456, AffHistoryQuota: 654321,
+	}
+	require.NoError(t, db.Create(user).Error)
+
+	gin.SetMode(gin.TestMode)
+	recorder := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(recorder)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/user/login", nil)
+	setupLogin(user, nil, c)
+
+	require.Equal(t, http.StatusOK, recorder.Code, recorder.Body.String())
+	var response struct {
+		Success bool `json:"success"`
+		Data    struct {
+			User struct {
+				Id              int    `json:"id"`
+				AffCode         string `json:"aff_code"`
+				AffCount        int    `json:"aff_count"`
+				AffQuota        int    `json:"aff_quota"`
+				AffHistoryQuota int    `json:"aff_history_quota"`
+			} `json:"user"`
+		} `json:"data"`
+	}
+	require.NoError(t, common.Unmarshal(recorder.Body.Bytes(), &response))
+	require.True(t, response.Success, recorder.Body.String())
+	assert.Equal(t, user.Id, response.Data.User.Id)
+	assert.Equal(t, "afftest", response.Data.User.AffCode)
+	assert.Equal(t, 3, response.Data.User.AffCount)
+	assert.Equal(t, 123456, response.Data.User.AffQuota)
+	assert.Equal(t, 654321, response.Data.User.AffHistoryQuota)
+}
