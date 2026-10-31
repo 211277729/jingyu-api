@@ -319,7 +319,7 @@ export function PublicHeader(props: PublicHeaderProps) {
             </div>
 
             {/* Mobile: compact actions + hamburger */}
-            <div className='flex shrink-0 items-center gap-2 lg:hidden'>
+            <div className='flex shrink-0 items-center gap-1.5 lg:hidden'>
               <SuperRewardButton />
               {!loading && isAuthenticated && <RechargeButton />}
               {showThemeSwitch && <ThemeSwitch />}

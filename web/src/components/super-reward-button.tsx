@@ -97,13 +97,14 @@ export function SuperRewardButton({ className }: { className?: string }) {
   const pill = (
     <Button
       onClick={handlePillClick}
-      className='super-reward-pill relative h-8 gap-1.5 overflow-visible rounded-full px-3 text-xs font-bold text-white shadow-[0_2px_12px_-2px_rgba(168,85,247,0.55)] transition-[filter] hover:brightness-110'
+      className='super-reward-pill relative h-8 w-8 justify-center overflow-visible rounded-full text-xs font-bold text-white shadow-[0_2px_12px_-2px_rgba(168,85,247,0.55)] transition-[filter] hover:brightness-110 sm:w-auto sm:px-3'
     >
       {/* Decorative sparkle dots, echoing the peer-site pill style */}
       <span className='pointer-events-none absolute top-1 left-2 size-1 rounded-full bg-white/60' />
       <span className='pointer-events-none absolute right-3 bottom-1 size-1.5 rounded-full bg-white/40' />
-      <Gift className='size-3.5' />
-      <span>{t('Daily Rewards')}</span>
+      <Gift className='size-4 sm:size-3.5' />
+      {/* Mobile H5: icon-only to keep the header on one line */}
+      <span className='hidden sm:inline'>{t('Daily Rewards')}</span>
       {checkinEnabled && !checkinStatusLoading && !checkedToday ? (
         <span className='bg-red-500 ring-background absolute -top-0.5 -right-1 size-2 rounded-full ring-2' />
       ) : null}

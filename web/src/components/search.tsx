@@ -30,30 +30,28 @@ type SearchProps = {
   placeholder?: string
 }
 
+/**
+ * Compact search trigger shown in headers. Renders an icon-only button that
+ * opens the command/search dialog — the placeholder text survives as the
+ * accessible label so the control stays usable on narrow mobile headers.
+ */
 export function Search({ className = '', placeholder }: SearchProps) {
   const { t } = useTranslation()
   const { setOpen } = useSearch()
-  const resolvedPlaceholder = placeholder ?? t('Search')
+  const label = placeholder ?? t('Search')
   return (
     <Button
-      variant='outline'
+      variant='ghost'
+      size='icon'
       className={cn(
-        'bg-muted/25 group text-muted-foreground hover:bg-accent relative h-8 w-full flex-1 justify-start rounded-md text-sm font-normal shadow-none sm:w-40 sm:pe-12 md:flex-none lg:w-52 xl:w-64',
+        'text-muted-foreground hover:text-foreground hover:bg-accent size-9 shrink-0',
         className
       )}
       onClick={() => setOpen(true)}
-      aria-label={resolvedPlaceholder}
+      aria-label={label}
+      title={label}
     >
-      <SearchIcon
-        aria-hidden='true'
-        className='absolute start-1.5 top-1/2 -translate-y-1/2'
-        size={16}
-      />
-      <span className='ms-4'>{resolvedPlaceholder}</span>
-      <kbd className='bg-muted group-hover:bg-accent pointer-events-none absolute end-[0.3rem] top-[0.3rem] hidden h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex'>
-        <span className='text-xs'>⌘</span>
-        {t('K')}
-      </kbd>
+      <SearchIcon aria-hidden='true' className='size-[1.2rem]' />
     </Button>
   )
 }

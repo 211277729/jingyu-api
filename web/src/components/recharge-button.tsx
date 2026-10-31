@@ -46,10 +46,11 @@ export function RechargeButton({ className }: { className?: string }) {
       variant='outline'
       onClick={() => navigate({ to: '/wallet' })}
       className={cn(
-        'bg-background/80 h-8 gap-1.5 rounded-full px-3 text-xs font-semibold shadow-sm',
+        'bg-background/80 hidden h-8 gap-1.5 rounded-full px-3 text-xs font-semibold shadow-sm sm:inline-flex',
         className
       )}
       aria-label={t('Recharge')}
+      title={t('Recharge')}
     >
       <Wallet className='text-primary size-3.5' />
       <span>{t('Recharge')}</span>

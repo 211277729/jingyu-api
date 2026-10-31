@@ -133,9 +133,7 @@ export function AppHeader({
           )}
           <SuperRewardButton />
           <RechargeButton />
-          {showSearch && (
-            <Search className='w-8 flex-none [&>span]:hidden sm:[&>span]:inline' />
-          )}
+          {showSearch && <Search className='shrink-0' />}
           {showNotifications && (
             <NotificationPopover
               open={notifications.popoverOpen}
