@@ -44,6 +44,7 @@ import { OAuthProviders } from '@/features/auth/components/oauth-providers'
 import { registerFormSchema } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
 import { useEmailVerification } from '@/features/auth/hooks/use-email-verification'
+import { useLegalConsentPrompt } from '@/features/auth/hooks/use-legal-consent-prompt'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 import {
   getAffiliateCode,
@@ -67,7 +68,6 @@ export function SignUpForm({
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
   const [isWeChatSubmitting, setIsWeChatSubmitting] = useState(false)
   const [turnstileWidgetKey, setTurnstileWidgetKey] = useState(0)
-  const legalConsentErrorMessage = t('Please agree to the legal terms first')
 
   const { status } = useStatus()
   const {
@@ -78,6 +78,11 @@ export function SignUpForm({
     validateTurnstile,
   } = useTurnstile()
   const { redirectToLogin, handleLoginResult } = useAuthRedirect()
+  const { confirmLegalConsent, legalConsentDialog } = useLegalConsentPrompt(
+    status,
+    agreedToLegal,
+    () => setAgreedToLegal(true)
+  )
   const {
     isSending: isSendingCode,
     secondsLeft,
@@ -140,8 +145,7 @@ export function SignUpForm({
   }, [])
 
   async function onSubmit(data: z.infer<typeof registerFormSchema>) {
-    if (requiresLegalConsent && !agreedToLegal) {
-      toast.error(legalConsentErrorMessage)
+    if (!(await confirmLegalConsent())) {
       return
     }
 
@@ -192,9 +196,8 @@ export function SignUpForm({
     }
   }
 
-  const handleOpenWeChatDialog = () => {
-    if (requiresLegalConsent && !agreedToLegal) {
-      toast.error(legalConsentErrorMessage)
+  const handleOpenWeChatDialog = async () => {
+    if (!(await confirmLegalConsent())) {
       return
     }
 
@@ -458,6 +461,8 @@ export function SignUpForm({
           </div>
         </Dialog>
       )}
+
+      {legalConsentDialog}
     </Form>
   )
 }

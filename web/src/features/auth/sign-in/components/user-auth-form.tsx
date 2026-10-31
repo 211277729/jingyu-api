@@ -44,6 +44,7 @@ import { LegalConsent } from '@/features/auth/components/legal-consent'
 import { OAuthProviders } from '@/features/auth/components/oauth-providers'
 import { loginFormSchema } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
+import { useLegalConsentPrompt } from '@/features/auth/hooks/use-legal-consent-prompt'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 import { beginPasskeyLogin, finishPasskeyLogin } from '@/features/auth/passkey'
 import {
@@ -83,7 +84,6 @@ export function UserAuthForm({
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
   const [isWeChatSubmitting, setIsWeChatSubmitting] = useState(false)
   const [turnstileWidgetKey, setTurnstileWidgetKey] = useState(0)
-  const legalConsentErrorMessage = t('Please agree to the legal terms first')
   const loginFailedMessage = t('Login failed')
 
   const { status } = useStatus()
@@ -109,6 +109,11 @@ export function UserAuthForm({
     validateTurnstile,
   } = useTurnstile()
   const { handleLoginResult } = useAuthRedirect()
+  const { confirmLegalConsent, legalConsentDialog } = useLegalConsentPrompt(
+    status,
+    agreedToLegal,
+    () => setAgreedToLegal(true)
+  )
 
   const hasUserAgreement = Boolean(status?.user_agreement_enabled)
   const hasPrivacyPolicy = Boolean(status?.privacy_policy_enabled)
@@ -173,8 +178,7 @@ export function UserAuthForm({
   }, [status])
 
   async function onSubmit(data: z.infer<typeof loginFormSchema>) {
-    if (requiresLegalConsent && !agreedToLegal) {
-      toast.error(legalConsentErrorMessage)
+    if (!(await confirmLegalConsent())) {
       return
     }
 
@@ -210,9 +214,8 @@ export function UserAuthForm({
     }
   }
 
-  const handleOpenWeChatDialog = () => {
-    if (requiresLegalConsent && !agreedToLegal) {
-      toast.error(legalConsentErrorMessage)
+  const handleOpenWeChatDialog = async () => {
+    if (!(await confirmLegalConsent())) {
       return
     }
 
@@ -254,8 +257,7 @@ export function UserAuthForm({
   }
 
   async function handlePasskeyLogin() {
-    if (requiresLegalConsent && !agreedToLegal) {
-      toast.error(legalConsentErrorMessage)
+    if (!(await confirmLegalConsent())) {
       return
     }
 
@@ -455,8 +457,7 @@ export function UserAuthForm({
             {phoneLoginEnabled && loginMode === 'phone' && (
               <PhoneLoginForm
                 redirectTo={redirectTo}
-                legalOk={!requiresLegalConsent || agreedToLegal}
-                legalErrorMessage={legalConsentErrorMessage}
+                confirmLegalConsent={confirmLegalConsent}
                 loginFailedMessage={loginFailedMessage}
               />
             )}
@@ -472,6 +473,8 @@ export function UserAuthForm({
 
         {!hasAlternativeLogin && alternativeLoginMethods}
       </form>
+
+      {legalConsentDialog}
 
       {hasWeChatLogin && (
         <Dialog

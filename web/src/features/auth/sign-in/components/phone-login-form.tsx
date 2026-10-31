@@ -39,15 +39,13 @@ import { createServerError } from '@/lib/server-error-message'
 
 interface PhoneLoginFormProps {
   redirectTo?: string
-  legalOk: boolean
-  legalErrorMessage: string
+  confirmLegalConsent: () => Promise<boolean>
   loginFailedMessage: string
 }
 
 export function PhoneLoginForm({
   redirectTo,
-  legalOk,
-  legalErrorMessage,
+  confirmLegalConsent,
   loginFailedMessage,
 }: PhoneLoginFormProps) {
   const { t } = useTranslation()
@@ -105,7 +103,9 @@ export function PhoneLoginForm({
   }
 
   const handleSubmit = async () => {
-    if (requiresLegalCheck()) return
+    if (!(await confirmLegalConsent())) {
+      return
+    }
     if (!isValidPhoneInput(phone)) {
       toast.error(t('Please enter a valid phone number'))
       return
@@ -141,14 +141,6 @@ export function PhoneLoginForm({
     } finally {
       setIsSubmitting(false)
     }
-  }
-
-  function requiresLegalCheck() {
-    if (!legalOk) {
-      toast.error(legalErrorMessage)
-      return true
-    }
-    return false
   }
 
   return (
