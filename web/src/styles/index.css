@@ -745,3 +745,43 @@ For commercial licensing, please contact support@quantumnous.com
     display: none;
   }
 }
+
+/* Super Rewards pill: deep violet bands plus a white sheen sweeping
+ * right-to-left, echoing the premium-tier badge style. Both layers share
+ * the same 200% tile and their first/last stops match, so the 0% -> 200%
+ * pan loops seamlessly. */
+.super-reward-pill {
+  background-image:
+    linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0) 35%,
+      rgba(255, 255, 255, 0.45) 50%,
+      rgba(255, 255, 255, 0) 65%
+    ),
+    linear-gradient(
+      90deg,
+      #6d28d9 0%,
+      #c026d3 30%,
+      #7c3aed 55%,
+      #e879f9 80%,
+      #6d28d9 100%
+    );
+  background-size: 200% 100%;
+  animation: super-reward-flow 2.4s linear infinite;
+}
+
+@keyframes super-reward-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .super-reward-pill {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}

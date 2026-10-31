@@ -24,6 +24,8 @@ import { Dialog } from '@/components/dialog'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { NotificationPopover } from '@/components/notification-popover'
 import { ProfileDropdown } from '@/components/profile-dropdown'
+import { RechargeButton } from '@/components/recharge-button'
+import { SuperRewardButton } from '@/components/super-reward-button'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -281,6 +283,12 @@ export function PublicHeader(props: PublicHeaderProps) {
                 )
               })}
 
+              {/* Growth & wallet shortcuts, shown right after the nav links */}
+              <div className='mx-1 flex items-center gap-1.5'>
+                <SuperRewardButton />
+                {isAuthenticated && <RechargeButton />}
+              </div>
+
               {(showLanguageSwitcher ||
                 showThemeSwitch ||
                 showNotifications) && (
@@ -312,6 +320,8 @@ export function PublicHeader(props: PublicHeaderProps) {
 
             {/* Mobile: compact actions + hamburger */}
             <div className='flex shrink-0 items-center gap-2 lg:hidden'>
+              <SuperRewardButton />
+              {!loading && isAuthenticated && <RechargeButton />}
               {showThemeSwitch && <ThemeSwitch />}
               {showAuthButtons && !loading && isAuthenticated && (
                 <ProfileDropdown />

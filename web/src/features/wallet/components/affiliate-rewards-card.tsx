@@ -16,8 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Share2 } from 'lucide-react'
+import { ArrowRight, Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from '@tanstack/react-router'
 
 import { CopyButton } from '@/components/copy-button'
 import { Button } from '@/components/ui/button'
@@ -78,6 +79,13 @@ export function AffiliateRewardsCard({
                 'Earn rewards when users join through your referral link. Transfer accumulated rewards to your balance anytime.'
               )}
             </p>
+            <Link
+              to='/invite'
+              className='text-primary mt-1 inline-flex items-center gap-1 text-xs hover:underline'
+            >
+              {t('View invite details')}
+              <ArrowRight className='size-3' />
+            </Link>
           </div>
         </div>
 
