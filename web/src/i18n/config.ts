@@ -24,15 +24,13 @@ import { convertDetectedLanguage } from './languages'
 
 // English is bundled with the main chunk so the fallback language is always
 // available synchronously; every other locale is code-split and fetched on
-// demand. This keeps the entry bundle small — the six lazy locales together
+// demand. This keeps the entry bundle small — the lazy locales together
 // weigh several megabytes raw, and any visitor uses only one of them.
+// fr/ru/ja/vi are intentionally not registered: their JSON files stay in
+// locales/ for upstream merges but are never bundled or fetched.
 import en from './locales/en.json'
 
 export const lazyLocaleModules = {
-  fr: () => import('./locales/fr.json'),
-  ja: () => import('./locales/ja.json'),
-  ru: () => import('./locales/ru.json'),
-  vi: () => import('./locales/vi.json'),
   zhCN: () => import('./locales/zh.json'),
   zhTW: () => import('./locales/zh-TW.json'),
 } as const
@@ -45,7 +43,7 @@ i18n
   .init({
     resources: { en },
     fallbackLng: 'en',
-    supportedLngs: ['en', 'zhCN', 'fr', 'ru', 'ja', 'vi', 'zhTW'],
+    supportedLngs: ['en', 'zhCN', 'zhTW'],
     load: 'currentOnly',
     nsSeparator: false, // Allow literal colons in keys (e.g., URLs, labels)
     partialBundledLanguages: true,

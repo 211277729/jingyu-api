@@ -10,10 +10,11 @@ type CheckinSetting struct {
 }
 
 // 默认配置
+// 管理后台填的是实际奖励金额（USD，最低 0.1），存储时按 QuotaPerUnit 换算为 quota 整数
 var checkinSetting = CheckinSetting{
-	Enabled:  false, // 默认关闭
-	MinQuota: 1000,  // 默认最小额度 1000 (约 0.002 USD)
-	MaxQuota: 10000, // 默认最大额度 10000 (约 0.02 USD)
+	Enabled:  false,  // 默认关闭
+	MinQuota: 50000,  // 默认最小奖励 0.1 USD
+	MaxQuota: 250000, // 默认最大奖励 0.5 USD
 }
 
 func init() {

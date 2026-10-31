@@ -145,6 +145,24 @@ export function getEditableQuotaStep(): number {
   return 10 ** -getCurrencyFractionDigits(0)
 }
 
+/**
+ * Format a currency amount as a fixed-notation string for editable inputs.
+ * Number.toString() switches to exponential notation below 1e-6 (legacy
+ * sub-quota amounts render as "2e-7"), so inputs must render from a toFixed
+ * string with trailing zeros trimmed instead.
+ */
+export function formatAmountInput(
+  value: number | '' | null | undefined
+): string {
+  if (value === '' || value == null || !Number.isFinite(value)) {
+    return ''
+  }
+  const text = value.toFixed(8)
+  return text.includes('.')
+    ? text.replace(/0+$/, '').replace(/\.$/, '')
+    : text
+}
+
 // ============================================================================
 // Timestamp Formatting
 // ============================================================================

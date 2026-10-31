@@ -25,13 +25,11 @@ import i18next from 'i18next'
 vi.mock('./locales/zh.json', () => ({
   default: { translation: { 'Unified API Gateway for': '统一 API 网关，面向' } },
 }))
-vi.mock('./locales/fr.json', () => ({
-  default: { translation: { 'Unified API Gateway for': 'Passerelle API unifiée' } },
+vi.mock('./locales/zh-TW.json', () => ({
+  default: {
+    translation: { 'Unified API Gateway for': '統一 API 閘道，面向' },
+  },
 }))
-vi.mock('./locales/ja.json', () => ({ default: { translation: {} } }))
-vi.mock('./locales/ru.json', () => ({ default: { translation: {} } }))
-vi.mock('./locales/vi.json', () => ({ default: { translation: {} } }))
-vi.mock('./locales/zh-TW.json', () => ({ default: { translation: {} } }))
 vi.mock('./locales/en.json', () => ({ default: { translation: {} } }))
 
 beforeAll(async () => {
@@ -49,8 +47,16 @@ describe('lazy locale loading', () => {
 
   it('loads a bundle before switching so the switch renders translated text', async () => {
     const { changeAppLanguage } = await import('./config')
+    await changeAppLanguage('zhTW')
+    expect(i18next.t('Unified API Gateway for')).toBe('統一 API 閘道，面向')
+  })
+
+  it('falls back to English for disabled locales instead of loading them', async () => {
+    const { changeAppLanguage } = await import('./config')
     await changeAppLanguage('fr')
-    expect(i18next.t('Unified API Gateway for')).toBe('Passerelle API unifiée')
+    expect(i18next.t('Unified API Gateway for')).toBe(
+      'Unified API Gateway for'
+    )
   })
 
   it('resolves unsupported language codes without throwing', async () => {
