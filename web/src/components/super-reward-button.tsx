@@ -103,8 +103,10 @@ export function SuperRewardButton({ className }: { className?: string }) {
       <span className='pointer-events-none absolute top-1 left-2 size-1 rounded-full bg-white/60' />
       <span className='pointer-events-none absolute right-3 bottom-1 size-1.5 rounded-full bg-white/40' />
       <Gift className='size-4 sm:size-3.5' />
-      {/* Mobile H5: icon-only to keep the header on one line */}
-      <span className='hidden sm:inline'>{t('Daily Rewards')}</span>
+      {/* Mobile H5 与顶栏滚动收缩时只留图标，保持导航一行放得下 */}
+      <span className='hidden sm:inline group-data-[scrolled]/header:hidden'>
+        {t('Daily Rewards')}
+      </span>
       {checkinEnabled && !checkinStatusLoading && !checkedToday ? (
         <span className='bg-red-500 ring-background absolute -top-0.5 -right-1 size-2 rounded-full ring-2' />
       ) : null}

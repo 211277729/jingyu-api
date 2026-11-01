@@ -46,16 +46,24 @@ export function RechargeButton({ className }: { className?: string }) {
       variant='outline'
       onClick={() => navigate({ to: '/wallet' })}
       className={cn(
-        'bg-background/80 hidden h-8 gap-1.5 rounded-full px-3 text-xs font-semibold shadow-sm sm:inline-flex',
+        'bg-background/80 inline-flex h-8 gap-1.5 rounded-full px-3 text-xs font-semibold shadow-sm',
+        // H5 顶栏空间有限，只留钱包图标圆钮
+        'max-sm:w-8 max-sm:justify-center max-sm:px-0',
+        // 桌面顶栏滚动收缩时压成纯图标圆钮，省出导航宽度
+        'group-data-[scrolled]/header:w-8 group-data-[scrolled]/header:justify-center group-data-[scrolled]/header:px-0',
         className
       )}
       aria-label={t('Recharge')}
       title={t('Recharge')}
     >
       <Wallet className='text-primary size-3.5' />
-      <span>{t('Recharge')}</span>
-      <span className='bg-border mx-0.5 h-4 w-px' />
-      <span className='text-primary tabular-nums'>{formatQuota(quota)}</span>
+      <span className='max-sm:hidden group-data-[scrolled]/header:hidden'>
+        {t('Recharge')}
+      </span>
+      <span className='bg-border mx-0.5 h-4 w-px max-sm:hidden group-data-[scrolled]/header:hidden' />
+      <span className='text-primary tabular-nums max-sm:hidden group-data-[scrolled]/header:hidden'>
+        {formatQuota(quota)}
+      </span>
     </Button>
   )
 }

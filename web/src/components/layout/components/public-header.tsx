@@ -201,7 +201,10 @@ export function PublicHeader(props: PublicHeaderProps) {
 
   return (
     <>
-      <header className='pointer-events-none fixed inset-x-0 top-0 z-50'>
+      <header
+        data-scrolled={scrolled || undefined}
+        className='group/header pointer-events-none fixed inset-x-0 top-0 z-50'
+      >
         <div
           className={cn(
             'pointer-events-auto mx-auto transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]',
@@ -296,7 +299,12 @@ export function PublicHeader(props: PublicHeaderProps) {
               )}
 
               {showLanguageSwitcher && <LanguageSwitcher />}
-              {showThemeSwitch && <ThemeSwitch />}
+              {/* 顶栏滚动收缩时隐藏主题切换，优先保住导航文字完整 */}
+              {showThemeSwitch && (
+                <span className='group-data-[scrolled]/header:hidden'>
+                  <ThemeSwitch />
+                </span>
+              )}
               {showNotifications && (
                 <NotificationPopover
                   open={notifications.popoverOpen}
@@ -322,7 +330,12 @@ export function PublicHeader(props: PublicHeaderProps) {
             <div className='flex shrink-0 items-center gap-1.5 lg:hidden'>
               <SuperRewardButton />
               {!loading && isAuthenticated && <RechargeButton />}
-              {showThemeSwitch && <ThemeSwitch />}
+              {/* 顶栏滚动收缩时隐藏主题切换，与桌面端保持一致 */}
+              {showThemeSwitch && (
+                <span className='group-data-[scrolled]/header:hidden'>
+                  <ThemeSwitch />
+                </span>
+              )}
               {showAuthButtons && !loading && isAuthenticated && (
                 <ProfileDropdown />
               )}
