@@ -375,6 +375,9 @@ export type BillingSettings = {
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number
+  'aff_rebate_setting.first_percent': number
+  'aff_rebate_setting.percent': number
+  'aff_rebate_setting.first_days': number
 }
 
 export type OperationsSettings = {

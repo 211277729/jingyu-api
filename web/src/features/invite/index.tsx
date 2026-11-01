@@ -20,26 +20,38 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SectionPageLayout } from '@/components/layout'
+import { useStatus } from '@/hooks/use-status'
 import { getSelf } from '@/lib/api'
 import { TransferDialog } from '@/features/wallet/components/dialogs/transfer-dialog'
 import { useAffiliate, useTopupInfo } from '@/features/wallet/hooks'
 import type { UserWalletData } from '@/features/wallet/types'
 
+import { InviteHero } from './components/invite-hero'
+import { InviteSteps } from './components/invite-steps'
 import { InviteLinkCard } from './components/invite-link-card'
 import { InviteRewardsCard } from './components/invite-rewards-card'
 
 /**
  * Standalone invite & rewards page.
  *
- * Surfaces the referral link, QR code, rewards stats and quota transfer
- * that previously lived only at the bottom of the wallet page, reusing
- * the same wallet APIs and data.
+ * A marketing-styled funnel: gradient hero with the concrete reward amounts
+ * from system settings, a three-step explainer, then the working cards
+ * (invite link / QR, rewards stats and quota transfer) reusing the same
+ * wallet APIs and data as before.
  */
 export function Invite() {
   const { t } = useTranslation()
   const [user, setUser] = useState<UserWalletData | null>(null)
   const [userLoading, setUserLoading] = useState(true)
   const [transferDialogOpen, setTransferDialogOpen] = useState(false)
+
+  const { status } = useStatus()
+  const inviterQuota = Number(status?.invite_inviter_quota ?? 0)
+  const inviteeQuota = Number(status?.invite_invitee_quota ?? 0)
+  // 邀请充值返利：好友充值到账后按百分比返给邀请人
+  const rebateFirstPercent = Number(status?.aff_topup_rebate_first_percent ?? 0)
+  const rebatePercent = Number(status?.aff_topup_rebate_percent ?? 0)
+  const rebateFirstDays = Number(status?.aff_topup_rebate_first_days ?? 0)
 
   const {
     affiliateCode,
@@ -82,6 +94,14 @@ export function Invite() {
       <SectionPageLayout.Title>{t('Invite & Earn')}</SectionPageLayout.Title>
       <SectionPageLayout.Content>
         <div className='mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-5'>
+          <InviteHero
+            inviterQuota={inviterQuota}
+            inviteeQuota={inviteeQuota}
+            rebateFirstPercent={rebateFirstPercent}
+            rebatePercent={rebatePercent}
+            rebateFirstDays={rebateFirstDays}
+          />
+          <InviteSteps />
           <div className='grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] xl:items-start'>
             <InviteLinkCard
               affiliateCode={affiliateCode}
@@ -95,6 +115,7 @@ export function Invite() {
               complianceConfirmed={
                 topupInfo?.payment_compliance_confirmed !== false
               }
+              hasTopupRebate={rebateFirstPercent > 0 || rebatePercent > 0}
               onTransfer={() => setTransferDialogOpen(true)}
             />
           </div>

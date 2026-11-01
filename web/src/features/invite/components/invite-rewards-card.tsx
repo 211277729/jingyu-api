@@ -16,13 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Coins, Users } from 'lucide-react'
+import { ArrowDownToLine, Coins, Users, Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TitledCard } from '@/components/ui/titled-card'
-import { formatQuota } from '@/lib/format'
+import { formatQuotaWithCurrency } from '@/lib/currency'
 
 import type { UserWalletData } from '@/features/wallet/types'
 
@@ -31,6 +31,7 @@ interface InviteRewardsCardProps {
   loading?: boolean
   transferring?: boolean
   complianceConfirmed?: boolean
+  hasTopupRebate?: boolean
   onTransfer: () => void
 }
 
@@ -39,6 +40,7 @@ export function InviteRewardsCard({
   loading,
   transferring,
   complianceConfirmed = true,
+  hasTopupRebate = false,
   onTransfer,
 }: InviteRewardsCardProps) {
   const { t } = useTranslation()
@@ -47,18 +49,21 @@ export function InviteRewardsCard({
   const stats = [
     {
       label: t('Pending rewards'),
-      value: formatQuota(user?.aff_quota ?? 0),
+      value: formatQuotaWithCurrency(user?.aff_quota ?? 0),
       icon: Coins,
+      accent: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     },
     {
       label: t('Total rewards earned'),
-      value: formatQuota(user?.aff_history_quota ?? 0),
-      icon: Coins,
+      value: formatQuotaWithCurrency(user?.aff_history_quota ?? 0),
+      icon: Wallet,
+      accent: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     },
     {
       label: t('Users invited'),
       value: String(user?.aff_count ?? 0),
       icon: Users,
+      accent: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
     },
   ]
 
@@ -78,6 +83,7 @@ export function InviteRewardsCard({
             onClick={onTransfer}
             disabled={!complianceConfirmed || transferring}
           >
+            <ArrowDownToLine className='size-3.5' />
             {t('Transfer to Balance')}
           </Button>
         ) : null
@@ -98,12 +104,17 @@ export function InviteRewardsCard({
             {stats.map((stat) => (
               <div
                 key={stat.label}
-                className='bg-muted/30 rounded-lg border p-3 text-center sm:text-left'
+                className='bg-muted/30 rounded-xl border p-3'
               >
-                <div className='text-muted-foreground text-[10px] font-medium tracking-wider uppercase'>
+                <span
+                  className={`mb-2 flex size-7 items-center justify-center rounded-lg ${stat.accent}`}
+                >
+                  <stat.icon className='size-3.5' />
+                </span>
+                <div className='text-muted-foreground truncate text-[10px] font-medium tracking-wider uppercase'>
                   {stat.label}
                 </div>
-                <div className='mt-1 truncate text-lg font-semibold tabular-nums'>
+                <div className='mt-0.5 truncate text-lg font-semibold tabular-nums'>
                   {stat.value}
                 </div>
               </div>
@@ -118,17 +129,20 @@ export function InviteRewardsCard({
             </p>
           ) : null}
 
-          <div className='bg-muted/30 text-muted-foreground rounded-lg border p-3 text-xs'>
+          <div className='bg-muted/30 text-muted-foreground rounded-xl border p-3 text-xs'>
             <div className='mb-1.5 text-foreground text-xs font-semibold'>
               {t('How it works')}
             </div>
             <ul className='list-disc space-y-1 pl-5'>
               <li>{t('Share your invite link with friends.')}</li>
-              <li>
-                {t(
-                  'Earn rewards when your invitees register and use the service.'
-                )}
-              </li>
+              <li>{t('Both of you receive the reward instantly.')}</li>
+              {hasTopupRebate ? (
+                <li>
+                  {t(
+                    'You also earn a percentage rebate on every top-up your friends make.'
+                  )}
+                </li>
+              ) : null}
               <li>
                 {t('Transfer accumulated rewards to your balance anytime.')}
               </li>

@@ -20,6 +20,7 @@ import { parseCurrencyDisplayType } from '@/lib/currency'
 
 import { CheckinSettingsSection } from '../general/checkin-settings-section'
 import { PricingSection } from '../general/pricing-section'
+import { AffRebateSettingsSection } from '../general/aff-rebate-settings-section'
 import { QuotaSettingsSection } from '../general/quota-settings-section'
 import { PaymentSettingsSection } from '../integrations/payment-settings-section'
 import { RatioSettingsCard } from '../models/ratio-settings-card'
@@ -217,6 +218,19 @@ const BILLING_SECTIONS = [
           enabled: settings['checkin_setting.enabled'],
           minQuotaUnits: settings['checkin_setting.min_quota'],
           maxQuotaUnits: settings['checkin_setting.max_quota'],
+        }}
+      />
+    ),
+  },
+  {
+    id: 'invite-rewards',
+    titleKey: 'Invite Rewards',
+    build: (settings: BillingSettings) => (
+      <AffRebateSettingsSection
+        defaultValues={{
+          firstPercent: settings['aff_rebate_setting.first_percent'],
+          percent: settings['aff_rebate_setting.percent'],
+          firstDays: settings['aff_rebate_setting.first_days'],
         }}
       />
     ),

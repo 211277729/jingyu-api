@@ -123,6 +123,9 @@ const defaultBillingSettings: BillingSettings = {
   'checkin_setting.enabled': false,
   'checkin_setting.min_quota': 1000,
   'checkin_setting.max_quota': 10000,
+  'aff_rebate_setting.first_percent': 0,
+  'aff_rebate_setting.percent': 0,
+  'aff_rebate_setting.first_days': 0,
 }
 
 export function BillingSettings() {
