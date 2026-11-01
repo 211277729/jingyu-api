@@ -124,6 +124,13 @@ func GetStatus(c *gin.Context) {
 		"user_agreement_enabled":      legalSetting.UserAgreement != "",
 		"privacy_policy_enabled":      legalSetting.PrivacyPolicy != "",
 		"checkin_enabled":             operation_setting.GetCheckinSetting().Enabled,
+		// 邀请奖励金额（quota）：注册成功后邀请人与被邀请人各自获得的固定额度
+		"invite_inviter_quota": common.QuotaForInviter,
+		"invite_invitee_quota": common.QuotaForInvitee,
+		// 邀请充值返利：好友充值/卡密到账后按百分比返给邀请人
+		"aff_topup_rebate_first_percent": operation_setting.GetAffRebateSetting().FirstPercent,
+		"aff_topup_rebate_percent":       operation_setting.GetAffRebateSetting().Percent,
+		"aff_topup_rebate_first_days":    operation_setting.GetAffRebateSetting().FirstDays,
 		"log_export_enabled":          operation_setting.GetLogSetting().UserExportEnabled,
 		"log_max_range_days":          operation_setting.GetLogSetting().MaxRangeDays,
 		"quota_remind_enabled":        common.QuotaRemindEnabled,

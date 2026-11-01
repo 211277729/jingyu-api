@@ -7,6 +7,7 @@ import (
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/logger"
+	"github.com/QuantumNous/new-api/setting/operation_setting"
 
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
@@ -106,7 +107,8 @@ func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[st
 		return result.Error
 	}
 	if result.RowsAffected == 1 {
-		return nil
+		// 入账成功后按配置给邀请人发放充值返利（失败会回滚整笔充值，保持账务一致）
+		return applyAffTopupRebate(tx, userId, creditedQuota)
 	}
 
 	var count int64
@@ -117,6 +119,84 @@ func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[st
 		return gorm.ErrRecordNotFound
 	}
 	return ErrTopUpQuotaLimitExceeded
+}
+
+// applyAffTopupRebate 在充值或卡密兑换到账后，按「邀请奖励」配置给邀请人发放返利。
+// 首笔判定：当前事件（充值订单或已核销卡密）在事务里已先落库，两张表的成功总数减一
+// 即历史完成次数，为 0 说明这是该用户的第一次入账。并发场景下同一用户的回调已被
+// creditTopUpQuota 的行级 UPDATE 串行化。
+func applyAffTopupRebate(tx *gorm.DB, userId int, creditedQuota int) error {
+	setting := operation_setting.GetAffRebateSetting()
+	if setting.FirstPercent <= 0 && setting.Percent <= 0 {
+		return nil
+	}
+	if !operation_setting.IsPaymentComplianceConfirmed() {
+		return nil
+	}
+
+	var payer struct {
+		InviterId int   `gorm:"column:inviter_id"`
+		CreatedAt int64 `gorm:"column:created_at"`
+	}
+	if err := tx.Model(&User{}).
+		Select("inviter_id", "created_at").
+		Where("id = ?", userId).
+		First(&payer).Error; err != nil {
+		return err
+	}
+	if payer.InviterId == 0 || payer.InviterId == userId {
+		return nil
+	}
+
+	var topupCount, redemptionCount int64
+	if err := tx.Model(&TopUp{}).
+		Where("user_id = ? AND status = ?", userId, common.TopUpStatusSuccess).
+		Count(&topupCount).Error; err != nil {
+		return err
+	}
+	if err := tx.Model(&Redemption{}).
+		Where("used_user_id = ? AND status = ?", userId, common.RedemptionCodeStatusUsed).
+		Count(&redemptionCount).Error; err != nil {
+		return err
+	}
+	isFirst := topupCount+redemptionCount <= 1
+
+	percent := setting.Percent
+	if isFirst {
+		withinWindow := setting.FirstDays <= 0 ||
+			common.GetTimestamp()-payer.CreatedAt <= int64(setting.FirstDays)*86400
+		if withinWindow {
+			percent = setting.FirstPercent
+		}
+	}
+	if percent <= 0 {
+		return nil
+	}
+
+	rebate, err := common.WalletQuotaFromDecimalStrict(
+		decimal.NewFromInt(int64(creditedQuota)).
+			Mul(decimal.NewFromFloat(percent)).
+			Div(decimal.NewFromInt(100)).
+			Floor(),
+	)
+	if err != nil || rebate <= 0 {
+		// 比例过低算不出有效额度时不返利，不影响充值本身
+		return nil
+	}
+
+	result := tx.Model(&User{}).Where("id = ?", payer.InviterId).Updates(map[string]any{
+		"aff_quota":   gorm.Expr("aff_quota + ?", rebate),
+		"aff_history": gorm.Expr("aff_history + ?", rebate),
+	})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		// 邀请人已不存在（注销等）时跳过返利，不影响充值
+		return nil
+	}
+	RecordLog(payer.InviterId, LogTypeSystem, common.NewMessage("Rebate for a friend's top-up {{quota}}", map[string]any{"quota": logger.FormatQuota(rebate)}))
+	return nil
 }
 
 func (topUp *TopUp) Update() error {
