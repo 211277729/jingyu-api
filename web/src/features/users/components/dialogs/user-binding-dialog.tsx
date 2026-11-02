@@ -17,22 +17,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useQuery } from '@tanstack/react-query'
-import {
-  Mail,
-  Globe,
-  MessageCircle,
-  Send,
-  Link2,
-  Unlink,
-  Loader2,
-  Eye,
-  EyeOff,
-} from 'lucide-react'
+import { Link2, Unlink, Loader2, Eye, EyeOff } from 'lucide-react'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
-import { IconGithub, IconDiscord } from '@/assets/brand-icons'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Dialog } from '@/components/dialog'
 import { StatusBadge } from '@/components/status-badge'
@@ -57,6 +46,7 @@ import {
   adminClearUserBinding,
   adminUnbindCustomOAuth,
 } from '../../api'
+import { BUILTIN_BINDINGS, type BindingStatusInfo } from '../../lib/binding-presets'
 import type { User } from '../../types'
 import { useUsers } from '../users-provider'
 
@@ -77,78 +67,6 @@ interface BindingItem {
   isBound: boolean
   isEnabled: boolean
 }
-
-interface StatusInfo {
-  github_oauth?: boolean
-  discord_oauth?: boolean
-  oidc_enabled?: boolean
-  wechat_login?: boolean
-  telegram_oauth?: boolean
-  linuxdo_oauth?: boolean
-  custom_oauth_providers?: Array<{
-    id: number
-    name: string
-    icon?: string
-  }>
-}
-
-const BUILTIN_BINDINGS: ReadonlyArray<{
-  key: string
-  field: string
-  label: string
-  icon: React.ReactNode
-  statusKey: keyof StatusInfo | null
-}> = [
-  {
-    key: 'email',
-    field: 'email',
-    label: 'Email',
-    icon: <Mail className='h-4 w-4' />,
-    statusKey: null,
-  },
-  {
-    key: 'github',
-    field: 'github_id',
-    label: 'GitHub',
-    icon: <IconGithub className='h-4 w-4' />,
-    statusKey: 'github_oauth',
-  },
-  {
-    key: 'discord',
-    field: 'discord_id',
-    label: 'Discord',
-    icon: <IconDiscord className='h-4 w-4' />,
-    statusKey: 'discord_oauth',
-  },
-  {
-    key: 'wechat',
-    field: 'wechat_id',
-    label: 'WeChat',
-    icon: <MessageCircle className='h-4 w-4' />,
-    statusKey: 'wechat_login',
-  },
-  {
-    key: 'oidc',
-    field: 'oidc_id',
-    label: 'OIDC',
-    icon: <Globe className='h-4 w-4' />,
-    statusKey: 'oidc_enabled',
-  },
-  {
-    key: 'telegram',
-    field: 'telegram_id',
-    label: 'Telegram',
-    icon: <Send className='h-4 w-4' />,
-    statusKey: 'telegram_oauth',
-  },
-  {
-    key: 'linuxdo',
-    field: 'linux_do_id',
-    label: 'LinuxDO',
-    icon: <Globe className='h-4 w-4' />,
-    statusKey: 'linuxdo_oauth',
-  },
-]
 
 function CustomProviderIcon(props: { iconUrl?: string }) {
   if (!props.iconUrl) return <Link2 className='h-4 w-4' />
@@ -215,7 +133,7 @@ export function UserBindingDialog(props: Props) {
 
   const allBindings = useMemo<BindingItem[]>(() => {
     const items: BindingItem[] = []
-    const status = statusInfo as StatusInfo | undefined
+    const status = statusInfo as BindingStatusInfo | undefined
 
     for (const field of BUILTIN_BINDINGS) {
       const value = user

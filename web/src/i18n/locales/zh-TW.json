@@ -7553,6 +7553,13 @@
     "The template must contain a variable used as the verification code": "The template must contain a variable used as the verification code",
     "Region": "Region",
     "Leave blank to keep the current secret": "Leave blank to keep the current secret",
-    "Save SMS settings": "Save SMS settings"
+    "Save SMS settings": "Save SMS settings",
+    "User Detail": "用戶詳情",
+    "View user information and manage the account": "檢視用戶資訊並管理該帳號",
+    "Contact Information": "聯絡方式",
+    "Phone": "手機號碼",
+    "Login Bindings": "登入綁定",
+    "Quota & Usage": "額度與用量",
+    "Invite Code": "邀請碼"
   }
 }

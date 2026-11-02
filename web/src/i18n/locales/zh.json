@@ -7601,6 +7601,13 @@
     "(First top-up rebate applies within {{days}} days of signing up.)": "（首充返利仅限注册 {{days}} 天内）",
     "First top-up rebate {{percent}}%": "首充返 {{percent}}%",
     "Recurring rebate {{percent}}%": "后续每笔返 {{percent}}%",
-    "You also earn a percentage rebate on every top-up your friends make.": "好友每次充值，你都能按比例获得返利。"
+    "You also earn a percentage rebate on every top-up your friends make.": "好友每次充值，你都能按比例获得返利。",
+    "User Detail": "用户详情",
+    "View user information and manage the account": "查看用户信息并管理该账号",
+    "Contact Information": "联系方式",
+    "Phone": "手机号",
+    "Login Bindings": "登录绑定",
+    "Quota & Usage": "额度与用量",
+    "Invite Code": "邀请码"
   }
 }

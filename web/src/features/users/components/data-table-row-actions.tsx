@@ -28,6 +28,7 @@ import {
   ShieldAlert,
   Link2,
   CreditCard,
+  Eye,
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -61,6 +62,7 @@ import {
 import { getUserActionMessage } from '../lib'
 import type { User } from '../types'
 import { UserBindingDialog } from './dialogs/user-binding-dialog'
+import { UserDetailDialog } from './dialogs/user-detail-dialog'
 import { useUsers } from './users-provider'
 
 const MANAGE_ACTION_TITLES: Record<AdminUserManageAction, string> = {
@@ -88,10 +90,15 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const [resetTwoFAOpen, setResetTwoFAOpen] = useState(false)
   const [bindingDialogOpen, setBindingDialogOpen] = useState(false)
   const [subscriptionsDialogOpen, setSubscriptionsDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
 
   const handleEdit = () => {
     setCurrentRow(user)
     setOpen('update')
+  }
+
+  const handleView = () => {
+    setDetailDialogOpen(true)
   }
 
   const handleDelete = () => {
@@ -194,6 +201,22 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   return (
     <div className='-ml-1.5 flex items-center gap-1'>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              onClick={handleView}
+              aria-label={t('View')}
+            />
+          }
+        >
+          <Eye />
+        </TooltipTrigger>
+        <TooltipContent>{t('View')}</TooltipContent>
+      </Tooltip>
+
       <Tooltip>
         <TooltipTrigger
           render={
@@ -339,6 +362,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         )}
         confirmText={t('Reset 2FA')}
         handleConfirm={handleResetTwoFA}
+      />
+
+      <UserDetailDialog
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        initialUser={user}
       />
 
       <UserBindingDialog

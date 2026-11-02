@@ -7601,6 +7601,13 @@
     "(First top-up rebate applies within {{days}} days of signing up.)": "(First top-up rebate applies within {{days}} days of signing up.)",
     "First top-up rebate {{percent}}%": "First top-up rebate {{percent}}%",
     "Recurring rebate {{percent}}%": "Recurring rebate {{percent}}%",
-    "You also earn a percentage rebate on every top-up your friends make.": "You also earn a percentage rebate on every top-up your friends make."
+    "You also earn a percentage rebate on every top-up your friends make.": "You also earn a percentage rebate on every top-up your friends make.",
+    "User Detail": "User Detail",
+    "View user information and manage the account": "View user information and manage the account",
+    "Contact Information": "Contact Information",
+    "Phone": "Phone",
+    "Login Bindings": "Login Bindings",
+    "Quota & Usage": "Quota & Usage",
+    "Invite Code": "Invite Code"
   }
 }

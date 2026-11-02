@@ -42,6 +42,7 @@ import {
   USER_ROLES,
   isUserDeleted,
 } from '../constants'
+import { THIRD_PARTY_BINDINGS } from '../lib/binding-presets'
 import type { User } from '../types'
 import { DataTableRowActions } from './data-table-row-actions'
 import { UserQuotaCell } from './user-quota-cell'
@@ -193,6 +194,81 @@ export function useUsersColumns(): ColumnDef<User>[] {
         size: 180,
         minSize: 160,
         meta: { mobileOrder: 40 },
+      },
+      {
+        accessorKey: 'email',
+        header: t('Contact'),
+        cell: ({ row }) => {
+          const email = row.original.email
+          const phone = row.original.phone
+
+          if (!email && !phone) {
+            return <span className='text-muted-foreground text-sm'>—</span>
+          }
+
+          return (
+            <div className='flex min-w-[120px] flex-col gap-1'>
+              {email && (
+                <LongText className='max-w-[160px] text-sm font-normal'>
+                  {email}
+                </LongText>
+              )}
+              {phone && (
+                <LongText className='text-muted-foreground max-w-[160px] text-xs font-normal'>
+                  {phone}
+                </LongText>
+              )}
+            </div>
+          )
+        },
+        enableSorting: false,
+        size: 200,
+        meta: { mobileHidden: true },
+      },
+      {
+        id: 'bindings',
+        // accessorFn keeps the column listed in the view-options menu.
+        accessorFn: (row) =>
+          THIRD_PARTY_BINDINGS.filter(
+            (binding) =>
+              String((row as unknown as Record<string, unknown>)[binding.field] || '')
+          ).length,
+        header: t('Bindings'),
+        cell: ({ row }) => {
+          const user = row.original as Record<string, unknown>
+          const bound = THIRD_PARTY_BINDINGS.map((binding) => ({
+            ...binding,
+            value: String(user[binding.field] || ''),
+          })).filter((binding) => binding.value)
+
+          if (bound.length === 0) {
+            return <span className='text-muted-foreground text-sm'>—</span>
+          }
+
+          return (
+            <div className='flex flex-wrap items-center gap-1'>
+              {bound.map((binding) => (
+                <Tooltip key={binding.key}>
+                  <TooltipTrigger
+                    render={
+                      <div className='border-muted-foreground/30 -ml-1 cursor-help rounded-md border p-1' />
+                    }
+                  >
+                    {binding.icon}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className='text-xs'>
+                      {binding.label}: {binding.value}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )
+        },
+        enableSorting: false,
+        size: 150,
+        meta: { mobileHidden: true },
       },
       {
         accessorKey: 'group',
