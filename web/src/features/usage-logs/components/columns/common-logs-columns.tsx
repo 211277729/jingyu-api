@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { useQuery } from '@tanstack/react-query'
 import type { ColumnDef } from '@tanstack/react-table'
 import { GitBranch, Sparkles, KeyRound } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -49,11 +50,12 @@ import { taskUsageUnitLabel } from '@/features/pricing/lib/task-price-display'
 import type { BillingUsageSchema } from '@/features/pricing/types'
 import { getUserAvatarFallback, getUserAvatarStyle } from '@/lib/avatar'
 import { formatBillingCurrencyFromUSD } from '@/lib/currency'
-import { formatLogQuota, formatTimestampToDate } from '@/lib/format'
+import { formatLogQuota, formatQuota, formatTimestampToDate } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
 import { LOG_TYPE_ALL_VALUE } from '../../constants'
+import { getUserInfo } from '../../api'
 import type { UsageLog } from '../../data/schema'
 import {
   formatModelName,
@@ -557,19 +559,40 @@ export function useCommonLogsColumns(
           header: t('User'),
           accessorFn: (row) => row.username,
           cell: function UserCell({ row }) {
+            const { t } = useTranslation()
             const {
               sensitiveVisible,
               setSelectedUserId,
               setUserInfoDialogOpen,
             } = useUsageLogsContext()
+            const [hovered, setHovered] = useState(false)
             const log = row.original
 
+            const { data: userInfo, isFetching } = useQuery({
+              queryKey: ['usage-log-user-info', log.user_id],
+              queryFn: () => getUserInfo(log.user_id),
+              enabled: hovered && sensitiveVisible && log.user_id != null,
+              staleTime: 60_000,
+              select: (res) => (res.success ? res.data : undefined),
+            })
+
             if (!log.username) return null
+
+            const remark = userInfo?.remark || ''
+            const remarkText = remark.length > 0 ? remark : t('None')
+            const balanceText =
+              userInfo?.quota !== undefined ? formatQuota(userInfo.quota) : '-'
+            const showRemark = sensitiveVisible && remark.length > 0
+            const showBalance = sensitiveVisible && userInfo?.quota !== undefined
+            const hasHoverInfo =
+              log.username.length > 12 || showRemark || showBalance || isFetching
 
             return (
               <button
                 type='button'
                 className='flex items-center gap-1.5 text-left'
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedUserId(log.user_id)
@@ -602,8 +625,35 @@ export function useCommonLogsColumns(
                     >
                       {sensitiveVisible ? log.username : '••••'}
                     </TooltipTrigger>
-                    {sensitiveVisible && log.username.length > 12 && (
-                      <TooltipContent side='top'>{log.username}</TooltipContent>
+                    {sensitiveVisible && hasHoverInfo && (
+                      <TooltipContent side='top' className='max-w-xs'>
+                        {log.username.length > 12 && (
+                          <p className='font-medium break-all'>
+                            {log.username}
+                          </p>
+                        )}
+                        {(showRemark || showBalance || isFetching) && (
+                          <div
+                            className={cn(
+                              'space-y-0.5 text-xs',
+                              log.username.length > 12 && 'mt-1 border-t pt-1'
+                            )}
+                          >
+                            <p>
+                              <span className='text-muted-foreground'>
+                                {t('Remark')}:
+                              </span>{' '}
+                              {isFetching ? '…' : remarkText}
+                            </p>
+                            <p>
+                              <span className='text-muted-foreground'>
+                                {t('Balance')}:
+                              </span>{' '}
+                              {isFetching ? '…' : balanceText}
+                            </p>
+                          </div>
+                        )}
+                      </TooltipContent>
                     )}
                   </Tooltip>
                 </TooltipProvider>
