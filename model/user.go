@@ -103,6 +103,8 @@ type User struct {
 	AffCount             int                        `json:"aff_count" gorm:"type:int;default:0;column:aff_count"`
 	AffQuota             int                        `json:"aff_quota" gorm:"type:int;default:0;column:aff_quota"`           // 邀请剩余额度
 	AffHistoryQuota      int                        `json:"aff_history_quota" gorm:"type:int;default:0;column:aff_history"` // 邀请历史额度
+	AgentQuota           int                        `json:"agent_quota" gorm:"type:bigint;default:0;column:agent_quota"`           // 代理佣金余额（可申请提现）
+	AgentHistoryQuota    int                        `json:"agent_history_quota" gorm:"type:bigint;default:0;column:agent_history"` // 代理佣金累计
 	InviterId            int                        `json:"inviter_id" gorm:"type:int;column:inviter_id;index"`
 	DeletedAt            gorm.DeletedAt             `gorm:"index"`
 	LinuxDOId            string                     `json:"linux_do_id" gorm:"column:linux_do_id;index"`

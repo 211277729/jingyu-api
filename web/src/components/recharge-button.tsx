@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Wallet } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
@@ -28,13 +28,13 @@ import { cn } from '@/lib/utils'
 /**
  * The "Recharge | balance" pill shown next to the Daily Rewards entry.
  *
- * Only rendered for signed-in users; clicking it jumps to the wallet
- * page where top-up happens. The balance is a quick glance value from
- * the auth session, the wallet page remains the source of truth.
+ * Only rendered for signed-in users; clicking it opens the wallet page
+ * (where top-up happens) in a new browser tab. The balance is a quick
+ * glance value from the auth session, the wallet page remains the
+ * source of truth.
  */
 export function RechargeButton({ className }: { className?: string }) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const quota = useAuthStore((s) => s.auth.user?.quota)
 
   if (quota === undefined) {
@@ -44,7 +44,14 @@ export function RechargeButton({ className }: { className?: string }) {
   return (
     <Button
       variant='outline'
-      onClick={() => navigate({ to: '/wallet' })}
+      render={
+        <Link
+          to='/wallet'
+          // 充值属高频参考入口，参照导航约定在新标签打开
+          target='_blank'
+          rel='noopener noreferrer'
+        />
+      }
       className={cn(
         'bg-background/80 inline-flex h-8 gap-1.5 rounded-full px-3 text-xs font-semibold shadow-sm',
         // H5 顶栏空间有限，只留钱包图标圆钮

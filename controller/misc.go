@@ -131,6 +131,12 @@ func GetStatus(c *gin.Context) {
 		"aff_topup_rebate_first_percent": operation_setting.GetAffRebateSetting().FirstPercent,
 		"aff_topup_rebate_percent":       operation_setting.GetAffRebateSetting().Percent,
 		"aff_topup_rebate_first_days":    operation_setting.GetAffRebateSetting().FirstDays,
+		// 代理分销：代理名下客户充值按比例计佣金（可提现）
+		"agent_enabled":              operation_setting.GetAgentSetting().Enabled,
+		"agent_first_percent":        operation_setting.GetAgentSetting().FirstPercent,
+		"agent_percent":              operation_setting.GetAgentSetting().Percent,
+		"agent_second_percent":       operation_setting.GetAgentSetting().SecondPercent,
+		"agent_min_withdraw_quota":   operation_setting.GetAgentSetting().MinWithdrawQuota,
 		"log_export_enabled":          operation_setting.GetLogSetting().UserExportEnabled,
 		"log_max_range_days":          operation_setting.GetLogSetting().MaxRangeDays,
 		"quota_remind_enabled":        common.QuotaRemindEnabled,

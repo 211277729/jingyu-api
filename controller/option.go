@@ -201,7 +201,8 @@ func UpdateOption(c *gin.Context) {
 	}
 	switch option.Key {
 	case "QuotaForInviter", "QuotaForInvitee",
-		"aff_rebate_setting.first_percent", "aff_rebate_setting.percent":
+		"aff_rebate_setting.first_percent", "aff_rebate_setting.percent",
+		"agent_setting.first_percent", "agent_setting.percent", "agent_setting.second_percent":
 		if isPositiveOptionValue(option.Value.(string)) && !operation_setting.IsPaymentComplianceConfirmed() {
 			common.ApiErrorT(c, "Payment, redemption, subscription, and invitation reward features are disabled. The administrator must confirm compliance terms before enabling them.")
 			return

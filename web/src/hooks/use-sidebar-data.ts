@@ -23,6 +23,7 @@ import {
   CreditCard,
   FileText,
   FlaskConical,
+  Handshake,
   Key,
   LayoutDashboard,
   ListTodo,
@@ -117,6 +118,11 @@ export function useSidebarData(): SidebarData {
             icon: Wallet,
           },
           {
+            title: t('Agent Program'),
+            url: '/agent',
+            icon: Handshake,
+          },
+          {
             title: t('Profile'),
             url: '/profile',
             icon: User,
@@ -151,6 +157,11 @@ export function useSidebarData(): SidebarData {
             title: t('Redemption Codes'),
             url: '/redemption-codes',
             icon: Ticket,
+          },
+          {
+            title: t('Agent Distribution'),
+            url: '/agent-admin',
+            icon: Handshake,
           },
           {
             title: t('Subscriptions'),

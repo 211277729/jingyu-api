@@ -378,6 +378,12 @@ export type BillingSettings = {
   'aff_rebate_setting.first_percent': number
   'aff_rebate_setting.percent': number
   'aff_rebate_setting.first_days': number
+  'agent_setting.enabled': boolean
+  'agent_setting.first_percent': number
+  'agent_setting.percent': number
+  'agent_setting.second_percent': number
+  'agent_setting.first_days': number
+  'agent_setting.min_withdraw_quota': number
 }
 
 export type OperationsSettings = {

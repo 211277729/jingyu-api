@@ -156,6 +156,14 @@ func SetApiRouter(router *gin.Engine) {
 				selfRoute.GET("/checkin", controller.GetCheckinStatus)
 				selfRoute.POST("/checkin", middleware.TurnstileCheck(), controller.DoCheckin)
 
+				// Agent distribution routes
+				selfRoute.GET("/agent/profile", controller.GetAgentProfile)
+				selfRoute.POST("/agent/apply", middleware.UserCriticalRateLimit("agent-apply"), controller.ApplyAgent)
+				selfRoute.GET("/agent/commissions", controller.GetUserAgentCommissions)
+				selfRoute.GET("/agent/customers", controller.GetAgentCustomers)
+				selfRoute.POST("/agent/withdraw", middleware.UserCriticalRateLimit("agent-withdraw"), controller.RequestAgentWithdraw)
+				selfRoute.GET("/agent/withdrawals", controller.GetUserAgentWithdrawals)
+
 				// Custom OAuth bindings
 				selfRoute.GET("/oauth/bindings", controller.GetUserOAuthBindings)
 				selfRoute.DELETE("/oauth/bindings/:provider_id", controller.UnbindCustomOAuth)
@@ -167,6 +175,16 @@ func SetApiRouter(router *gin.Engine) {
 				adminRoute.GET("/", controller.GetAllUsers)
 				adminRoute.GET("/topup", controller.GetAllTopUps)
 				adminRoute.POST("/topup/complete", controller.AdminCompleteTopUp)
+
+				// Agent distribution admin routes
+				adminRoute.GET("/agent/admin/profiles", controller.GetAllAgentProfiles)
+				adminRoute.POST("/agent/admin/profiles/review", controller.ReviewAgentProfile)
+				adminRoute.POST("/agent/admin/profiles/delete", controller.DeleteAgentProfile)
+				adminRoute.POST("/agent/admin/adjust-quota", controller.AdjustAgentQuota)
+				adminRoute.GET("/agent/admin/withdrawals", controller.GetAllAgentWithdrawals)
+				adminRoute.POST("/agent/admin/withdrawals/review", controller.ReviewAgentWithdrawal)
+				adminRoute.GET("/agent/admin/commissions", controller.GetAllAgentCommissions)
+				adminRoute.POST("/agent/admin/bind-customer", controller.BindAgentCustomer)
 				adminRoute.GET("/search", controller.SearchUsers)
 				adminRoute.GET("/:id/oauth/bindings", controller.GetUserOAuthBindingsByAdmin)
 				adminRoute.DELETE("/:id/oauth/bindings/:provider_id", controller.UnbindCustomOAuthByAdmin)

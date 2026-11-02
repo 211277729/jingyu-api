@@ -126,6 +126,12 @@ const defaultBillingSettings: BillingSettings = {
   'aff_rebate_setting.first_percent': 0,
   'aff_rebate_setting.percent': 0,
   'aff_rebate_setting.first_days': 0,
+  'agent_setting.enabled': false,
+  'agent_setting.first_percent': 0,
+  'agent_setting.percent': 0,
+  'agent_setting.second_percent': 0,
+  'agent_setting.first_days': 0,
+  'agent_setting.min_withdraw_quota': 0,
 }
 
 export function BillingSettings() {

@@ -16,8 +16,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useNavigate } from '@tanstack/react-router'
-import { CalendarCheck, ChevronRight, Gift, Sparkles, Users } from 'lucide-react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import {
+  CalendarCheck,
+  ChevronRight,
+  Gift,
+  Handshake,
+  Sparkles,
+  Users,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -31,6 +38,7 @@ import {
 } from '@/components/ui/popover'
 import { useCheckin } from '@/features/profile/hooks'
 import type { CheckinRecord } from '@/features/profile/types'
+import { LuckyDrawDialog } from '@/features/lucky-draw'
 import { useStatus } from '@/hooks/use-status'
 import { formatQuotaWithCurrency } from '@/lib/currency'
 import { formatQuota } from '@/lib/format'
@@ -53,8 +61,11 @@ export function SuperRewardButton({ className }: { className?: string }) {
   const { status } = useStatus()
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [drawDialogOpen, setDrawDialogOpen] = useState(false)
 
   const checkinEnabled = isAuthenticated && status?.checkin_enabled === true
+  // 代理分销开关下浮窗追加「合作代理」入口（与导航栏「代理赚钱」同一页面）
+  const agentEnabled = isAuthenticated && status?.agent_enabled === true
   const turnstileEnabled = !!(
     status?.turnstile_check && status?.turnstile_site_key
   )
@@ -218,7 +229,8 @@ export function SuperRewardButton({ className }: { className?: string }) {
       ) : null}
 
       {isAuthenticated ? (
-        <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+        <>
+          <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
           <PopoverTrigger render={pill} className={className} />
           <PopoverContent align='start' sideOffset={8} className='w-72 p-1.5'>
             <button
@@ -248,13 +260,13 @@ export function SuperRewardButton({ className }: { className?: string }) {
               <ChevronRight className='text-muted-foreground size-4 shrink-0' />
             </button>
 
-            <button
-              type='button'
+            {/* 邀请返利属独立页面，参照导航约定在新标签打开，避免离开当前操作流 */}
+            <Link
+              to='/invite'
+              target='_blank'
+              rel='noopener noreferrer'
+              onClick={() => setPopoverOpen(false)}
               className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
-              onClick={() => {
-                setPopoverOpen(false)
-                navigate({ to: '/invite' })
-              }}
             >
               <span className='bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
                 <Users className='size-4' />
@@ -275,9 +287,60 @@ export function SuperRewardButton({ className }: { className?: string }) {
                 </span>
               </span>
               <ChevronRight className='text-muted-foreground size-4 shrink-0' />
+            </Link>
+
+            {/* 代理合作在新标签打开，与导航栏「代理合作」行为一致 */}
+            {agentEnabled ? (
+              <Link
+                to='/agent'
+                target='_blank'
+                rel='noopener noreferrer'
+                onClick={() => setPopoverOpen(false)}
+                className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
+              >
+                <span className='bg-orange-500/10 text-orange-600 dark:text-orange-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
+                  <Handshake className='size-4' />
+                </span>
+                <span className='min-w-0 flex-1'>
+                  <span className='flex items-center gap-1.5 text-sm font-semibold'>
+                    {t('Partner Agent')}
+                  </span>
+                  <span className='text-muted-foreground block truncate text-xs'>
+                    {t(
+                      'Share your invite link — commission credits automatically on every customer top-up.'
+                    )}
+                  </span>
+                </span>
+                <ChevronRight className='text-muted-foreground size-4 shrink-0' />
+              </Link>
+            ) : null}
+
+            <button
+              type='button'
+              className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
+              onClick={() => {
+                setPopoverOpen(false)
+                setDrawDialogOpen(true)
+              }}
+            >
+              <span className='bg-amber-500/10 text-amber-600 dark:text-amber-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
+                <Sparkles className='size-4' />
+              </span>
+              <span className='min-w-0 flex-1'>
+                <span className='flex items-center gap-1.5 text-sm font-semibold'>
+                  {t('Lucky Draw')}
+                </span>
+                <span className='text-muted-foreground block truncate text-xs'>
+                  {t('Random grid draw: the rarer the reward, the longer it flickers')}
+                </span>
+              </span>
+              <ChevronRight className='text-muted-foreground size-4 shrink-0' />
             </button>
           </PopoverContent>
-        </Popover>
+          </Popover>
+
+          <LuckyDrawDialog open={drawDialogOpen} onOpenChange={setDrawDialogOpen} />
+        </>
       ) : (
         <span className={cn('inline-flex', className)}>{pill}</span>
       )}

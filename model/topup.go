@@ -90,7 +90,8 @@ func ValidateTopUpQuotaCapacity(userId int, creditedQuota int) error {
 // creditTopUpQuota atomically enforces the wallet ceiling while adding quota.
 // Keeping the predicate and increment in one UPDATE prevents two
 // concurrent callbacks from both passing a separate read/check.
-func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[string]any) error {
+// source 为可选的到账来源（订单号/兑换码 ID），用于代理佣金明细对账。
+func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[string]any, source ...*RebateSource) error {
 	maxCurrentQuota, err := topUpQuotaMaxCurrent(creditedQuota)
 	if err != nil {
 		return err
@@ -107,8 +108,12 @@ func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[st
 		return result.Error
 	}
 	if result.RowsAffected == 1 {
-		// 入账成功后按配置给邀请人发放充值返利（失败会回滚整笔充值，保持账务一致）
-		return applyAffTopupRebate(tx, userId, creditedQuota)
+		// 入账成功后按配置给邀请人发放充值返利或代理佣金（失败会回滚整笔充值，保持账务一致）
+		var rebateSource *RebateSource
+		if len(source) > 0 {
+			rebateSource = source[0]
+		}
+		return applyAffTopupRebate(tx, userId, creditedQuota, rebateSource)
 	}
 
 	var count int64
@@ -121,15 +126,13 @@ func creditTopUpQuota(tx *gorm.DB, userId int, creditedQuota int, updates map[st
 	return ErrTopUpQuotaLimitExceeded
 }
 
-// applyAffTopupRebate 在充值或卡密兑换到账后，按「邀请奖励」配置给邀请人发放返利。
+// applyAffTopupRebate 在充值或卡密兑换到账后发放邀请返利或代理佣金。
+// 若付款人的直接邀请人是已通过审核的代理，走代理分销路径（佣金计入 agent_quota，
+// 最多两级，明细落 agent_commissions）；否则走「邀请奖励」路径（返利计入 aff_quota）。
 // 首笔判定：当前事件（充值订单或已核销卡密）在事务里已先落库，两张表的成功总数减一
 // 即历史完成次数，为 0 说明这是该用户的第一次入账。并发场景下同一用户的回调已被
 // creditTopUpQuota 的行级 UPDATE 串行化。
-func applyAffTopupRebate(tx *gorm.DB, userId int, creditedQuota int) error {
-	setting := operation_setting.GetAffRebateSetting()
-	if setting.FirstPercent <= 0 && setting.Percent <= 0 {
-		return nil
-	}
+func applyAffTopupRebate(tx *gorm.DB, userId int, creditedQuota int, source *RebateSource) error {
 	if !operation_setting.IsPaymentComplianceConfirmed() {
 		return nil
 	}
@@ -160,6 +163,24 @@ func applyAffTopupRebate(tx *gorm.DB, userId int, creditedQuota int) error {
 		return err
 	}
 	isFirst := topupCount+redemptionCount <= 1
+
+	// 代理分销路径：直接邀请人是已通过代理时，佣金计入 agent_quota，不再走邀请返利
+	agentSetting := operation_setting.GetAgentSetting()
+	if agentSetting.Enabled {
+		profile, err := getApprovedAgentProfile(tx, payer.InviterId)
+		if err == nil {
+			return applyAgentCommission(tx, userId, creditedQuota, isFirst, payer.CreatedAt, profile, source)
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return err
+		}
+	}
+
+	// —— 以下为原「邀请充值返利」路径，逻辑保持不变 ——
+	setting := operation_setting.GetAffRebateSetting()
+	if setting.FirstPercent <= 0 && setting.Percent <= 0 {
+		return nil
+	}
 
 	percent := setting.Percent
 	if isFirst {
@@ -297,7 +318,7 @@ func RechargeEpay(tradeNo string, actualPaymentMethod string, callerIp string) (
 		if err := tx.Save(topUp).Error; err != nil {
 			return err
 		}
-		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil)
+		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 	if err != nil {
 		if !errors.Is(err, ErrTopUpNotFound) && !errors.Is(err, ErrPaymentMethodMismatch) && !errors.Is(err, ErrTopUpStatusInvalid) {
@@ -357,7 +378,7 @@ func Recharge(referenceId string, customerId string, callerIp string) (err error
 		}
 		return creditTopUpQuota(tx, topUp.UserId, quota, map[string]any{
 			"stripe_customer": customerId,
-		})
+		}, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 
 	if err != nil {
@@ -662,7 +683,7 @@ func RechargeCreem(referenceId string, customerEmail string, customerName string
 			}
 		}
 
-		return creditTopUpQuota(tx, topUp.UserId, quota, updateFields)
+		return creditTopUpQuota(tx, topUp.UserId, quota, updateFields, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 
 	if err != nil {
@@ -720,7 +741,7 @@ func RechargeWaffo(tradeNo string, callerIp string) (err error) {
 			return err
 		}
 
-		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil)
+		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 
 	if err != nil {
@@ -780,7 +801,7 @@ func RechargeWxPay(tradeNo string, callerIp string) error {
 			return err
 		}
 
-		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil)
+		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 
 	if err != nil {
@@ -840,7 +861,7 @@ func RechargeWaffoPancake(tradeNo string) (err error) {
 			return err
 		}
 
-		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil)
+		return creditTopUpQuota(tx, topUp.UserId, quotaToAdd, nil, &RebateSource{TopUpId: topUp.Id, TradeNo: topUp.TradeNo})
 	})
 
 	if err != nil {

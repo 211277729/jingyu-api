@@ -174,7 +174,7 @@ func Redeem(key string, userId int) (quota int, err error) {
 		if result.RowsAffected == 0 {
 			return errors.New("redemption code already used")
 		}
-		return creditTopUpQuota(tx, userId, redemption.Quota, nil)
+		return creditTopUpQuota(tx, userId, redemption.Quota, nil, &RebateSource{RedemptionId: redemption.Id})
 	})
 	if err != nil {
 		common.SysError(common.LogText("redemption failed: %s", err.Error()))

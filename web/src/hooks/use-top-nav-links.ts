@@ -122,6 +122,16 @@ export function useTopNavLinks(): TopNavLink[] {
     })
   }
 
+  // 代理合作：公开落地页（独立于后台），代理分销关闭时隐藏
+  if (status?.agent_enabled === true) {
+    links.push({
+      title: t('Agent Earnings'),
+      href: '/agent-program',
+      requiresAuth: !isAuthed,
+      openInNewTab: true,
+    })
+  }
+
   // About
   if (modules?.about !== false) {
     links.push({ title: t('About'), href: '/about' })
