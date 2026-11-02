@@ -17,15 +17,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
   createRootRouteWithContext,
   Outlet,
   redirect,
   useNavigate,
 } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 
 import { NavigationProgress } from '@/components/navigation-progress'
 import { Toaster } from '@/components/ui/sonner'
@@ -97,14 +95,58 @@ function RootComponent() {
       <NavigationProgress />
       <Outlet />
       <Toaster closeButton duration={5000} position='top-center' richColors />
-      {import.meta.env.MODE === 'development' && (
-        <>
-          <ReactQueryDevtools buttonPosition='bottom-left' />
-          <TanStackRouterDevtools position='bottom-right' />
-          <DevtoolsCloseFix />
-        </>
-      )}
+      {import.meta.env.MODE === 'development' && <DevtoolsGate />}
     </ThemeCustomizationProvider>
+  )
+}
+
+// 开发调试工具默认完全不挂载（连 chunk 都不加载，两个 devtools 面板是开发期
+// CPU/内存的常驻大头）。需要时在地址栏加 ?devtools=1 打开并记住，?devtools=0
+// 关闭；开关状态存 localStorage，生产模式永远不渲染。
+const ReactQueryDevtools = lazy(() =>
+  import('@tanstack/react-query-devtools').then((m) => ({
+    default: m.ReactQueryDevtools,
+  }))
+)
+const TanStackRouterDevtools = lazy(() =>
+  import('@tanstack/react-router-devtools').then((m) => ({
+    default: m.TanStackRouterDevtools,
+  }))
+)
+
+const DEVTOOLS_ENABLED_KEY = 'dev_devtools_enabled'
+
+function DevtoolsGate() {
+  const [enabled, setEnabled] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.has('devtools')) {
+      localStorage.setItem(
+        DEVTOOLS_ENABLED_KEY,
+        params.get('devtools') === '0' ? '0' : '1'
+      )
+      // 用完即从地址栏摘掉参数，避免刷新/分享链接时带上
+      params.delete('devtools')
+      const query = params.toString()
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+      )
+    }
+    setEnabled(localStorage.getItem(DEVTOOLS_ENABLED_KEY) === '1')
+  }, [])
+
+  if (!enabled) {
+    return null
+  }
+  return (
+    <Suspense fallback={null}>
+      <ReactQueryDevtools buttonPosition='bottom-left' />
+      <TanStackRouterDevtools position='bottom-right' />
+      <DevtoolsCloseFix />
+    </Suspense>
   )
 }
 
