@@ -64,8 +64,10 @@ export const DOCS_ENDPOINTS: EndpointDefinition[] = [
 
 /** Anchor ids on the page, in the order the sections appear. */
 export const DOCS_SECTION_IDS = [
+  'quick-start',
   'api-key',
   'endpoints',
+  'verify',
   'models',
   'tools',
   'troubleshooting',
@@ -75,8 +77,10 @@ export type DocsSectionId = (typeof DOCS_SECTION_IDS)[number]
 
 /** Section id to i18n key for its heading, shared by the body and the index. */
 export const DOCS_SECTION_TITLE_KEYS: Record<DocsSectionId, string> = {
+  'quick-start': 'Quick Start',
   'api-key': 'Get an API Key',
   endpoints: 'API Endpoints',
+  verify: 'Verify the Connection',
   models: 'Available Models',
   tools: 'Connect a Tool',
   troubleshooting: 'Troubleshooting',
@@ -120,5 +124,24 @@ export const FAQ_ITEMS: FaqItem[] = [
     questionKey: 'Do streaming and tool calling work?',
     answerKey:
       'Yes. The OpenAI routes support server-sent events, tool calls and reasoning output; the Anthropic route supports the equivalent Messages features.',
+  },
+  {
+    id: 'cc-switch-no-effect',
+    questionKey:
+      'I imported the provider with CC Switch but the tool still uses the old endpoint.',
+    answerKey:
+      'Claude Code picks up the switch immediately. Codex and Gemini CLI read their config at startup, so quit and restart them after importing.',
+  },
+  {
+    id: 'copy-key-again',
+    questionKey: 'Where can I copy my key again?',
+    answerKey:
+      'Open API Keys, open the row actions menu of the key, and choose Copy Key.',
+  },
+  {
+    id: 'check-balance',
+    questionKey: 'Where do I check my remaining balance?',
+    answerKey:
+      'Open Wallet. A valid token with an empty balance still fails with an insufficient balance error.',
   },
 ]

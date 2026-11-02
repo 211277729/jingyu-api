@@ -21,9 +21,18 @@ import { cleanup, render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
+import { useAuthStore } from '@/stores/auth-store'
+
+import { generateSetupCode } from '../api'
+import { AiSetupCard } from '../components/ai-setup-card'
 import { ToolGuides } from '../components/tool-guides'
 import { DOCS_SECTION_IDS } from '../constants'
 import { Docs } from '../index'
+
+vi.mock('../api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../api')>()),
+  generateSetupCode: vi.fn(),
+}))
 
 // The public shell owns the app router and header chrome, neither of which the
 // docs page contributes; replacing them keeps this suite on the page itself.
@@ -103,6 +112,58 @@ describe('docs page addresses', () => {
       screen.getAllByText('deepseek/deepseek-v4.1-flash').length
     ).toBeGreaterThan(0)
   })
+
+  it('offers both base URL variants, one per client family', () => {
+    renderWithCache(<Docs />)
+
+    expect(screen.getByText('OpenAI-compatible clients')).toBeInTheDocument()
+    expect(
+      screen.getByText('Anthropic clients (Claude Code)')
+    ).toBeInTheDocument()
+    expect(screen.getByText(ORIGIN, { selector: 'code' })).toBeInTheDocument()
+  })
+})
+
+describe('quick start and verify sections', () => {
+  it('renders the four quick-start steps with links into the details', () => {
+    renderWithCache(<Docs />)
+
+    expect(screen.getByText('Check your balance')).toBeInTheDocument()
+    expect(screen.getByText('Create an API key')).toBeInTheDocument()
+    expect(screen.getByText('Connect your tool')).toBeInTheDocument()
+    expect(screen.getByText('Verify the connection')).toBeInTheDocument()
+    expect(
+      screen.getAllByRole('link', { name: 'Open API Keys' }).length
+    ).toBeGreaterThan(0)
+  })
+
+  it('walks through creating a key with the exact UI labels', () => {
+    renderWithCache(<Docs />)
+
+    expect(
+      screen.getByText(/click the "Create API Key" button/)
+    ).toBeInTheDocument()
+    expect(screen.getByText(/choose "Copy Key"/)).toBeInTheDocument()
+  })
+
+  it('shows what a successful response looks like in the verify section', () => {
+    renderWithCache(<Docs />)
+
+    expect(
+      screen.getByText(/"object": "chat\.completion"/, { selector: 'code' })
+    ).toBeInTheDocument()
+  })
+
+  it('links each tool guide card from the quick-jump chips', () => {
+    renderWithCache(<Docs />)
+
+    for (const id of ['cc-switch', 'claude-code', 'codex', 'deepseek-harness']) {
+      expect(document.querySelector(`#${id}`)).not.toBeNull()
+    }
+    expect(
+      screen.getByRole('link', { name: 'CC Switch' })
+    ).toBeInTheDocument()
+  })
 })
 
 describe('tool base URLs', () => {
@@ -141,5 +202,72 @@ describe('tool base URLs', () => {
       selector: 'code',
     })
     expect(provider.textContent).toContain(`baseURL: ${OPENAI_BASE_URL}`)
+  })
+})
+
+describe('AI setup card', () => {
+  afterEach(() => {
+    useAuthStore.getState().auth.setUser(null)
+    vi.mocked(generateSetupCode).mockReset()
+  })
+
+  it('keeps the prompt collapsed until the reader expands it', async () => {
+    render(<AiSetupCard origin={ORIGIN} />)
+
+    expect(
+      screen.queryByText(/Read https:\/\/gateway\.example\/llms\.txt/)
+    ).not.toBeInTheDocument()
+    const { userEvent } = await import('@testing-library/user-event')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'View the full prompt' })
+    )
+
+    const prompt = screen.getByText(/Read https:\/\/gateway\.example\/llms\.txt/)
+    expect(prompt.textContent).toContain('ask me for my sk- API key')
+  })
+
+  it('links signed-out visitors to sign-in instead of offering a setup code', () => {
+    render(<AiSetupCard origin={ORIGIN} />)
+
+    expect(
+      screen.getByRole('link', { name: 'Sign in to generate a setup code' })
+    ).toHaveAttribute('href', '/sign-in')
+    expect(
+      screen.queryByRole('button', { name: 'Generate a setup code' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('rewrites the prompt to include the setup code once generated', async () => {
+    const user = { id: 1, username: 'tester' } as never
+    useAuthStore.getState().auth.setUser(user)
+    vi.mocked(generateSetupCode).mockResolvedValue({
+      success: true,
+      data: { code: 'ABCD2345EFGH6789', expires_in: 600 },
+    })
+
+    render(<AiSetupCard origin={ORIGIN} />)
+    const { userEvent } = await import('@testing-library/user-event')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Generate a setup code' })
+    )
+
+    expect(await screen.findByText('ABCD2345EFGH6789')).toBeInTheDocument()
+    await userEvent.click(
+      screen.getByRole('button', { name: 'View the full prompt' })
+    )
+    const prompt = screen.getByText(/My one-time setup code is ABCD2345EFGH6789/)
+    expect(prompt.textContent).toContain('/api/setup_code/redeem')
+  })
+
+  it('renders on the full docs page with the signed-out variant', () => {
+    renderWithCache(<Docs />)
+
+    expect(screen.getByText('Configure with AI')).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Sign in to generate a setup code' })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'View the full prompt' })
+    ).toBeInTheDocument()
   })
 })

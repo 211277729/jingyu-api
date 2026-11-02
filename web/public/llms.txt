@@ -1,0 +1,122 @@
+# Jingyu API — AI gateway setup guide for coding agents
+
+> This file is written for AI coding agents (Claude Code, Codex, Cursor, etc.).
+> The gateway origin is the same origin this file was fetched from, without a
+> trailing slash. Below it is written as `<ORIGIN>`; replace it with that origin
+> before running any command.
+
+## What this gateway is
+
+An OpenAI- and Anthropic-compatible API relay. One API key works on all routes.
+A key is created from the web dashboard (API Keys page) or exchanged from a
+one-time setup code (see "Setup code redemption" below).
+
+## Base URLs
+
+- OpenAI-compatible clients: `<ORIGIN>/v1`
+- Anthropic clients (Claude Code): `<ORIGIN>` — do NOT append `/v1`; Claude Code
+  posts to `/v1/messages` itself, so a suffix would produce `/v1/v1/messages`.
+
+## Authentication
+
+- OpenAI routes: `Authorization: Bearer sk-…`
+- Anthropic route (`/v1/messages`): `x-api-key: sk-…` (plus `anthropic-version: 2023-06-01`)
+
+Both headers may carry the same key.
+
+## Endpoints
+
+| Method | Path                    | Protocol                  | Used by            |
+| ------ | ----------------------- | ------------------------- | ------------------ |
+| GET    | `/v1/models`            | OpenAI / Anthropic        | model list         |
+| POST   | `/v1/chat/completions`  | OpenAI Chat Completions   | chat, tools, SSE   |
+| POST   | `/v1/responses`         | OpenAI Responses          | Codex              |
+| POST   | `/v1/messages`          | Anthropic Messages        | Claude Code        |
+
+## Setup code redemption
+
+If the user gives you a one-time setup code (16 characters, e.g. from the
+docs page "Configure with AI" card), exchange it for a real key. The code is
+single-use and expires in 10 minutes. Redeem it exactly once, then discard it:
+
+```bash
+curl -s <ORIGIN>/api/setup_code/redeem \
+  -H 'Content-Type: application/json' \
+  -d '{"code":"SETUP_CODE"}'
+```
+
+A successful reply is `{"success":true,"data":{"key":"sk-…"}}`. Use that key
+for the configuration below. Do not commit the key to any repository, and do
+not write it into files that get shared; prefer environment variables or the
+tool's own credential store.
+
+If you do not have a setup code, ask the user for an `sk-…` key instead. You
+can check whether the account has quota by calling `GET /v1/models` with the
+key; an auth error means the key is wrong, a quota error means the balance is
+empty (the user must top up in the Wallet page).
+
+## Tool configuration
+
+### Claude Code
+
+Add to `~/.claude/settings.json` (or export the same variables in the shell):
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "<ORIGIN>",
+    "ANTHROPIC_API_KEY": "sk-xxxxxxxx",
+    "ANTHROPIC_MODEL": "MODEL_ID"
+  }
+}
+```
+
+Keep `ANTHROPIC_MODEL` set to a model id from `GET /v1/models`.
+
+### Codex
+
+Codex uses the Responses API. Edit `~/.codex/config.toml`:
+
+```toml
+model = "MODEL_ID"
+model_provider = "jingyu-api"
+
+[model_providers.jingyu-api]
+name = "Jingyu API"
+base_url = "<ORIGIN>/v1"
+wire_api = "responses"
+env_key = "JINGYU_API_KEY"
+```
+
+Then export the key in the shell you launch Codex from:
+
+```bash
+export JINGYU_API_KEY=sk-xxxxxxxx      # macOS / Linux / WSL
+# PowerShell: $env:JINGYU_API_KEY = "sk-xxxxxxxx"
+```
+
+### Other OpenAI-compatible tools
+
+Set the base URL to `<ORIGIN>/v1` and the API key to the `sk-…` value, using
+whatever mechanism the tool provides (config file, env var, UI settings).
+
+## Verify the connection
+
+After configuring, run one real request and confirm the reply shape:
+
+```bash
+curl -s <ORIGIN>/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer sk-xxxxxxxx' \
+  -d '{"model":"MODEL_ID","messages":[{"role":"user","content":"Say OK"}]}'
+```
+
+A successful reply contains `"object": "chat.completion"` and a
+`choices[0].message.content` field. Anything else is an error to report back to
+the user (401: key wrong or disabled; quota error: balance empty; 404/400 on
+model: model id not offered — pick one from `GET /v1/models`).
+
+## Model ids
+
+Fetch the current list with `GET /v1/models` (Bearer auth). Send the model id
+exactly as listed, including the vendor prefix.

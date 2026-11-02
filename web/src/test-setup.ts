@@ -98,6 +98,22 @@ Object.defineProperty(globalThis, 'ResizeObserver', {
   value: ResizeObserverMock,
 })
 
+// jsdom has no IntersectionObserver. A no-op stub matches ResizeObserver
+// above; scroll-spy behavior itself is checked in browser QA.
+class IntersectionObserverMock {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+  takeRecords(): IntersectionObserverEntry[] {
+    return []
+  }
+}
+
+Object.defineProperty(globalThis, 'IntersectionObserver', {
+  configurable: true,
+  value: IntersectionObserverMock,
+})
+
 Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
   configurable: true,
   value: () => undefined,

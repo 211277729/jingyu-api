@@ -97,6 +97,8 @@ export type TopNavLink = {
   disabled?: boolean
   requiresAuth?: boolean
   external?: boolean
+  /** Internal link that should still open in a new browser tab. */
+  openInNewTab?: boolean
 }
 
 /**

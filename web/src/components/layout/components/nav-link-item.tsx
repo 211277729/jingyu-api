@@ -53,7 +53,13 @@ export function NavLinkItem({ link, className }: NavLinkItemProps) {
   }
 
   return (
-    <Link to={link.href} className={linkClassName} disabled={link.disabled}>
+    <Link
+      to={link.href}
+      className={linkClassName}
+      disabled={link.disabled}
+      target={link.openInNewTab ? '_blank' : undefined}
+      rel={link.openInNewTab ? 'noopener noreferrer' : undefined}
+    >
       {link.title}
     </Link>
   )
@@ -76,9 +82,9 @@ export function NavLinkList({
 }: NavLinkListProps) {
   return (
     <>
-      {links.map((link, index) => (
+      {links.map((link) => (
         <NavLinkItem
-          key={index}
+          key={`${link.title}-${link.href}`}
           link={link}
           className={cn(className, itemClassName)}
         />

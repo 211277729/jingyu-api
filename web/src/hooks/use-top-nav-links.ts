@@ -72,26 +72,42 @@ export function useTopNavLinks(): TopNavLink[] {
   const nav = modules?.nav
   if (nav && typeof nav === 'object' && nav.enabled) {
     const requiresAuth = nav.requireAuth && !isAuthed
-    links.push({ title: t('AI Navigation'), href: '/nav', requiresAuth })
+    // 与文档一样在新标签打开，保持站点可回访
+    links.push({
+      title: t('AI Navigation'),
+      href: '/nav',
+      requiresAuth,
+      openInNewTab: true,
+    })
   }
 
   // Console -> /dashboard (new console path)
   if (modules?.console !== false) {
-    links.push({ title: t('Console'), href: '/dashboard' })
+    links.push({ title: t('Console'), href: '/dashboard', openInNewTab: true })
   }
 
   // Pricing
   const pricing = modules?.pricing
   if (pricing && typeof pricing === 'object' && pricing.enabled) {
     const requiresAuth = pricing.requireAuth && !isAuthed
-    links.push({ title: t('Model Square'), href: '/pricing', requiresAuth })
+    links.push({
+      title: t('Model Square'),
+      href: '/pricing',
+      requiresAuth,
+      openInNewTab: true,
+    })
   }
 
   // Rankings
   const rankings = modules?.rankings
   if (rankings && typeof rankings === 'object' && rankings.enabled) {
     const requiresAuth = rankings.requireAuth && !isAuthed
-    links.push({ title: t('Rankings'), href: '/rankings', requiresAuth })
+    links.push({
+      title: t('Rankings'),
+      href: '/rankings',
+      requiresAuth,
+      openInNewTab: true,
+    })
   }
 
   // Docs
@@ -101,6 +117,8 @@ export function useTopNavLinks(): TopNavLink[] {
       title: t('Docs'),
       href: docs.href,
       external: docs.external,
+      // 文档是参考内容，读者常需要对照站点操作，导航栏点击在新标签打开
+      openInNewTab: true,
     })
   }
 

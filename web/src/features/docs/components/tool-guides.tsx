@@ -45,7 +45,7 @@ export function ToolGuides(props: ToolGuidesProps) {
       },
       {
         text: t(
-          'Open API Keys, open the actions menu of the key you want to use, and choose CC Switch.'
+          'Open API Keys, open the row actions menu of the key you want to use, and choose "CC Switch".'
         ),
       },
       {
@@ -165,6 +165,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
         )}
         steps={steps.ccSwitch}
         recommended
+        anchorId='cc-switch'
         footnote={t(
           'Claude Code switches immediately. Restart Codex and Gemini CLI after switching.'
         )}
@@ -177,6 +178,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
           'DeepSeek Harness declares providers in its Models settings page. Add this gateway once and every agent preset can use it.'
         )}
         steps={steps.harness}
+        anchorId='deepseek-harness'
         footnote={t('If the fetch fails, add the model ids by hand instead.')}
       />
 
@@ -187,6 +189,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
           'Codex needs a model that serves the Responses API, so it cannot use models listed above as chat-only.'
         )}
         steps={steps.codex}
+        anchorId='codex'
         footnote={t(
           'Keep wire_api = "responses"; this gateway serves the Responses API natively, so no local routing is needed.'
         )}
@@ -199,6 +202,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
           'Claude Code reads its endpoint and credential from the environment, and takes the origin only.'
         )}
         steps={steps.claudeCode}
+        anchorId='claude-code'
         footnote={t(
           'Do not append /v1 to the base URL; Claude Code already posts to /v1/messages, so a suffix produces /v1/v1/messages.'
         )}

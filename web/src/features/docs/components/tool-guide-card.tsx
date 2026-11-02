@@ -22,18 +22,10 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { TitledCard } from '@/components/ui/titled-card'
 
-import { CodeBlock } from './code-block'
+import { StepList, type StepItem } from './step-list'
 
-export type ToolGuideSnippet = {
-  /** Optional file path or shell name shown above the snippet. */
-  label?: string
-  code: string
-}
-
-export type ToolGuideStep = {
-  text: string
-  snippet?: ToolGuideSnippet
-}
+export type ToolGuideSnippet = StepItem['snippet']
+export type ToolGuideStep = StepItem
 
 interface ToolGuideCardProps {
   name: string
@@ -42,6 +34,8 @@ interface ToolGuideCardProps {
   steps: ToolGuideStep[]
   /** Marks the setup path the page recommends over the manual ones. */
   recommended?: boolean
+  /** Anchor target so other page elements can deep-link to this card. */
+  anchorId?: string
   footnote?: string
 }
 
@@ -49,42 +43,27 @@ export function ToolGuideCard(props: ToolGuideCardProps) {
   const { t } = useTranslation()
 
   return (
-    <TitledCard
-      icon={props.logo}
-      title={
-        <span className='flex flex-wrap items-center gap-2'>
-          {props.name}
-          {props.recommended === true && (
-            <Badge variant='secondary'>{t('Recommended')}</Badge>
-          )}
-        </span>
-      }
-      description={props.intro}
+    <div
+      id={props.anchorId}
+      className={props.anchorId != null ? 'scroll-mt-24' : undefined}
     >
-      <ol className='space-y-5'>
-        {props.steps.map((step, index) => (
-          <li key={step.text} className='flex gap-3'>
-            <span
-              className='bg-muted text-muted-foreground mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold'
-              aria-hidden='true'
-            >
-              {index + 1}
-            </span>
-            <div className='min-w-0 flex-1 space-y-2'>
-              <p className='text-sm'>{step.text}</p>
-              {step.snippet != null && (
-                <CodeBlock
-                  code={step.snippet.code}
-                  label={step.snippet.label}
-                />
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
-      {props.footnote != null && (
-        <p className='text-muted-foreground mt-4 text-xs'>{props.footnote}</p>
-      )}
-    </TitledCard>
+      <TitledCard
+        icon={props.logo}
+        title={
+          <span className='flex flex-wrap items-center gap-2'>
+            {props.name}
+            {props.recommended === true && (
+              <Badge variant='secondary'>{t('Recommended')}</Badge>
+            )}
+          </span>
+        }
+        description={props.intro}
+      >
+        <StepList steps={props.steps} />
+        {props.footnote != null && (
+          <p className='text-muted-foreground mt-4 text-xs'>{props.footnote}</p>
+        )}
+      </TitledCard>
+    </div>
   )
 }

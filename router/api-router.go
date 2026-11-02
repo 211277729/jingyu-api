@@ -306,6 +306,13 @@ func SetApiRouter(router *gin.Engine) {
 			tokenRoute.POST("/batch/keys", middleware.CriticalRateLimit(), middleware.DisableCache(), controller.GetTokenKeysBatch)
 		}
 
+		// AI 代理配置：登录用户生成一次性配置码，AI agent 匿名兑换出令牌。
+		setupCodeRoute := apiRouter.Group("/setup_code")
+		{
+			setupCodeRoute.POST("/", middleware.UserAuth(), middleware.UserCriticalRateLimit("setup-code"), middleware.DisableCache(), controller.GenerateSetupCode)
+			setupCodeRoute.POST("/redeem", middleware.CriticalRateLimit(), anonymousRequestBodyLimit, controller.RedeemSetupCode)
+		}
+
 		usageRoute := apiRouter.Group("/usage")
 		usageRoute.Use(middleware.CORS(), middleware.CriticalRateLimit())
 		{
