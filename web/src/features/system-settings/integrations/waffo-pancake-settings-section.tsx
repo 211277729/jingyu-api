@@ -459,15 +459,17 @@ export function WaffoPancakeSettingsSection({
           Pricing — sits next to the credentials because both feed the same
           checkout call. Pancake's checkout currency is fixed to USD, so
           UnitPrice is a plain multiplier: credit × UnitPrice becomes the USD
-          amount sent to Pancake. Keep it equal to the global Price setting, or
-          the checkout total will disagree with the recharge preview.
+          amount sent to Pancake. It is independent of the global Price
+          setting (which is CNY-denominated for epay) — operators set it to
+          global Price ÷ USD exchange rate so the checkout total tracks the
+          recharge preview.
         */}
         <div className='grid gap-4 sm:grid-cols-2 lg:col-span-2'>
           <div className='grid gap-1.5'>
             <Label>{t('Unit price (USD)')}</Label>
             <Input
               type='number'
-              step={0.1}
+              step='any'
               min={0}
               value={values.WaffoPancakeUnitPrice}
               onChange={(event) =>
@@ -477,11 +479,19 @@ export function WaffoPancakeSettingsSection({
                 )
               }
             />
-            <p className='text-muted-foreground text-xs'>
-              {t(
-                'Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.'
-              )}
-            </p>
+            <div className='text-muted-foreground space-y-1 text-xs'>
+              <p>{t('Checkout currency is fixed to USD.')}</p>
+              <p>
+                {t(
+                  'Amount charged = top-up units × Unit price (USD) × group top-up ratio × amount discount.'
+                )}
+              </p>
+              <p>
+                {t(
+                  'This price does not follow the global Price setting (charged in CNY). Set it to global Price ÷ USD exchange rate, e.g. Price 1 ÷ 7.3 ≈ 0.14, so 10 units cost about 1.4 USD.'
+                )}
+              </p>
+            </div>
           </div>
           <div className='grid gap-1.5'>
             <Label>{t('Minimum top-up quantity')}</Label>

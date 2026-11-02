@@ -4861,7 +4861,6 @@
     "Price": "Giá",
     "Price ($/1K calls)": "Giá ($/1K lượt gọi)",
     "Price (local currency / USD)": "Giá (tiền tệ địa phương / USD)",
-    "Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.": "Tính phí trên mỗi đơn vị tín dụng. Hãy đặt bằng với cài đặt «Giá» chung, nếu không tổng tiền thanh toán sẽ khác với bản xem trước nạp tiền.",
     "Price adjustment for {{model}}": "Điều chỉnh giá cho {{model}}",
     "Price adjustment for {{model}} from {{source}}": "Điều chỉnh giá {{model}} từ {{source}}",
     "Price cannot be negative": "Giá không được là số âm",

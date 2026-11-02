@@ -4861,7 +4861,6 @@
     "Price": "Prix",
     "Price ($/1K calls)": "Prix ($/1K appels)",
     "Price (local currency / USD)": "Prix (devise locale / USD)",
-    "Charged per unit of credit. Keep it equal to the global Price setting, or the checkout total will not match the recharge preview.": "Facturé par unité de crédit. Gardez cette valeur égale au réglage global « Prix », sinon le total encaissé différera de l'aperçu de recharge.",
     "Price adjustment for {{model}}": "Ajustement du prix de {{model}}",
     "Price adjustment for {{model}} from {{source}}": "Ajuster le prix de {{model}} depuis {{source}}",
     "Price cannot be negative": "Le prix ne peut pas être négatif",
