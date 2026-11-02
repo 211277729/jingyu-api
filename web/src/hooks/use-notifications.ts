@@ -171,6 +171,9 @@ export function useNotifications() {
     notice: noticeContent,
     announcements,
     loading: noticeLoading || statusLoading,
+    // Separate loading flags so callers can render progressively
+    noticeLoading,
+    statusLoading,
 
     // Unread counts
     unreadCount: unreadCounts.total,

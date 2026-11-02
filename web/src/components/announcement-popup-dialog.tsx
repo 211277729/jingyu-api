@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import type { AnnouncementItem } from '@/features/dashboard/types'
 import { getAnnouncementKey, useNotifications } from '@/hooks/use-notifications'
 import { getAnnouncementColorClass } from '@/lib/colors'
@@ -33,11 +34,17 @@ import { formatDateTimeObject } from '@/lib/time'
 import { cn } from '@/lib/utils'
 import { useNotificationStore } from '@/stores/notification-store'
 
+// 时间线分页渲染：Markdown（shiki 高亮）渲染开销大，首屏只渲染一部分
+const TIMELINE_PAGE_SIZE = 5
+
 /**
  * 全局公告弹窗：登录后检测到未读内容时在屏幕中央弹出。
  *
- * 内容分两段：最前面是系统公告（Notice，单条必读），其后是按发布时间倒序的
- * 未读公告（Announcements）。数据复用 useNotifications 的共享查询缓存。
+ * 弹窗内容默认展示完整公告时间线（按发布时间倒序，未读高亮），
+ * 系统公告（Notice，必读）始终置顶，数据复用 useNotifications 的共享查询缓存。
+ *
+ * 加载优化：公告列表来自 /api/status 的 localStorage 快照，弹窗即点即开；
+ * 系统公告请求独立加载，用骨架占位不阻塞弹窗打开；时间线分页渲染正文。
  *
  * - 「知道了」把系统公告和当前公告全部标记为已读（与铃铛通知中心一致）；
  * - 「今日关闭」/ 右上角关闭 = 当天不再自动弹出，未读状态保留在铃铛里；
@@ -45,8 +52,13 @@ import { useNotificationStore } from '@/stores/notification-store'
  */
 export function AnnouncementPopupDialog() {
   const { t } = useTranslation()
-  const { notice, announcements, loading, unreadNoticeCount } =
-    useNotifications()
+  const {
+    notice,
+    announcements,
+    unreadNoticeCount,
+    noticeLoading,
+    statusLoading,
+  } = useNotifications()
   const {
     readAnnouncementKeys,
     markNoticeRead,
@@ -58,34 +70,72 @@ export function AnnouncementPopupDialog() {
   const [open, setOpen] = useState(false)
   // 本次布局生命周期内用户已手动关闭过，避免数据刷新后再次自动弹出
   const [dismissed, setDismissed] = useState(false)
+  const [timelineCount, setTimelineCount] = useState(TIMELINE_PAGE_SIZE)
 
   // 系统公告非空且内容与上次已读不一致时视为未读
   const hasUnreadNotice = Boolean(notice) && unreadNoticeCount > 0
 
-  // 未读公告，按发布时间倒序，最新的展示在最前面
-  const unreadAnnouncements = useMemo(
+  // 公告时间线：全部公告按发布时间倒序；未读的在前端用圆点配色高亮
+  const sortedAnnouncements = useMemo(
     () =>
-      (announcements as unknown as AnnouncementItem[])
-        .filter(
-          (item) =>
-            !readAnnouncementKeys.includes(
-              getAnnouncementKey(item as unknown as Record<string, unknown>)
-            )
-        )
-        .sort(
-          (a, b) =>
-            new Date(b.publishDate || 0).getTime() -
-            new Date(a.publishDate || 0).getTime()
-        ),
-    [announcements, readAnnouncementKeys]
+      [...(announcements as unknown as AnnouncementItem[])].sort(
+        (a, b) =>
+          new Date(b.publishDate || 0).getTime() -
+          new Date(a.publishDate || 0).getTime()
+      ),
+    [announcements]
   )
 
+  const unreadAnnouncementsCount = useMemo(
+    () =>
+      sortedAnnouncements.filter(
+        (item) =>
+          !readAnnouncementKeys.includes(
+            getAnnouncementKey(item as unknown as Record<string, unknown>)
+          )
+      ).length,
+    [sortedAnnouncements, readAnnouncementKeys]
+  )
+
+  const isAnnouncementUnread = (item: AnnouncementItem) =>
+    !readAnnouncementKeys.includes(
+      getAnnouncementKey(item as unknown as Record<string, unknown>)
+    )
+
   useEffect(() => {
-    if (loading || dismissed || open) return
-    if (!hasUnreadNotice && unreadAnnouncements.length === 0) return
-    if (isNoticeClosed()) return
-    setOpen(true)
-  }, [loading, dismissed, open, hasUnreadNotice, unreadAnnouncements, isNoticeClosed])
+    if (dismissed || open || isNoticeClosed()) return
+    // 公告列表随 /api/status 快照立即可用，有未读公告即弹；
+    // 系统公告未返回时先不阻塞，返回后未读会追加在弹窗顶部
+    if (unreadAnnouncementsCount > 0 && !statusLoading) {
+      setOpen(true)
+      return
+    }
+    if (noticeLoading) return
+    if (hasUnreadNotice) setOpen(true)
+  }, [
+    dismissed,
+    open,
+    isNoticeClosed,
+    unreadAnnouncementsCount,
+    statusLoading,
+    noticeLoading,
+    hasUnreadNotice,
+  ])
+
+  // 打开时把滚动条强制回到顶部，避免焦点移动等浏览器行为把内容滚到底部
+  useEffect(() => {
+    if (!open) return
+    const raf = requestAnimationFrame(() => {
+      document
+        .querySelectorAll<HTMLElement>(
+          '[data-slot=dialog-content], [data-slot=scroll-area-viewport]'
+        )
+        .forEach((el) => {
+          el.scrollTop = 0
+        })
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [open])
 
   // 今日关闭：当天不再自动弹出，未读角标仍保留
   const handleCloseToday = () => {
@@ -110,8 +160,10 @@ export function AnnouncementPopupDialog() {
     setOpen(false)
   }
 
-  const unreadTotal =
-    (hasUnreadNotice ? 1 : 0) + unreadAnnouncements.length
+  const unreadTotal = (hasUnreadNotice ? 1 : 0) + unreadAnnouncementsCount
+  const visibleAnnouncements = sortedAnnouncements.slice(0, timelineCount)
+  const hasMoreAnnouncements =
+    sortedAnnouncements.length > visibleAnnouncements.length
 
   return (
     <Dialog
@@ -137,20 +189,26 @@ export function AnnouncementPopupDialog() {
     >
       <ScrollArea className='max-h-[min(58vh,520px)] pr-4'>
         <div className='space-y-5'>
-          {hasUnreadNotice && (
-            <section className='space-y-2'>
-              <div className='flex items-center gap-2 text-sm font-medium'>
-                <Bell className='size-4 shrink-0' />
-                {t('System Notice')}
-                <Badge>{t('Must-read')}</Badge>
-              </div>
-              <RichContent breaks content={notice} />
-            </section>
+          {noticeLoading ? (
+            <div className='space-y-2'>
+              <Skeleton className='h-4 w-24' />
+              <Skeleton className='h-4 w-full' />
+              <Skeleton className='h-4 w-2/3' />
+            </div>
+          ) : (
+            hasUnreadNotice && (
+              <section className='space-y-2'>
+                <div className='flex items-center gap-2 text-sm font-medium'>
+                  <Bell className='size-4 shrink-0' />
+                  {t('System Notice')}
+                  <Badge>{t('Must-read')}</Badge>
+                </div>
+                <RichContent breaks content={notice} />
+              </section>
+            )
           )}
-          {hasUnreadNotice && unreadAnnouncements.length > 0 && (
-            <Separator />
-          )}
-          {unreadAnnouncements.length > 0 && (
+          {hasUnreadNotice && sortedAnnouncements.length > 0 && <Separator />}
+          {sortedAnnouncements.length > 0 && (
             <div className='space-y-5'>
               {hasUnreadNotice && (
                 <div className='flex items-center gap-2 text-sm font-medium'>
@@ -158,36 +216,58 @@ export function AnnouncementPopupDialog() {
                   {t('Announcements')}
                 </div>
               )}
-              {unreadAnnouncements.map((item, index) => (
-                <div
-                  key={
-                    getAnnouncementKey(
-                      item as unknown as Record<string, unknown>
-                    ) || index
-                  }
-                  className='space-y-2'
-                >
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                    <span
+              {visibleAnnouncements.map((item, index) => {
+                const unread = isAnnouncementUnread(item)
+                return (
+                  <div
+                    key={
+                      getAnnouncementKey(
+                        item as unknown as Record<string, unknown>
+                      ) || index
+                    }
+                    className='space-y-2'
+                  >
+                    <div
                       className={cn(
-                        'inline-block size-2 shrink-0 rounded-full',
-                        getAnnouncementColorClass(item.type)
+                        'flex items-center gap-2 text-sm',
+                        unread ? 'text-foreground' : 'text-muted-foreground'
                       )}
-                    />
-                    {item.publishDate
-                      ? formatDateTimeObject(new Date(item.publishDate))
-                      : null}
+                    >
+                      <span
+                        className={cn(
+                          'inline-block size-2 shrink-0 rounded-full',
+                          unread
+                            ? getAnnouncementColorClass(item.type)
+                            : 'bg-muted-foreground/30'
+                        )}
+                      />
+                      {item.publishDate
+                        ? formatDateTimeObject(new Date(item.publishDate))
+                        : null}
+                    </div>
+                    <RichContent breaks content={item.content} />
+                    {item.extra && (
+                      <RichContent
+                        breaks
+                        content={item.extra}
+                        className='text-muted-foreground'
+                      />
+                    )}
                   </div>
-                  <RichContent breaks content={item.content} />
-                  {item.extra && (
-                    <RichContent
-                      breaks
-                      content={item.extra}
-                      className='text-muted-foreground'
-                    />
-                  )}
-                </div>
-              ))}
+                )
+              })}
+              {hasMoreAnnouncements && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='w-full'
+                  onClick={() =>
+                    setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)
+                  }
+                >
+                  {t('Show more announcements')}
+                </Button>
+              )}
             </div>
           )}
         </div>
