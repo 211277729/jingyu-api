@@ -785,3 +785,46 @@ For commercial licensing, please contact support@quantumnous.com
     background-position: 50% 50%;
   }
 }
+
+/* Lucky Draw cells: unrevealed slots flicker in gray; each slot locks in
+ * with a short pop once its turn comes, so more cells means a longer
+ * reveal — echoing the supply-crate opening feel. */
+@keyframes lucky-cell-flicker {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.lucky-cell-flicker {
+  animation: lucky-cell-flicker 0.9s ease-in-out infinite;
+}
+
+@keyframes lucky-cell-pop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.lucky-cell-pop {
+  animation: lucky-cell-pop 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lucky-cell-flicker,
+  .lucky-cell-pop {
+    animation: none;
+  }
+}
