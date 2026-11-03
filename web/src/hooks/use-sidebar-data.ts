@@ -35,6 +35,7 @@ import {
   ShieldCheck,
   Ticket,
   User,
+  UserPlus,
   Users,
   Wallet,
 } from 'lucide-react'
@@ -126,6 +127,12 @@ export function useSidebarData(): SidebarData {
             title: t('Profile'),
             url: '/profile',
             icon: User,
+          },
+          {
+            // 邀请返利独立页面，主入口放在个人资料下方（每日奖励浮窗里也有一份）
+            title: t('Invite & Earn'),
+            url: '/invite',
+            icon: UserPlus,
           },
           {
             title: t('Security & Access'),
