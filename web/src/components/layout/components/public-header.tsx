@@ -332,8 +332,8 @@ export function PublicHeader(props: PublicHeaderProps) {
             <div className='flex shrink-0 items-center gap-1.5 lg:hidden'>
               <SuperRewardButton />
               {!loading && isAuthenticated && <RechargeButton />}
-              {/* 顶栏滚动收缩时隐藏主题切换，与桌面端保持一致 */}
-              {showThemeSwitch && (
+              {/* H5 顶栏空间有限：登录用户的主题切换收进用户浮窗，游客留在顶栏 */}
+              {showThemeSwitch && !isAuthenticated && (
                 <span className='group-data-[scrolled]/header:hidden'>
                   <ThemeSwitch />
                 </span>

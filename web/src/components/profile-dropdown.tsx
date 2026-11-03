@@ -22,6 +22,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SignOutDialog } from '@/components/sign-out-dialog'
+import { ThemeQuickSwitcher } from '@/components/theme-quick-switcher'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
@@ -135,6 +136,12 @@ export function ProfileDropdown() {
               {t('System Settings')}
             </DropdownMenuItem>
           )}
+
+          {/* H5 顶栏不显示主题按钮，收进用户浮窗 */}
+          <div className='lg:hidden'>
+            <DropdownMenuSeparator />
+            <ThemeQuickSwitcher />
+          </div>
 
           <DropdownMenuSeparator />
 
