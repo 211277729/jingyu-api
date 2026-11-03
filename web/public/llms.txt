@@ -95,6 +95,13 @@ export JINGYU_API_KEY=sk-xxxxxxxx      # macOS / Linux / WSL
 # PowerShell: $env:JINGYU_API_KEY = "sk-xxxxxxxx"
 ```
 
+### CC Switch / Magpie (GUI switchers)
+
+CC Switch (https://ccswitch.io/zh/) and Magpie (https://usemagpie.ai/zh/) are
+desktop apps that manage provider configs for Claude Code, Codex and Gemini
+CLI. If the user has one installed, prefer its own import flow: add a custom
+provider with base URL `<ORIGIN>/v1`, the OpenAI protocol, and the key.
+
 ### Other OpenAI-compatible tools
 
 Set the base URL to `<ORIGIN>/v1` and the API key to the `sk-…` value, using

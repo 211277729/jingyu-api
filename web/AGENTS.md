@@ -234,3 +234,4 @@
 - **2026-09-06**：明确组件复用的强制检索流程、业务封装优先级、新增条件、常用入口及审查要求。
 - **2026-11-03**：在 3.1 中补充新增翻译 key 的强制核对流程：三语言同加、逐 key 核对（防多会话并行覆盖丢失）、locale 缺 key 的运行期症状与排查顺序。
 - **2026-11-03**：文档页新增「用 AI 帮你配置」卡片（`features/docs/components/ai-setup-card.tsx`）与站点根 `public/llms.txt` 机器可读接入文档；登录用户可生成一次性配置码（后端 `/api/setup_code`），AI agent 兑换出密钥自动完成接入，用户无需手动复制 sk- 值。
+- **2026-11-03**：工具接入卡片 CC Switch 安装地址从 GitHub 改为官网 https://ccswitch.io/zh/ ；新增 Magpie（https://usemagpie.ai/zh/）接入卡片与快速跳转锚点，llms.txt 同步补充 GUI 切换器一节。

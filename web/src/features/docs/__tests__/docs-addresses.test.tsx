@@ -157,16 +157,42 @@ describe('quick start and verify sections', () => {
   it('links each tool guide card from the quick-jump chips', () => {
     renderWithCache(<Docs />)
 
-    for (const id of ['cc-switch', 'claude-code', 'codex', 'deepseek-harness']) {
+    for (const id of ['cc-switch', 'magpie', 'claude-code', 'codex', 'deepseek-harness']) {
       expect(document.querySelector(`#${id}`)).not.toBeNull()
     }
     expect(
       screen.getByRole('link', { name: 'CC Switch' })
     ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Magpie' })).toBeInTheDocument()
   })
 })
 
 describe('tool base URLs', () => {
+  it('points CC Switch at its official site instead of GitHub', () => {
+    render(<ToolGuides origin={ORIGIN} openAiBaseUrl={OPENAI_BASE_URL} />)
+
+    const install = screen.getByText(/brew install --cask cc-switch/, {
+      selector: 'code',
+    })
+    expect(install.textContent).toContain('https://ccswitch.io/zh/')
+    expect(install.textContent).not.toContain('github.com')
+  })
+
+  it('gives Magpie its official site and the /v1 base URL', () => {
+    render(<ToolGuides origin={ORIGIN} openAiBaseUrl={OPENAI_BASE_URL} />)
+
+    expect(screen.getByText('Magpie')).toBeInTheDocument()
+    const install = screen.getByText(/usemagpie\.ai\/zh\//, {
+      selector: 'code',
+    })
+    expect(install.textContent).toContain('https://usemagpie.ai/zh/')
+    const provider = screen.getByText(
+      /Add a custom provider with this base URL/,
+      { exact: false }
+    )
+    expect(provider).toBeInTheDocument()
+  })
+
   it('gives Codex the /v1 base URL it appends /responses to', () => {
     render(<ToolGuides origin={ORIGIN} openAiBaseUrl={OPENAI_BASE_URL} />)
 

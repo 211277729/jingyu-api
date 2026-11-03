@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { ArrowRightLeft } from 'lucide-react'
+import { ArrowRightLeft, Bird } from 'lucide-react'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -37,10 +37,10 @@ export function ToolGuides(props: ToolGuidesProps) {
   const steps = useMemo(() => {
     const ccSwitch: ToolGuideStep[] = [
       {
-        text: t('Install CC Switch from its releases page, then open it.'),
+        text: t('Install CC Switch from its official site, then open it.'),
         snippet: {
           label: 'install',
-          code: `# macOS\nbrew install --cask cc-switch\n\n# Windows / Linux\n# https://github.com/farion1231/cc-switch/releases/latest`,
+          code: `# macOS\nbrew install --cask cc-switch\n\n# All platforms\n# https://ccswitch.io/zh/`,
         },
       },
       {
@@ -55,6 +55,25 @@ export function ToolGuides(props: ToolGuidesProps) {
       },
       {
         text: t('Confirm the import in CC Switch, then enable the provider.'),
+      },
+    ]
+
+    const magpie: ToolGuideStep[] = [
+      {
+        text: t('Install Magpie from its official site, then open it.'),
+        snippet: {
+          label: 'install',
+          code: '# https://usemagpie.ai/zh/',
+        },
+      },
+      {
+        text: t(
+          'Add a custom provider with this base URL, choose the OpenAI protocol, and paste your API key.'
+        ),
+        snippet: { label: 'Base URL', code: props.openAiBaseUrl },
+      },
+      {
+        text: t('Switch the model for your agent to a model from this gateway.'),
       },
     ]
 
@@ -152,7 +171,7 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
       },
     ]
 
-    return { ccSwitch, harness, codex, claudeCode }
+    return { ccSwitch, magpie, harness, codex, claudeCode }
   }, [t, props.origin, props.openAiBaseUrl])
 
   return (
@@ -168,6 +187,19 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
         anchorId='cc-switch'
         footnote={t(
           'Claude Code switches immediately. Restart Codex and Gemini CLI after switching.'
+        )}
+      />
+
+      <ToolGuideCard
+        name={t('Magpie')}
+        logo={<Bird className='shrink-0' aria-hidden='true' />}
+        intro={t(
+          'Magpie is a local switcher that lets Claude Code, Codex and Gemini CLI use any provider. Add this gateway once and switch models per agent.'
+        )}
+        steps={steps.magpie}
+        anchorId='magpie'
+        footnote={t(
+          'Restart the agent after switching; most tools read their config at startup.'
         )}
       />
 

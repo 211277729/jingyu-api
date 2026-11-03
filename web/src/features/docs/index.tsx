@@ -51,6 +51,7 @@ import { DOCS_ENDPOINTS } from './constants'
 /** Anchor ids of the individual tool guide cards, for the quick-jump chips. */
 const TOOL_GUIDE_ANCHORS = [
   { id: 'cc-switch', labelKey: 'CC Switch' },
+  { id: 'magpie', labelKey: 'Magpie' },
   { id: 'claude-code', labelKey: 'Claude Code' },
   { id: 'codex', labelKey: 'Codex' },
   { id: 'deepseek-harness', labelKey: 'DeepSeek Harness' },
