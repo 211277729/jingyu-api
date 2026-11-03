@@ -289,6 +289,10 @@ export interface TopupRecord {
   complete_time?: number
   /** Payment status */
   status: TopupStatus
+  /** Username (admin list only) */
+  username?: string
+  /** Display name (admin list only) */
+  display_name?: string
 }
 
 /**

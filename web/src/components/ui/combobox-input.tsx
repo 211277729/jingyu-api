@@ -44,6 +44,8 @@ interface ComboboxInputProps {
   allowCustomValue?: boolean
   openOnFocus?: boolean
   disabled?: boolean
+  /** Skip client-side filtering when options are already filtered server-side */
+  disableClientFilter?: boolean
   onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
   'aria-label'?: string
   'aria-labelledby'?: string
@@ -62,6 +64,7 @@ export function ComboboxInput({
   allowCustomValue = false,
   openOnFocus = true,
   disabled = false,
+  disableClientFilter = false,
   onKeyDown,
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
@@ -94,6 +97,7 @@ export function ComboboxInput({
   const displayValue = open ? searchValue : (selectedOption?.label ?? value)
 
   const filteredOptions = React.useMemo(() => {
+    if (disableClientFilter) return options
     if (!searchChanged || !searchValue.trim()) return options
     const search = searchValue.toLowerCase().trim()
     return options.filter(
@@ -101,7 +105,7 @@ export function ComboboxInput({
         option.label.toLowerCase().includes(search) ||
         option.value.toLowerCase().includes(search)
     )
-  }, [options, searchValue, searchChanged])
+  }, [options, searchValue, searchChanged, disableClientFilter])
 
   // Reset highlight when filtered options change
   React.useEffect(() => {
@@ -140,10 +144,20 @@ export function ComboboxInput({
       input.closest<HTMLElement>('[role="dialog"]') ?? document.body
     const measure = () => {
       const rect = input.getBoundingClientRect()
+      // A transformed dialog (Tailwind's -translate-x/y utilities) becomes the
+      // containing block for this fixed dropdown, so raw viewport coordinates
+      // would be offset by the dialog's own position. Express coordinates
+      // relative to the portal container instead (no-op for document.body,
+      // whose origin is the viewport... unless the page is scrolled, hence the
+      // explicit zero origin below).
+      const origin =
+        container === document.body
+          ? { left: 0, top: 0 }
+          : container.getBoundingClientRect()
       setDropdown({
         container,
-        top: rect.bottom + 4,
-        left: rect.left,
+        top: rect.bottom - origin.top + 4,
+        left: rect.left - origin.left,
         width: rect.width,
       })
     }

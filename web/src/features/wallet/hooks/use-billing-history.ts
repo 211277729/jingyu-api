@@ -30,6 +30,7 @@ import {
   completeOrder,
   isApiSuccess,
 } from '../api'
+import type { BillingHistoryUserFilter } from '../api'
 import type { TopupRecord } from '../types'
 
 // ============================================================================
@@ -53,6 +54,7 @@ export function useBillingHistory(options: UseBillingHistoryOptions = {}) {
   const [pageSize, setPageSize] = useState(initialPageSize)
   const [keyword, setKeyword] = useState('')
   const debouncedKeyword = useDebounce(keyword)
+  const [userFilter, setUserFilter] = useState<BillingHistoryUserFilter>()
   const requestIdRef = useRef(0)
   const [loading, setLoading] = useState(false)
   const [completing, setCompleting] = useState(false)
@@ -65,7 +67,12 @@ export function useBillingHistory(options: UseBillingHistoryOptions = {}) {
     setLoading(true)
     try {
       const response = isAdmin
-        ? await getAllBillingHistory(page, pageSize, debouncedKeyword)
+        ? await getAllBillingHistory(
+            page,
+            pageSize,
+            debouncedKeyword,
+            userFilter
+          )
         : await getUserBillingHistory(page, pageSize, debouncedKeyword)
 
       if (requestId !== requestIdRef.current) return
@@ -88,7 +95,7 @@ export function useBillingHistory(options: UseBillingHistoryOptions = {}) {
         setLoading(false)
       }
     }
-  }, [debouncedKeyword, isAdmin, page, pageSize])
+  }, [debouncedKeyword, isAdmin, page, pageSize, userFilter])
 
   /**
    * Complete a pending order (admin only)
@@ -146,6 +153,17 @@ export function useBillingHistory(options: UseBillingHistoryOptions = {}) {
     setPage(1) // Reset to first page when searching
   }, [])
 
+  /**
+   * Change the user filter (admin only)
+   */
+  const handleUserFilterChange = useCallback(
+    (filter: BillingHistoryUserFilter | undefined) => {
+      setUserFilter(filter)
+      setPage(1) // Reset to first page when changing filter
+    },
+    []
+  )
+
   // Fetch data after the search draft has settled.
   useEffect(() => {
     if (keyword !== debouncedKeyword) return
@@ -165,6 +183,7 @@ export function useBillingHistory(options: UseBillingHistoryOptions = {}) {
     handlePageChange,
     handlePageSizeChange,
     handleSearch,
+    handleUserFilterChange,
     handleCompleteOrder,
     refresh: fetchBillingHistory,
   }

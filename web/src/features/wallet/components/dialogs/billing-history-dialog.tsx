@@ -16,10 +16,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Search, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import {
+  Search,
+  Copy,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  X,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { ComboboxInput } from '@/components/ui/combobox-input'
 import { Dialog } from '@/components/dialog'
 import { StatusBadge } from '@/components/status-badge'
 import {
@@ -45,10 +53,12 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
+import { useDebounce } from '@/hooks/use-debounce'
 import { formatCurrencyFromUSD } from '@/lib/currency'
 import { formatNumber } from '@/lib/format'
 
 import { useBillingHistory } from '../../hooks/use-billing-history'
+import { useUserSuggestions } from '../../hooks/use-user-suggestions'
 import {
   getStatusConfig,
   getPaymentMethodName,
@@ -58,6 +68,11 @@ import {
 interface BillingHistoryDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+}
+
+interface SelectedUser {
+  id: number
+  label: string
 }
 
 export function BillingHistoryDialog({
@@ -77,11 +92,46 @@ export function BillingHistoryDialog({
     handlePageChange,
     handlePageSizeChange,
     handleSearch,
+    handleUserFilterChange,
     handleCompleteOrder,
   } = useBillingHistory()
 
   const [confirmTradeNo, setConfirmTradeNo] = useState<string | null>(null)
   const { copyToClipboard, copiedText } = useCopyToClipboard({ notify: false })
+
+  // Admin user filter: selected user wins over free-text username search
+  const [userInput, setUserInput] = useState('')
+  const [selectedUser, setSelectedUser] = useState<SelectedUser | null>(null)
+  const usernameDraft = selectedUser ? '' : userInput.trim()
+  const debouncedUsername = useDebounce(usernameDraft)
+  const { options: userOptions, loading: userSuggestionsLoading } =
+    useUserSuggestions(userInput)
+
+  useEffect(() => {
+    if (selectedUser) {
+      handleUserFilterChange({ userId: selectedUser.id })
+    } else if (debouncedUsername) {
+      handleUserFilterChange({ username: debouncedUsername })
+    } else {
+      handleUserFilterChange(undefined)
+    }
+  }, [selectedUser, debouncedUsername, handleUserFilterChange])
+
+  const handleUserInputChange = (value: string) => {
+    const matched = userOptions.find((option) => option.value === value)
+    if (matched) {
+      setSelectedUser({ id: Number.parseInt(value, 10), label: matched.label })
+      setUserInput(value)
+    } else {
+      setSelectedUser(null)
+      setUserInput(value)
+    }
+  }
+
+  const handleClearUserFilter = () => {
+    setUserInput('')
+    setSelectedUser(null)
+  }
 
   const totalPages = Math.ceil(total / pageSize)
 
@@ -119,6 +169,36 @@ export function BillingHistoryDialog({
                 className='h-9 pl-10'
               />
             </div>
+            {isAdmin && (
+              <div className='relative flex-1'>
+                <ComboboxInput
+                  options={userOptions}
+                  value={userInput}
+                  onValueChange={handleUserInputChange}
+                  placeholder={t('Filter by user name or ID...')}
+                  emptyText='No matching users'
+                  allowCustomValue
+                  disableClientFilter
+                  className='h-9'
+                />
+                {(selectedUser || userInput) && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    className='absolute top-1/2 right-8 h-5 w-5 -translate-y-1/2 p-0'
+                    aria-label={t('Clear user filter')}
+                    onClick={handleClearUserFilter}
+                  >
+                    <X className='h-3 w-3' />
+                  </Button>
+                )}
+                {userSuggestionsLoading && (
+                  <span className='sr-only' role='status'>
+                    {t('Loading...')}
+                  </span>
+                )}
+              </div>
+            )}
             <Select
               items={[
                 { value: '10', label: t('10 / page') },
@@ -214,7 +294,11 @@ export function BillingHistoryDialog({
                             </Button>
                             {isAdmin && record.user_id != null && (
                               <StatusBadge
-                                label={`${t('User ID')}: ${record.user_id}`}
+                                label={
+                                  record.username
+                                    ? `${record.username} (#${record.user_id})`
+                                    : `${t('User ID')}: ${record.user_id}`
+                                }
                                 variant='neutral'
                                 size='sm'
                                 copyText={String(record.user_id)}

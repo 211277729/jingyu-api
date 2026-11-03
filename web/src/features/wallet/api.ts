@@ -258,12 +258,23 @@ export async function getUserBillingHistory(
 }
 
 /**
+ * Optional user filter for the admin billing history list
+ */
+export interface BillingHistoryUserFilter {
+  /** Exact user ID filter (takes precedence over username) */
+  userId?: number
+  /** Fuzzy username/display_name/email filter */
+  username?: string
+}
+
+/**
  * Get billing history for all users (admin only)
  */
 export async function getAllBillingHistory(
   page: number,
   pageSize: number,
-  keyword?: string
+  keyword?: string,
+  user?: BillingHistoryUserFilter
 ): Promise<ApiResponse<BillingHistoryResponse>> {
   const params = new URLSearchParams({
     p: page.toString(),
@@ -271,6 +282,12 @@ export async function getAllBillingHistory(
   })
   if (keyword) {
     params.append('keyword', keyword)
+  }
+  if (user?.userId) {
+    params.append('user_id', user.userId.toString())
+  }
+  if (user?.username) {
+    params.append('username', user.username)
   }
   const res = await api.get(`/api/user/topup?${params.toString()}`)
   return res.data

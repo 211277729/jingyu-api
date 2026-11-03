@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -574,21 +575,23 @@ func GetUserTopUps(c *gin.Context) {
 	common.ApiSuccess(c, pageInfo)
 }
 
-// GetAllTopUps 管理员获取全平台充值记录
+// GetAllTopUps 管理员获取全平台充值记录，支持按订单号（keyword）、用户名/用户 ID（username、user_id）过滤
 func GetAllTopUps(c *gin.Context) {
 	pageInfo := common.GetPageQuery(c)
 	keyword := c.Query("keyword")
+	username := strings.TrimSpace(c.Query("username"))
 
-	var (
-		topups []*model.TopUp
-		total  int64
-		err    error
-	)
-	if keyword != "" {
-		topups, total, err = model.SearchAllTopUps(keyword, pageInfo)
-	} else {
-		topups, total, err = model.GetAllTopUps(pageInfo)
+	userId := 0
+	if userIdParam := c.Query("user_id"); userIdParam != "" {
+		parsed, perr := strconv.Atoi(userIdParam)
+		if perr != nil || parsed <= 0 {
+			common.ApiErrorT(c, "Invalid parameters")
+			return
+		}
+		userId = parsed
 	}
+
+	topups, total, err := model.GetAllTopUpsFiltered(keyword, username, userId, pageInfo)
 	if err != nil {
 		common.ApiError(c, err)
 		return

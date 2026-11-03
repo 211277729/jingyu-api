@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"strconv"
 
 	"github.com/QuantumNous/new-api/common"
 	"github.com/QuantumNous/new-api/logger"
@@ -436,8 +437,17 @@ func GetUserTopUps(userId int, pageInfo *common.PageInfo) (topups []*TopUp, tota
 	return topups, total, nil
 }
 
-// GetAllTopUps 获取全平台的充值记录（管理员使用，不限制时间窗口）
-func GetAllTopUps(pageInfo *common.PageInfo) (topups []*TopUp, total int64, err error) {
+// TopUpView 充值记录视图，附带下单用户的用户名信息（管理员列表使用）
+type TopUpView struct {
+	TopUp
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+}
+
+// GetAllTopUpsFiltered 获取全平台的充值记录，支持按订单号、用户名/用户 ID 过滤。
+// 管理员使用，不限制时间窗口。username 为空串表示不做用户过滤；
+// userId 为 0 表示不做用户 ID 精确过滤。
+func GetAllTopUpsFiltered(keyword string, username string, userId int, pageInfo *common.PageInfo) (views []*TopUpView, total int64, err error) {
 	tx := DB.Begin()
 	if tx.Error != nil {
 		return nil, 0, tx.Error
@@ -448,21 +458,56 @@ func GetAllTopUps(pageInfo *common.PageInfo) (topups []*TopUp, total int64, err 
 		}
 	}()
 
-	if err = tx.Model(&TopUp{}).Count(&total).Error; err != nil {
-		tx.Rollback()
-		return nil, 0, err
+	query := tx.Table("top_ups").
+		Joins("LEFT JOIN users ON users.id = top_ups.user_id").
+		Select("top_ups.*, users.username AS username, users.display_name AS display_name")
+
+	if keyword != "" {
+		pattern, perr := sanitizeLikePattern(keyword)
+		if perr != nil {
+			tx.Rollback()
+			return nil, 0, perr
+		}
+		query = query.Where("top_ups.trade_no LIKE ? ESCAPE '!'", pattern)
 	}
 
-	if err = tx.Order("id desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&topups).Error; err != nil {
+	if username != "" {
+		pattern, perr := sanitizeLikePattern(username)
+		if perr != nil {
+			tx.Rollback()
+			return nil, 0, perr
+		}
+		fuzzyPattern := "%" + pattern + "%"
+		userCond := "(users.username LIKE ? ESCAPE '!' OR users.display_name LIKE ? ESCAPE '!' OR users.email LIKE ? ESCAPE '!')"
+		userArgs := []interface{}{fuzzyPattern, fuzzyPattern, fuzzyPattern}
+		// 纯数字输入同时按用户 ID 精确匹配，方便直接输入 ID 查询
+		if id, cerr := strconv.Atoi(username); cerr == nil {
+			userCond += " OR top_ups.user_id = ?"
+			userArgs = append(userArgs, id)
+		}
+		query = query.Where(userCond, userArgs...)
+	}
+
+	if userId > 0 {
+		query = query.Where("top_ups.user_id = ?", userId)
+	}
+
+	if err = query.Limit(searchTopUpCountHardLimit).Count(&total).Error; err != nil {
 		tx.Rollback()
-		return nil, 0, err
+		common.SysError(common.LogText("failed to count search topups: %s", err.Error()))
+		return nil, 0, common.NewMessage("Failed to search top-up records")
+	}
+
+	if err = query.Order("top_ups.id desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Scan(&views).Error; err != nil {
+		tx.Rollback()
+		common.SysError(common.LogText("failed to search topups: %s", err.Error()))
+		return nil, 0, common.NewMessage("Failed to search top-up records")
 	}
 
 	if err = tx.Commit().Error; err != nil {
 		return nil, 0, err
 	}
-
-	return topups, total, nil
+	return views, total, nil
 }
 
 // searchTopUpCountHardLimit 搜索充值记录时 COUNT 的安全上限，
@@ -482,46 +527,6 @@ func SearchUserTopUps(userId int, keyword string, pageInfo *common.PageInfo) (to
 	}()
 
 	query := tx.Model(&TopUp{}).Where("user_id = ? AND create_time >= ?", userId, topUpQueryCutoff())
-	if keyword != "" {
-		pattern, perr := sanitizeLikePattern(keyword)
-		if perr != nil {
-			tx.Rollback()
-			return nil, 0, perr
-		}
-		query = query.Where("trade_no LIKE ? ESCAPE '!'", pattern)
-	}
-
-	if err = query.Limit(searchTopUpCountHardLimit).Count(&total).Error; err != nil {
-		tx.Rollback()
-		common.SysError(common.LogText("failed to count search topups: %s", err.Error()))
-		return nil, 0, common.NewMessage("Failed to search top-up records")
-	}
-
-	if err = query.Order("id desc").Limit(pageInfo.GetPageSize()).Offset(pageInfo.GetStartIdx()).Find(&topups).Error; err != nil {
-		tx.Rollback()
-		common.SysError(common.LogText("failed to search topups: %s", err.Error()))
-		return nil, 0, common.NewMessage("Failed to search top-up records")
-	}
-
-	if err = tx.Commit().Error; err != nil {
-		return nil, 0, err
-	}
-	return topups, total, nil
-}
-
-// SearchAllTopUps 按订单号搜索全平台充值记录（管理员使用，不限制时间窗口）
-func SearchAllTopUps(keyword string, pageInfo *common.PageInfo) (topups []*TopUp, total int64, err error) {
-	tx := DB.Begin()
-	if tx.Error != nil {
-		return nil, 0, tx.Error
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
-	query := tx.Model(&TopUp{})
 	if keyword != "" {
 		pattern, perr := sanitizeLikePattern(keyword)
 		if perr != nil {
