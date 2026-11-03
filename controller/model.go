@@ -248,7 +248,7 @@ func ListModels(c *gin.Context, modelType int) {
 			tokenModelLimit = map[string]bool{}
 		}
 	}
-	models := service.GetGroupsEnabledModels(ownerGroups)
+	models := model.FilterHiddenModels(service.GetGroupsEnabledModels(ownerGroups))
 	for _, modelName := range models {
 		if modelLimitEnable {
 			matchingName := ratio_setting.RoutingMatchModelName(modelName)
@@ -347,6 +347,19 @@ func EnabledListModels(c *gin.Context) {
 
 func RetrieveModel(c *gin.Context, modelType int) {
 	modelId := c.Param("model")
+	if model.IsModelHidden(modelId) {
+		// 已下架模型按不存在处理，与 /v1/models 列表行为一致
+		openAIError := types.OpenAIError{
+			Message: fmt.Sprintf("The model '%s' does not exist", modelId),
+			Type:    "invalid_request_error",
+			Param:   "model",
+			Code:    "model_not_found",
+		}
+		c.JSON(200, gin.H{
+			"error": openAIError,
+		})
+		return
+	}
 	if aiModel, ok := openAIModelsMap[modelId]; ok {
 		switch modelType {
 		case constant.ChannelTypeAnthropic:

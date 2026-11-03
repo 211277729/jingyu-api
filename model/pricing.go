@@ -204,6 +204,7 @@ func updatePricing() {
 		names = append(names, ability.Model)
 	}
 	metaMap := resolveModelMetadata(allMeta, names)
+	rebuildHiddenModelCache(allMeta)
 
 	// 预加载供应商
 	var vendors []Vendor

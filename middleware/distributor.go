@@ -52,6 +52,13 @@ func Distribute() func(c *gin.Context) {
 			abortWithOpenAiMessage(c, invalidRequestStatus(err), i18n.T(c, i18n.MsgDistributorInvalidRequest, map[string]any{"Error": err.Error()}))
 			return
 		}
+		if modelRequest.Model != "" && model.IsModelHidden(modelRequest.Model) {
+			// 广场隐藏即下架：渠道不动，但已下架模型拒绝路由（在 ModelMapping 重写前按原始模型名判定）
+			abortWithOpenAiMessage(c, http.StatusForbidden,
+				i18n.T(c, i18n.MsgDistributorModelHidden, map[string]any{"Model": modelRequest.Model}),
+				types.ErrorCodeInvalidRequest)
+			return
+		}
 		_, pinned, _ := constraints.ResolvedPin()
 		if !pinned {
 			// Select a channel for the user
