@@ -24,7 +24,6 @@ import { Dialog } from '@/components/dialog'
 import { RichContent } from '@/components/rich-content'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { AnnouncementItem } from '@/features/dashboard/types'
@@ -46,8 +45,10 @@ const TIMELINE_PAGE_SIZE = 5
  * 加载优化：公告列表来自 /api/status 的 localStorage 快照，弹窗即点即开；
  * 系统公告请求独立加载，用骨架占位不阻塞弹窗打开；时间线分页渲染正文。
  *
- * - 「知道了」把系统公告和当前公告全部标记为已读（与铃铛通知中心一致）；
- * - 「今日关闭」/ 右上角关闭 = 当天不再自动弹出，未读状态保留在铃铛里；
+ * - 「知道了」/ 右上角 × / ESC / 点击遮罩关闭：把系统公告和当前公告全部
+ *   标记为已读（与铃铛通知中心一致）；
+ * - 「今日关闭」= 当天不再因「关闭时已知的内容」自动弹出，未读状态保留在
+ *   铃铛里；关闭后新发布的公告仍会照常弹出；
  * - 弹出状态持久化在 notification-store（localStorage），每条内容只弹一次。
  */
 export function AnnouncementPopupDialog() {
@@ -64,7 +65,7 @@ export function AnnouncementPopupDialog() {
     markNoticeRead,
     markAnnouncementsRead,
     setClosedUntilDate,
-    isNoticeClosed,
+    isClosedToday,
   } = useNotificationStore()
 
   const [open, setOpen] = useState(false)
@@ -102,8 +103,21 @@ export function AnnouncementPopupDialog() {
       getAnnouncementKey(item as unknown as Record<string, unknown>)
     )
 
+  // 当前未读公告的 key 列表（含系统公告之外的全部未读项）
+  const unreadAnnouncementKeys = useMemo(
+    () =>
+      sortedAnnouncements
+        .map((item) =>
+          getAnnouncementKey(item as unknown as Record<string, unknown>)
+        )
+        .filter((key) => !readAnnouncementKeys.includes(key)),
+    [sortedAnnouncements, readAnnouncementKeys]
+  )
+
   useEffect(() => {
-    if (dismissed || open || isNoticeClosed()) return
+    if (dismissed || open) return
+    // 「今日关闭」只压制关闭时已知的内容；出现新公告后当天仍会弹出
+    if (isClosedToday(unreadAnnouncementKeys)) return
     // 公告列表随 /api/status 快照立即可用，有未读公告即弹；
     // 系统公告未返回时先不阻塞，返回后未读会追加在弹窗顶部
     if (unreadAnnouncementsCount > 0 && !statusLoading) {
@@ -115,7 +129,8 @@ export function AnnouncementPopupDialog() {
   }, [
     dismissed,
     open,
-    isNoticeClosed,
+    isClosedToday,
+    unreadAnnouncementKeys,
     unreadAnnouncementsCount,
     statusLoading,
     noticeLoading,
@@ -128,7 +143,7 @@ export function AnnouncementPopupDialog() {
     const raf = requestAnimationFrame(() => {
       document
         .querySelectorAll<HTMLElement>(
-          '[data-slot=dialog-content], [data-slot=scroll-area-viewport]'
+          '[data-slot=dialog-content], [data-slot=announcement-popup-scroll]'
         )
         .forEach((el) => {
           el.scrollTop = 0
@@ -137,9 +152,10 @@ export function AnnouncementPopupDialog() {
     return () => cancelAnimationFrame(raf)
   }, [open])
 
-  // 今日关闭：当天不再自动弹出，未读角标仍保留
+  // 今日关闭：当天不再因「已知内容」自动弹出，未读角标仍保留；
+  // 关闭后新发布的公告不受影响，仍会照常弹出
   const handleCloseToday = () => {
-    setClosedUntilDate(new Date().toDateString())
+    setClosedUntilDate(new Date().toDateString(), unreadAnnouncementKeys)
     setDismissed(true)
     setOpen(false)
   }
@@ -170,7 +186,8 @@ export function AnnouncementPopupDialog() {
       open={open}
       onOpenChange={(nextOpen) => {
         if (nextOpen) return
-        handleCloseToday()
+        // 右上角 × / ESC / 点击遮罩关闭都按「知道了」处理：内容视为已读
+        handleAcknowledge()
       }}
       title={t('Announcements')}
       description={t('{{count}} new announcement(s)', { count: unreadTotal })}
@@ -187,7 +204,13 @@ export function AnnouncementPopupDialog() {
         </>
       }
     >
-      <ScrollArea className='max-h-[min(58vh,520px)] pr-4'>
+      {/* 不用 ScrollArea：Root 只有 max-h 时 Viewport 会被内容撑开并溢出到外层
+          dialog-content，系统公告异步加载后外层滚动条会被带过头；普通 div 的
+          max-h + overflow-y-auto 自带约束，滚动始终发生在自身。 */}
+      <div
+        data-slot='announcement-popup-scroll'
+        className='max-h-[min(58vh,520px)] overflow-y-auto overscroll-contain pr-4'
+      >
         <div className='space-y-5'>
           {noticeLoading ? (
             <div className='space-y-2'>
@@ -256,22 +279,22 @@ export function AnnouncementPopupDialog() {
                   </div>
                 )
               })}
-              {hasMoreAnnouncements && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  className='w-full'
-                  onClick={() =>
-                    setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)
-                  }
-                >
-                  {t('Show more announcements')}
-                </Button>
-              )}
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
+      {/* 「查看更多」放在滚动容器外：避免它成为容器内唯一的可聚焦元素，
+          否则 Base UI 弹窗的焦点管理聚焦它时，浏览器会把时间线滚到最底部 */}
+      {hasMoreAnnouncements && (
+        <Button
+          variant='ghost'
+          size='sm'
+          className='w-full'
+          onClick={() => setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)}
+        >
+          {t('Show more announcements')}
+        </Button>
+      )}
     </Dialog>
   )
 }

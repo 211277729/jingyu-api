@@ -24,15 +24,18 @@ interface NotificationState {
   lastReadNotice: string
   // Array of read announcement keys (id or content hash)
   readAnnouncementKeys: string[]
-  // Timestamp of last "Close Today" action
+  // Date string of the last "Close Today" action
   closedUntilDate: string | null
+  // Unread announcement keys at the moment of "Close Today"; only these stay
+  // suppressed for the rest of the day, newer announcements still pop up
+  closedAnnouncementKeys: string[]
 
   // Actions
   markNoticeRead: (noticeContent: string) => void
   markAnnouncementsRead: (keys: string[]) => void
-  setClosedUntilDate: (date: string | null) => void
+  setClosedUntilDate: (date: string | null, closedKeys?: string[]) => void
   isAnnouncementRead: (key: string) => boolean
-  isNoticeClosed: () => boolean
+  isClosedToday: (announcementKeys: string[]) => boolean
 }
 
 /**
@@ -45,6 +48,7 @@ export const useNotificationStore = create<NotificationState>()(
       lastReadNotice: '',
       readAnnouncementKeys: [],
       closedUntilDate: null,
+      closedAnnouncementKeys: [],
 
       markNoticeRead: (noticeContent: string) => {
         // Persist the full trimmed content so edits beyond 100 chars register
@@ -60,20 +64,26 @@ export const useNotificationStore = create<NotificationState>()(
         }))
       },
 
-      setClosedUntilDate: (date: string | null) => {
-        set({ closedUntilDate: date })
+      setClosedUntilDate: (date, closedKeys) => {
+        set({
+          closedUntilDate: date,
+          closedAnnouncementKeys: date ? (closedKeys ?? []) : [],
+        })
       },
 
       isAnnouncementRead: (key: string) => {
         return get().readAnnouncementKeys.includes(key)
       },
 
-      isNoticeClosed: () => {
-        const { closedUntilDate } = get()
+      // 当日已「今日关闭」且传入的公告 key 都是关闭时已知的内容时才抑制；
+      // 出现快照之外的新公告时返回 false，让弹窗照常弹出
+      isClosedToday: (announcementKeys: string[]) => {
+        const { closedUntilDate, closedAnnouncementKeys } = get()
         if (!closedUntilDate) return false
-
-        const today = new Date().toDateString()
-        return closedUntilDate === today
+        if (closedUntilDate !== new Date().toDateString()) return false
+        return announcementKeys.every((key) =>
+          closedAnnouncementKeys.includes(key)
+        )
       },
     }),
     {
@@ -82,6 +92,7 @@ export const useNotificationStore = create<NotificationState>()(
         lastReadNotice: state.lastReadNotice,
         readAnnouncementKeys: state.readAnnouncementKeys,
         closedUntilDate: state.closedUntilDate,
+        closedAnnouncementKeys: state.closedAnnouncementKeys,
       }),
     }
   )
