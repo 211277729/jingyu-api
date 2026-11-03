@@ -223,14 +223,41 @@ func responsesInputItemToChatMessages(ctx context.Context, item map[string]any, 
 	}
 
 	role := strings.TrimSpace(kitutil.Interface2String(item["role"]))
-	if role == "" {
-		role = "user"
-	}
 	content, err := responsesInputContentToChatContent(ctx, item["content"])
 	if err != nil {
 		return nil, nil, err
 	}
+	if role == "" && responsesChatContentIsEmpty(content) {
+		// Items with neither role nor content — reasoning, item_reference, ... —
+		// have no Chat Completions counterpart. Emitting them would produce a
+		// user message with empty content, which upstreams reject with 400
+		// "user message must have content".
+		return messages, nil, nil
+	}
+	if role == "" {
+		role = "user"
+	}
+	if responsesChatContentIsEmpty(content) {
+		// Chat Completions requires user message content; pad instead of
+		// forwarding an empty string.
+		content = "..."
+	}
 	return append(messages, dto.Message{Role: role, Content: content}), nil, nil
+}
+
+// responsesChatContentIsEmpty reports whether converted Chat content carries
+// nothing at all: a missing value, a blank string, or an empty part array.
+func responsesChatContentIsEmpty(content any) bool {
+	switch value := content.(type) {
+	case nil:
+		return true
+	case string:
+		return strings.TrimSpace(value) == ""
+	case []any:
+		return len(value) == 0
+	default:
+		return false
+	}
 }
 
 func responsesInputContentToChatContent(ctx context.Context, content any) (any, error) {

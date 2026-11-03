@@ -184,6 +184,42 @@ func TestResponsesRequestToChatCompletionsRequestOnlyFunctionCallCreatesAssistan
 	assert.Equal(t, `{"q":"x"}`, toolCalls[0].Function.Arguments)
 }
 
+func TestResponsesRequestToChatCompletionsRequestSkipsRolelessEmptyItems(t *testing.T) {
+	got, err := ResponsesRequestToChatCompletionsRequest(context.Background(), &dto.OpenAIResponsesRequest{
+		Model: "gpt-test",
+		Input: mustRawMessage(t, []map[string]any{
+			{"role": "user", "content": "hello"},
+			{"type": "reasoning", "id": "rs_1", "summary": []map[string]any{}},
+			{"type": "item_reference", "id": "rs_1"},
+			{"role": "user", "content": []map[string]any{{"type": "input_text", "text": "again"}}},
+		}),
+	})
+	require.NoError(t, err)
+
+	require.Len(t, got.Messages, 2)
+	assert.Equal(t, "user", got.Messages[0].Role)
+	assert.Equal(t, "hello", got.Messages[0].Content)
+	assert.Equal(t, "user", got.Messages[1].Role)
+	assert.Equal(t, "again", got.Messages[1].Content)
+}
+
+func TestResponsesRequestToChatCompletionsRequestPadsEmptyUserContent(t *testing.T) {
+	got, err := ResponsesRequestToChatCompletionsRequest(context.Background(), &dto.OpenAIResponsesRequest{
+		Model: "gpt-test",
+		Input: mustRawMessage(t, []map[string]any{
+			{"role": "user", "content": ""},
+			{"role": "user", "content": []map[string]any{{"type": "input_text", "text": ""}}},
+		}),
+	})
+	require.NoError(t, err)
+
+	require.Len(t, got.Messages, 2)
+	for _, message := range got.Messages {
+		assert.Equal(t, "user", message.Role)
+		assert.Equal(t, "...", message.Content)
+	}
+}
+
 func TestResponsesRequestToChatCompletionsRequestToolsToolChoiceAndTextFormat(t *testing.T) {
 	got, err := ResponsesRequestToChatCompletionsRequest(context.Background(), &dto.OpenAIResponsesRequest{
 		Model: "gpt-test",
