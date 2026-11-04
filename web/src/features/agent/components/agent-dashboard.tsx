@@ -23,17 +23,14 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Dialog } from '@/components/dialog'
+import { InviteLinkCard } from '@/features/invite/components/invite-link-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  getAgentCommissions,
-  getAgentCustomers,
-  getAgentWithdrawals,
-  requestAgentWithdraw,
-} from '@/features/agent/api'
+import { getAgentCommissions, getAgentCustomers, getAgentWithdrawals, requestAgentWithdraw } from '@/features/agent/api'
 import type { AgentProfileData, AgentWithdrawalStatus } from '@/features/agent/types'
+import { useAffiliate } from '@/features/wallet/hooks'
 import { formatQuota, parseQuotaFromDollars, quotaUnitsToDollars } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
 
@@ -158,6 +155,13 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
   const firstPercent = profile && profile.first_percent > 0 ? profile.first_percent : data.first_percent
   const percent = profile && profile.percent > 0 ? profile.percent : data.percent
 
+  // 推广物料：与邀请返利页同一个邀请码/链接（generateAffiliateLink 生成），代理直接复制销售
+  const {
+    affiliateCode,
+    affiliateLink,
+    loading: affiliateLoading,
+  } = useAffiliate()
+
   const commissions = useQuery({
     queryKey: ['agent-commissions', commissionsPage],
     queryFn: () => getAgentCommissions(commissionsPage, PAGE_SIZE),
@@ -199,6 +203,13 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
 
   return (
     <div className='space-y-4'>
+      {/* 推广物料：邀请码/链接/二维码，与邀请返利页同一个码 */}
+      <InviteLinkCard
+        affiliateCode={affiliateCode}
+        affiliateLink={affiliateLink}
+        loading={affiliateLoading}
+      />
+
       {/* 统计 + 提现 */}
       <div className='grid gap-3 sm:grid-cols-3'>
         <div className='rounded-2xl border p-4'>
