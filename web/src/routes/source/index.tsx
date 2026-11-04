@@ -16,10 +16,17 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { SourceNotice } from '@/features/source'
-
+/**
+ * Former address of the licence notice.
+ *
+ * Kept as a permanent redirect rather than deleted: the page has already been
+ * offered to users at this path, and a source offer that stops resolving reads
+ * as an offer that was withdrawn. Every entry point now links to /licensing.
+ */
 export const Route = createFileRoute('/source/')({
-  component: SourceNotice,
+  beforeLoad: () => {
+    throw redirect({ to: '/licensing', replace: true })
+  },
 })

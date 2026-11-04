@@ -1,0 +1,6 @@
+# Keep crawlers out of the licence notice: it has to stay reachable for users
+# and auditors, but a deployment that is not shipping this software as its own
+# product does not need it indexed.
+User-agent: *
+Disallow: /licensing
+Disallow: /source

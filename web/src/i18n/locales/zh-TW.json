@@ -5998,7 +5998,6 @@
     "Sort Order": "排序",
     "Sort priority": "排序優先級",
     "Source": "來源",
-    "Source repository": "原始碼倉庫",
     "Source diff": "原始碼差异",
     "Source Endpoint": "來源端點",
     "Source Field": "來源欄位",
@@ -7560,9 +7559,6 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "為思考模式上游補全 assistant 歷史訊息中缺失的 reasoning_content，避免帶工具調用的多輪請求被拒絕（DeepSeek 類上游）",
     "Model patterns for reasoning padding": "補全生效的模型匹配",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "逗號分隔的匹配模式，按上游模型名匹配，支持 * 和 ?；留空表示對本渠道所有模型生效",
-    "License & source": "許可與原始碼",
-    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "本站基於 New API 修改後運行，並依 AGPLv3 第 13 條向使用者提供對應的原始碼。",
-    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "此處提供的原始碼即本站目前運行的版本。若倉庫暫時無法存取，可透過本站公告的聯絡方式索取對應原始碼。",
     "Agent Ecosystem": "Agent 生態",
     "Works with coding, office, research and design agents": "適配編碼、辦公、研究和設計等 Agent 應用",
     "Desktop, terminal and IDE agents connect through one base URL and one key — no per-app gateway.": "桌面、終端與 IDE 中的 Agent 只需一個介面位址和一把金鑰即可接入，無需為每個應用單獨設定閘道。",
@@ -7822,6 +7818,19 @@
     "Phone": "手機號碼",
     "Login Bindings": "登入綁定",
     "Quota & Usage": "額度與用量",
-    "Invite Code": "邀請碼"
+    "Invite Code": "邀請碼",
+    "This deployment runs software distributed under the GNU Affero General Public License v3.0.": "本站運行的軟體以 GNU Affero 通用公共許可證第 3 版分發。",
+    "Applicable license": "適用許可證",
+    "Modifications": "修改說明",
+    "This deployment contains modifications to the original work, which are present in the release this deployment is currently running.": "本站包含對原始作品的修改，這些修改存在於本站目前運行的版本中。",
+    "Network use": "網路使用",
+    "Users interacting with this deployment over a network may obtain the corresponding source of the running version at no charge, as required by section 13 of the GNU Affero General Public License v3.0. The location is listed under Related documents on this page.": "依 GNU Affero 通用公共許可證第 3 版第 13 條，透過網路存取本站的使用者可免費取得目前運行版本對應的原始碼，取得位置見本頁「相關文件」一節。",
+    "Third-party components": "第三方元件",
+    "Third-party components and their license terms are listed in the attribution file distributed with this software.": "第三方元件及其許可條款列在本軟體隨附的署名檔案中。",
+    "Warranty and liability": "擔保與責任",
+    "This software is provided without warranty of any kind, and the authors are not liable for any damages arising from its use.": "本軟體不提供任何形式的擔保，作者不對因其使用而產生的任何損害承擔責任。",
+    "Related documents": "相關文件",
+    "Corresponding source": "對應原始碼",
+    "If the source location is unavailable, request the corresponding source through the contact channel published on this site.": "若上述位置暫時無法存取，可透過本站公告的聯絡方式索取對應原始碼。"
   }
 }

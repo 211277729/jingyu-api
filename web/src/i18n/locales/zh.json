@@ -5998,7 +5998,6 @@
     "Sort Order": "排序",
     "Sort priority": "排序优先级",
     "Source": "来源",
-    "Source repository": "源码仓库",
     "Source diff": "源码差异",
     "Source Endpoint": "来源端点",
     "Source Field": "来源字段",
@@ -7560,9 +7559,6 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "为思考模式上游补全 assistant 历史消息中缺失的 reasoning_content，避免带工具调用的多轮请求被拒绝（DeepSeek 类上游）",
     "Model patterns for reasoning padding": "补全生效的模型匹配",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "逗号分隔的匹配模式，按上游模型名匹配，支持 * 和 ?；留空表示对本渠道所有模型生效",
-    "License & source": "许可与源码",
-    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "本站基于 New API 修改后运行，并按 AGPLv3 第 13 条向使用者提供对应的源码。",
-    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "此处提供的源码即本站当前运行的版本。若仓库暂时无法访问，可通过本站公示的联系方式索取对应源码。",
     "Agent Ecosystem": "Agent 生态",
     "Works with coding, office, research and design agents": "适配编码、办公、研究和设计等 Agent 应用",
     "Desktop, terminal and IDE agents connect through one base URL and one key — no per-app gateway.": "桌面、终端与 IDE 中的 Agent 只需一个接口地址和一枚密钥即可接入，无需为每个应用单独配置网关。",
@@ -7822,6 +7818,19 @@
     "Phone": "手机号",
     "Login Bindings": "登录绑定",
     "Quota & Usage": "额度与用量",
-    "Invite Code": "邀请码"
+    "Invite Code": "邀请码",
+    "This deployment runs software distributed under the GNU Affero General Public License v3.0.": "本站运行的软件以 GNU Affero 通用公共许可证第 3 版分发。",
+    "Applicable license": "适用许可证",
+    "Modifications": "修改说明",
+    "This deployment contains modifications to the original work, which are present in the release this deployment is currently running.": "本站包含对原始作品的修改，这些修改存在于本站当前运行的版本中。",
+    "Network use": "网络使用",
+    "Users interacting with this deployment over a network may obtain the corresponding source of the running version at no charge, as required by section 13 of the GNU Affero General Public License v3.0. The location is listed under Related documents on this page.": "依照 GNU Affero 通用公共许可证第 3 版第 13 条，通过网络访问本站的使用者可免费获取当前运行版本对应的源码，获取位置见本页「相关文档」一节。",
+    "Third-party components": "第三方组件",
+    "Third-party components and their license terms are listed in the attribution file distributed with this software.": "第三方组件及其许可条款列在本软件随附的署名文件中。",
+    "Warranty and liability": "担保与责任",
+    "This software is provided without warranty of any kind, and the authors are not liable for any damages arising from its use.": "本软件不提供任何形式的担保，作者不对因其使用而产生的任何损害承担责任。",
+    "Related documents": "相关文档",
+    "Corresponding source": "对应源码",
+    "If the source location is unavailable, request the corresponding source through the contact channel published on this site.": "若上述位置暂时无法访问，可通过本站公示的联系方式索取对应源码。"
   }
 }

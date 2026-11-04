@@ -144,13 +144,17 @@ function ProjectAttribution(props: { currentYear: number; inline?: boolean }) {
         行尾的入口用于满足 AGPLv3 第 13 条的源码提供义务；放在同一行是为了
         不给页脚多加一行。可以调小、调淡，但不能隐藏——第 13 条要求 "prominently offer"。
         该入口刻意做成低对比度、无 hover 反馈、默认光标，只保留可点击跳转本身，
-        且指向站内 /source 许可页而不是直接外链仓库，避免源码成为页面上的显眼出口。
+        且指向站内 /licensing 许可页而不是直接外链仓库：页脚标签只写「许可」，
+        源码位置收在许可页的折叠区里，避免源码成为页面上的显眼出口。
       */}
       <span className='block'>
         Frontend design and development by New API contributors.
         {' · '}
-        <Link to='/source' className='text-muted-foreground/30 cursor-default'>
-          {t('License & source')}
+        <Link
+          to='/licensing'
+          className='text-muted-foreground/30 cursor-default'
+        >
+          {t('License')}
         </Link>
       </span>
     </span>

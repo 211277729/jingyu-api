@@ -5998,7 +5998,6 @@
     "Sort Order": "Ordre de tri",
     "Sort priority": "Priorité de tri",
     "Source": "Source",
-    "Source repository": "Dépôt du code source",
     "Source diff": "Différence du code source",
     "Source Endpoint": "Point source",
     "Source Field": "Champ source",
@@ -7560,9 +7559,6 @@
     "Fill missing reasoning_content on assistant history for thinking-mode upstreams that reject tool-call requests without it (DeepSeek style)": "Complète le reasoning_content manquant de l'historique assistant pour les fournisseurs en mode réflexion qui rejettent les requêtes d'appel d'outils sans lui (style DeepSeek)",
     "Model patterns for reasoning padding": "Modèles concernés par le complément de reasoning",
     "Comma-separated patterns matched against the upstream model name; supports * and ?, empty applies to every model on this channel": "Motifs séparés par des virgules comparés au nom du modèle amont ; prend en charge * et ?, vide applique à tous les modèles de ce canal",
-    "License & source": "Licence et code source",
-    "This site runs a modified version of New API and provides the corresponding source to its users as required by AGPLv3 section 13.": "Ce site exécute une version modifiée de New API et fournit à ses utilisateurs le code source correspondant, comme l'exige l'article 13 de l'AGPLv3.",
-    "The source offered here is the version this site is running. If the repository is unavailable, request the corresponding source through the contact channel published on this site.": "Le code source proposé ici correspond à la version actuellement exécutée sur ce site. Si le dépôt est indisponible, demandez le code source correspondant via le canal de contact publié sur ce site.",
     "Agent Ecosystem": "Écosystème d’agents",
     "Works with coding, office, research and design agents": "Compatible avec les agents de développement, de bureautique, de recherche et de design",
     "Desktop, terminal and IDE agents connect through one base URL and one key — no per-app gateway.": "Les agents de bureau, de terminal et d’IDE se connectent via une seule URL de base et une seule clé, sans passerelle par application.",
@@ -7822,6 +7818,19 @@
     "Phone": "Phone",
     "Login Bindings": "Login Bindings",
     "Quota & Usage": "Quota & Usage",
-    "Invite Code": "Invite Code"
+    "Invite Code": "Invite Code",
+    "This deployment runs software distributed under the GNU Affero General Public License v3.0.": "This deployment runs software distributed under the GNU Affero General Public License v3.0.",
+    "Applicable license": "Applicable license",
+    "Modifications": "Modifications",
+    "This deployment contains modifications to the original work, which are present in the release this deployment is currently running.": "This deployment contains modifications to the original work, which are present in the release this deployment is currently running.",
+    "Network use": "Network use",
+    "Users interacting with this deployment over a network may obtain the corresponding source of the running version at no charge, as required by section 13 of the GNU Affero General Public License v3.0. The location is listed under Related documents on this page.": "Users interacting with this deployment over a network may obtain the corresponding source of the running version at no charge, as required by section 13 of the GNU Affero General Public License v3.0. The location is listed under Related documents on this page.",
+    "Third-party components": "Third-party components",
+    "Third-party components and their license terms are listed in the attribution file distributed with this software.": "Third-party components and their license terms are listed in the attribution file distributed with this software.",
+    "Warranty and liability": "Warranty and liability",
+    "This software is provided without warranty of any kind, and the authors are not liable for any damages arising from its use.": "This software is provided without warranty of any kind, and the authors are not liable for any damages arising from its use.",
+    "Related documents": "Related documents",
+    "Corresponding source": "Corresponding source",
+    "If the source location is unavailable, request the corresponding source through the contact channel published on this site.": "If the source location is unavailable, request the corresponding source through the contact channel published on this site."
   }
 }
