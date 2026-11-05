@@ -552,6 +552,30 @@ func GetUserIdByAffCode(affCode string) (int, error) {
 	return user.Id, err
 }
 
+// inviteeSummaryLimit caps how many invited users one invite page load can
+// return, protecting the self endpoint from pathological invite counts.
+const inviteeSummaryLimit = 500
+
+// GetInviteeSummariesByInviter returns a lightweight projection of the users
+// invited by the given inviter, newest first. Soft-deleted users are excluded
+// by GORM's default scope, so the list can only reference live invitations.
+func GetInviteeSummariesByInviter(inviterId int) ([]User, error) {
+	var invitees []User
+	err := DB.
+		Select("id, username, display_name, email, phone, status, aff_count, created_at, last_login_at").
+		Where("inviter_id = ?", inviterId).
+		Order("created_at DESC, id DESC").
+		Limit(inviteeSummaryLimit).
+		Find(&invitees).Error
+	return invitees, err
+}
+
+// InviteeSummaryLimit exposes the invite-list cap to the controller layer so
+// the frontend can render a hint when the response is truncated.
+func InviteeSummaryLimit() int {
+	return inviteeSummaryLimit
+}
+
 // DeleteUserById soft-deletes a user and returns how many scoped access tokens
 // were deleted with it.
 func DeleteUserById(id int) (int64, error) {

@@ -258,6 +258,8 @@ export interface UserWalletData {
   aff_history_quota: number
   /** Number of successful affiliate invites */
   aff_count: number
+  /** User role (>= 10 means admin, used for admin-only affordances) */
+  role?: number
   /** User group */
   group: string
 }

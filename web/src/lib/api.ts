@@ -66,6 +66,34 @@ export async function getUserGroups(): Promise<{
   return res.data
 }
 
+export interface InviteeRecord {
+  id: number
+  username: string
+  display_name: string
+  email: string
+  phone: string
+  status: number
+  aff_count: number
+  created_at: number
+  last_login_at: number
+}
+
+export interface InviteeListData {
+  invitees: InviteeRecord[]
+  total: number
+  capped_limit: number
+}
+
+export async function getInvitees(userId?: number): Promise<{
+  success: boolean
+  message?: string
+  data?: InviteeListData
+}> {
+  const config = userId ? { params: { user_id: userId } } : undefined
+  const res = await api.get('/api/user/aff/invitees', config)
+  return res.data
+}
+
 // ============================================================================
 // System APIs
 // ============================================================================

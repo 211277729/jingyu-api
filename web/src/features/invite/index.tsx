@@ -20,16 +20,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { SectionPageLayout } from '@/components/layout'
-import { useStatus } from '@/hooks/use-status'
-import { getSelf } from '@/lib/api'
 import { TransferDialog } from '@/features/wallet/components/dialogs/transfer-dialog'
 import { useAffiliate, useTopupInfo } from '@/features/wallet/hooks'
 import type { UserWalletData } from '@/features/wallet/types'
+import { useStatus } from '@/hooks/use-status'
+import { getSelf } from '@/lib/api'
 
 import { InviteHero } from './components/invite-hero'
-import { InviteSteps } from './components/invite-steps'
+import { InviteesCard } from './components/invite-invitees-card'
 import { InviteLinkCard } from './components/invite-link-card'
 import { InviteRewardsCard } from './components/invite-rewards-card'
+import { InviteSteps } from './components/invite-steps'
 
 /**
  * Standalone invite & rewards page.
@@ -119,6 +120,7 @@ export function Invite() {
               onTransfer={() => setTransferDialogOpen(true)}
             />
           </div>
+          <InviteesCard user={user} />
         </div>
       </SectionPageLayout.Content>
 

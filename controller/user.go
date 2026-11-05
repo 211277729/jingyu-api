@@ -464,6 +464,96 @@ func GetAffCode(c *gin.Context) {
 	return
 }
 
+// maskInviteeContact hides most of an email or phone so common inviters only
+// see enough to recognize the account. Admins receive the raw value.
+func maskInviteeContact(value string, isAdmin bool) string {
+	if value == "" || isAdmin {
+		return value
+	}
+	at := strings.IndexByte(value, '@')
+	if at > 0 {
+		name := value[:at]
+		head := strings.ToUpper(name[:1])
+		return head + "***" + value[at:]
+	}
+	if len(value) <= 2 {
+		return "***"
+	}
+	return value[:2] + "****" + value[len(value)-2:]
+}
+
+// inviteeResponse is the per-invitee payload of the invite list. Contacts are
+// masked for common users and unmasked for admins.
+type inviteeResponse struct {
+	Id          int    `json:"id"`
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	Email       string `json:"email"`
+	Phone       string `json:"phone"`
+	Status      int    `json:"status"`
+	AffCount    int    `json:"aff_count"`
+	CreatedAt   int64  `json:"created_at"`
+	LastLoginAt int64  `json:"last_login_at"`
+}
+
+// GetInvitees lists the accounts invited by the current user, newest first.
+// An admin may pass ?user_id=<id> to inspect another user's invite list;
+// common users are always restricted to their own.
+func GetInvitees(c *gin.Context) {
+	id := c.GetInt("id")
+	role := c.GetInt("role")
+	isAdmin := role >= common.RoleAdminUser
+
+	targetId := id
+	if userIdStr := c.Query("user_id"); userIdStr != "" {
+		if !isAdmin {
+			c.JSON(http.StatusForbidden, gin.H{
+				"success": false,
+				"message": "无权查看其他用户的邀请明细",
+			})
+			return
+		}
+		parsed, err := strconv.Atoi(userIdStr)
+		if err != nil || parsed <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "无效的用户 ID",
+			})
+			return
+		}
+		targetId = parsed
+	}
+
+	invitees, err := model.GetInviteeSummariesByInviter(targetId)
+	if err != nil {
+		common.ApiError(c, err)
+		return
+	}
+	responseData := make([]inviteeResponse, 0, len(invitees))
+	for _, invitee := range invitees {
+		responseData = append(responseData, inviteeResponse{
+			Id:          invitee.Id,
+			Username:    invitee.Username,
+			DisplayName: invitee.DisplayName,
+			Email:       maskInviteeContact(invitee.Email, isAdmin),
+			Phone:       maskInviteeContact(invitee.Phone, isAdmin),
+			Status:      invitee.Status,
+			AffCount:    invitee.AffCount,
+			CreatedAt:   invitee.CreatedAt,
+			LastLoginAt: invitee.LastLoginAt,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "",
+		"data": gin.H{
+			"invitees":     responseData,
+			"total":        len(responseData),
+			"capped_limit": model.InviteeSummaryLimit(),
+		},
+	})
+}
+
 func GetSelf(c *gin.Context) {
 	id := c.GetInt("id")
 	userRole := c.GetInt("role")
