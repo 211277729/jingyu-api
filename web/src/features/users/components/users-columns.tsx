@@ -229,9 +229,10 @@ export function useUsersColumns(): ColumnDef<User>[] {
         id: 'bindings',
         // accessorFn keeps the column listed in the view-options menu.
         accessorFn: (row) =>
-          THIRD_PARTY_BINDINGS.filter(
-            (binding) =>
-              String((row as unknown as Record<string, unknown>)[binding.field] || '')
+          THIRD_PARTY_BINDINGS.filter((binding) =>
+            String(
+              (row as unknown as Record<string, unknown>)[binding.field] || ''
+            )
           ).length,
         header: t('Bindings'),
         cell: ({ row }) => {

@@ -89,7 +89,7 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
                       </Link>
                     )
                   }
-                 />
+                />
               )
             )}
           </DropdownMenuContent>

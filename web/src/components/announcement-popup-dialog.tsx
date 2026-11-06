@@ -290,7 +290,9 @@ export function AnnouncementPopupDialog() {
           variant='ghost'
           size='sm'
           className='w-full'
-          onClick={() => setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)}
+          onClick={() =>
+            setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)
+          }
         >
           {t('Show more announcements')}
         </Button>

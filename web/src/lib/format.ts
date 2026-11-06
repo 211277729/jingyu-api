@@ -158,9 +158,7 @@ export function formatAmountInput(
     return ''
   }
   const text = value.toFixed(8)
-  return text.includes('.')
-    ? text.replace(/0+$/, '').replace(/\.$/, '')
-    : text
+  return text.includes('.') ? text.replace(/0+$/, '').replace(/\.$/, '') : text
 }
 
 // ============================================================================

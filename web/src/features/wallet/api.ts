@@ -199,7 +199,7 @@ export async function getWxPayOrderStatus(
 
 /**
  * Calculate payment amount for Waffo Pancake payment
- */export async function calculateWaffoPancakeAmount(
+ */ export async function calculateWaffoPancakeAmount(
   request: AmountRequest
 ): Promise<AmountResponse> {
   const res = await api.post('/api/user/waffo-pancake/amount', request, {

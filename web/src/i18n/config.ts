@@ -21,7 +21,6 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 
 import { convertDetectedLanguage } from './languages'
-
 // English is bundled with the main chunk so the fallback language is always
 // available synchronously; every other locale is code-split and fetched on
 // demand. This keeps the entry bundle small — the lazy locales together

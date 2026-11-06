@@ -109,7 +109,11 @@ describe('display price ratio', () => {
       7.3
     )
     expect(
-      getDisplayPriceRatio(buildTopupInfo({}), PAYMENT_TYPES.WXPAY_OFFICIAL, 7.3)
+      getDisplayPriceRatio(
+        buildTopupInfo({}),
+        PAYMENT_TYPES.WXPAY_OFFICIAL,
+        7.3
+      )
     ).toBe(7.3)
   })
 })

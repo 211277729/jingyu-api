@@ -55,7 +55,8 @@ export function LobeIconView(props: LobeIconViewProps) {
       <Suspense
         fallback={renderIconFallback(
           (typeof iconName === 'string' ? iconName.split('.')[0] : '') || '?',
-          typeof iconProps.size === 'number' || typeof iconProps.size === 'string'
+          typeof iconProps.size === 'number' ||
+            typeof iconProps.size === 'string'
             ? iconProps.size
             : size
         )}

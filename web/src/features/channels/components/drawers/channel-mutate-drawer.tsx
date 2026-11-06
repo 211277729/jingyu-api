@@ -1860,7 +1860,9 @@ export function ChannelMutateDrawer({
           </div>
           <FormControl>
             <Switch
-              disabled={sensitiveLocked || form.watch('system_prompt_force_override')}
+              disabled={
+                sensitiveLocked || form.watch('system_prompt_force_override')
+              }
               checked={field.value}
               onCheckedChange={field.onChange}
             />

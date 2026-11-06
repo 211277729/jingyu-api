@@ -33,7 +33,8 @@ import { api } from '@/lib/api'
 import { SettingsPageProvider } from '../../components/settings-page-context'
 import { FAQSection } from '../faq-section'
 
-const SERVER_PAYLOAD = '[{"id":9,"question":"Server entry","answer":"From server"}]'
+const SERVER_PAYLOAD =
+  '[{"id":9,"question":"Server entry","answer":"From server"}]'
 const UNSAVED_HINT =
   'Edits take effect only after you click "Save Settings"; refreshing now discards them.'
 

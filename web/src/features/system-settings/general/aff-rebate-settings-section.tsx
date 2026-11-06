@@ -40,21 +40,20 @@ import { useUpdateOption } from '../hooks/use-update-option'
 
 // 返利比例按好友到账 quota 的百分比计算，首笔比例受注册天数窗口限制（0 = 不限制）
 const schema = (t: (key: string) => string) =>
-  z
-    .object({
-      firstPercent: z.coerce
-        .number()
-        .min(0, t('Rebate percentage cannot be negative'))
-        .max(100, t('Rebate percentage cannot exceed 100')),
-      percent: z.coerce
-        .number()
-        .min(0, t('Rebate percentage cannot be negative'))
-        .max(100, t('Rebate percentage cannot exceed 100')),
-      firstDays: z.coerce
-        .number()
-        .int(t('Days must be a whole number'))
-        .min(0, t('Days cannot be negative')),
-    })
+  z.object({
+    firstPercent: z.coerce
+      .number()
+      .min(0, t('Rebate percentage cannot be negative'))
+      .max(100, t('Rebate percentage cannot exceed 100')),
+    percent: z.coerce
+      .number()
+      .min(0, t('Rebate percentage cannot be negative'))
+      .max(100, t('Rebate percentage cannot exceed 100')),
+    firstDays: z.coerce
+      .number()
+      .int(t('Days must be a whole number'))
+      .min(0, t('Days cannot be negative')),
+  })
 
 type FormValues = {
   firstPercent: string | number

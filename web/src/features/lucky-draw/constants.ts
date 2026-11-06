@@ -34,8 +34,7 @@ export const RARITY_STYLES: Record<
 > = {
   common: {
     cell: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-    badge:
-      'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+    badge: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
     labelKey: 'Common reward',
   },
   rare: {
@@ -45,14 +44,12 @@ export const RARITY_STYLES: Record<
   },
   epic: {
     cell: 'border-violet-500/40 bg-violet-500/10 text-violet-600 dark:text-violet-400',
-    badge:
-      'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    badge: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
     labelKey: 'Epic reward',
   },
   legendary: {
     cell: 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400',
-    badge:
-      'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
     labelKey: 'Legendary reward',
   },
 }
