@@ -118,13 +118,17 @@ echo 'COMPOSE_PROJECT_NAME=<线上项目名>' >> .env
 
 ```powershell
 cd <仓库目录>
-$env:DOCKER_BUILDKIT='0'
-docker build -t jingyu-api:test .
+$env:DOCKER_BUILDKIT='1'
+docker buildx build --load -t jingyu-api:test .
 ```
 
+- **必须用 BuildKit**：Dockerfile 用了 `--mount=type=cache` 复用 bun / go 的包与编译缓存，
+  传统构建器（`DOCKER_BUILDKIT=0`）会直接报错
 - 镜像分三阶段：`oven/bun` 构建前端 → `golang` 编译并 `//go:embed` 前端 → `debian:bookworm-slim` 运行
 - **宿主机不需要先 `bun run build`**，前端在镜像第一阶段重新构建并嵌入二进制
 - 基础镜像按 digest 固定，本地已存在会被复用；报 `failed to authorize ... auth.docker.io` 是到 Docker Hub 超时，确认三个 base 镜像本地在（`docker images | grep -E 'oven/bun|golang|debian'`）后重试
+- BuildKit 每次仍会去 registry 解析这三个 digest 的元数据，连不上 Docker Hub 时每个阶段要干等约 42 秒。
+  配了 `registry-mirrors` 之后这个等待才会消失（Docker Desktop → Settings → Docker Engine）
 - 境内 goproxy 不通时：`docker build --build-arg GOPROXY=https://proxy.golang.org,direct -t jingyu-api:test .`
 - 构建机与服务器架构不一致时必须指定：`docker build --platform linux/amd64 -t jingyu-api:test .`
 
@@ -518,9 +522,9 @@ curl -sI https://cdnwb.xiaoyuji.cn/jingyuai-api/static/js/index.<新哈希>.js
 `bun run build:image` 内部按「先出前端、再编 Go」排列，总耗时等同一次完整构建：
 
 ```
-build --target builder   → 前端产物（源码变了才重跑）
-导出 /build/web/dist     → web/dist
-build（完整）            → 复用上面的缓存，只编译 Go
+buildx --target dist     → 前端产物（源码变了才重跑）
+                         → 直接落盘到 web/dist（不再导出 2.5GB 中间镜像）
+buildx（完整）           → 复用上面的缓存，只编译 Go
 ```
 
 <details>
@@ -535,11 +539,16 @@ docker buildx build --target web-dist --output type=local,dest=web/dist .
 这需要 Dockerfile 里有一个只含 dist 的导出阶段：
 
 ```dockerfile
-FROM scratch AS web-dist
+FROM scratch AS dist
 COPY --from=builder /build/web/dist /
 ```
 
-本机 buildx（v0.36.1 / BuildKit v0.32.2）可用时会走这条路；不可用时 `build:image` 会自动退回「传统构建器 + `docker cp`」，两者产出完全一致。
+`build:image` 会同时输出两份：`--output type=local` 把产物直接落到 `web/dist`，
+`--output type=docker` 打一个约 88MB 的 `jingyu-api-web:export` 小镜像，供
+`dist:from-image --no-build` 秒级取用。
+
+> ⚠️ **必须启用 BuildKit**（`DOCKER_BUILDKIT=1`，Docker Desktop 默认即开）。Dockerfile 里的
+> `--mount=type=cache` 和 `--output type=local` 都是 BuildKit 独有的能力，传统构建器无法执行。
 </details>
 
 > ⚠️ **不要用本地 `bun run build` 的 dist 往 COS 传。** 本地构建和 Docker 内构建的产物 hash 并不相同（bun 版本、`VITE_REACT_APP_VERSION`、`NODE_ENV` 等差异），而线上 `index.html` 引用的是 **Docker 那套** hash。传错了就是 `index.css` / `async` 分包全部 404、页面白屏。

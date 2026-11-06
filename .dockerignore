@@ -9,6 +9,8 @@ docs
 .gocache
 /web/node_modules
 /web/dist
+# .local 是本地草稿/临时产物目录（约 120MB），不进镜像也不该进构建上下文
+/.local
 
 # 本地调试/历史产物，不进镜像也不进构建上下文（合计约 700MB，
 # 漏排是 docker build 变慢的主因）
@@ -17,4 +19,6 @@ docs
 *.dump
 logs
 one-api.db
+one-api.db-shm
+one-api.db-wal
 !THIRD-PARTY-LICENSES.md
