@@ -225,6 +225,8 @@
 ---
 
 ## 更新日志
+- **2026-11-06**：「用 AI 帮你配置」卡交互加固：①「复制提示词」从无脑复制改为**前置校验**——未登录直接 return、登录但无配置码时 toast 提示并自动生成（成功后提示词自动带码）、配置码过期时自动续生成（过期是死码，不值得弹回步骤一），生成成功才写入剪贴板（改用自管按钮 + useCopyToClipboard，不再用 CopyButton 因其点击即复制拦不住）；卡片内加红色过期提示条（codeInvalid 态）。②提示词 `<pre>` 加 `whitespace-pre-wrap [overflow-wrap:anywhere]` 修复长 URL 横向撑破渐变描边卡片的溢出。i18n 新增 3 个 key（三语同加 + sync + 逐 key 核对）；docs 测试 19/19（新增「无码点复制自动生成」用例）。
+- **2026-11-06**：文档页二次重设计为**整页沉浸式暗色控制台**（脱离 `PublicLayout`，直接组合 `PublicHeader` 并在页面根节点加 `dark` class 做**子树级强制暗 token**——修复浅色主题下共享导航栏透明背景+token 深色文字叠暗底不可见的问题；滚动后的 `bg-background/60` 玻璃胶囊也因此自动变暗色）：hero 渐变大标题 + `GatewayConstellation` 工具接入**双环轨道球**（工具 chip 在**屏幕空间**沿两条投影椭圆（rAF 驱动，SQUASH=0.42，无 3D 变换）绕网关枢纽公转，chip 只做 translate 不旋转所以文字永不变形，远侧（上半圈）降透明度做纵深；桌面外环 a=280 + 内环 a=170、移动端 a=114/80 两套独立 stage（size-0 锚点 + getClientRects 判断 display:none）；仅 transform 更新、`prefers-reduced-motion` 下静态摆放）、全宽终端命令条展示双 BASE_URL、AI 配置卡改渐变描边面板并新增右侧 agent 工作演示终端（生成配置码后切换为展示真实配置码）；全部正文组件（DocsSection/StepList/QuickStart/EndpointTable/ModelList/FaqList/ToolGuideCard/DocsIndex）改固定 zinc/紫/青暗色配色，玻璃卡片 + 编号分区（01–07）。在此暗底上给共享控件显式传 `hover:bg-white/10 hover:text-white` 类，禁止依赖主题 token 前景色。18/18 docs 测试、tsc、oxlint 通过，浅色/深色主题与 1440px、375px 均已截图核对。
 
 - **2026-01-28**：初始版本（国际化、代码、组件、类型等基础规范）。
 - **2026-01-28**：补充状态管理、API、表单、路由、错误处理、样式、文件组织、可访问性、安全、测试、依赖与构建部署规范。

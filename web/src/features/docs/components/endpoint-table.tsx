@@ -39,29 +39,40 @@ export function EndpointTable(props: { rows: EndpointRow[] }) {
   const { t } = useTranslation()
 
   return (
-    <div className='ring-foreground/10 overflow-hidden rounded-xl ring-1'>
+    <div className='overflow-hidden rounded-xl bg-black/20 ring-1 ring-white/10'>
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>{t('Endpoint')}</TableHead>
-            <TableHead>{t('Protocol')}</TableHead>
-            <TableHead>{t('Authorization')}</TableHead>
-            <TableHead>{t('Purpose')}</TableHead>
+          <TableRow className='border-white/10 hover:bg-transparent'>
+            <TableHead className='text-zinc-400'>{t('Endpoint')}</TableHead>
+            <TableHead className='text-zinc-400'>{t('Protocol')}</TableHead>
+            <TableHead className='text-zinc-400'>
+              {t('Authorization')}
+            </TableHead>
+            <TableHead className='text-zinc-400'>{t('Purpose')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {props.rows.map((row) => (
-            <TableRow key={`${row.method} ${row.path}`}>
+            <TableRow
+              key={`${row.method} ${row.path}`}
+              className='border-white/10 hover:bg-white/[0.04]'
+            >
               <TableCell className='font-mono text-xs'>
-                <span className='text-muted-foreground'>{row.method}</span>{' '}
-                {row.path}
+                <span
+                  className={
+                    row.method === 'GET' ? 'text-cyan-300' : 'text-violet-300'
+                  }
+                >
+                  {row.method}
+                </span>{' '}
+                <span className='text-zinc-100'>{row.path}</span>
               </TableCell>
-              <TableCell>{row.protocol}</TableCell>
-              <TableCell className='text-muted-foreground font-mono text-xs'>
+              <TableCell className='text-zinc-300'>{row.protocol}</TableCell>
+              <TableCell className='font-mono text-xs text-zinc-400'>
                 {row.auth}
               </TableCell>
               <TableCell
-                className='whitespace-normal'
+                className='whitespace-normal text-zinc-400'
                 data-table-text='secondary'
               >
                 {row.purpose}

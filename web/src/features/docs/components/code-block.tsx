@@ -36,21 +36,24 @@ export function CodeBlock(props: CodeBlockProps) {
   return (
     <div
       className={cn(
-        'bg-muted/40 ring-foreground/10 overflow-hidden rounded-lg ring-1',
+        'ring-white/10 bg-black/40 overflow-hidden rounded-lg ring-1',
         props.className
       )}
     >
-      <div className='flex items-center justify-between gap-2 border-b px-3 py-1.5'>
-        <span className='text-muted-foreground truncate font-mono text-xs'>
+      <div className='flex items-center gap-1.5 border-b border-white/[0.06] px-3 py-1.5'>
+        <span className='size-2 rounded-full bg-red-400 opacity-70' />
+        <span className='size-2 rounded-full bg-amber-400 opacity-70' />
+        <span className='size-2 rounded-full bg-emerald-400 opacity-70' />
+        <span className='ml-1 truncate font-mono text-xs text-zinc-500'>
           {props.label ?? ''}
         </span>
         <CopyButton
           value={props.code}
-          className='size-6'
+          className='ml-auto text-zinc-400 hover:bg-white/10 hover:text-zinc-100'
           iconClassName='size-3.5'
         />
       </div>
-      <pre className='overflow-x-auto px-3 py-2.5 text-xs leading-relaxed'>
+      <pre className='overflow-x-auto px-3 py-2.5 text-xs leading-relaxed text-zinc-100'>
         <code className='font-mono'>{props.code}</code>
       </pre>
     </div>

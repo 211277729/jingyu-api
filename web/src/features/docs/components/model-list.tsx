@@ -45,32 +45,36 @@ export function ModelList() {
 
   if (models.length === 0) {
     return (
-      <p className='text-muted-foreground text-sm'>
+      <p className='text-sm text-zinc-400'>
         {t('No models are currently available.')}
       </p>
     )
   }
 
   return (
-    <div className='ring-foreground/10 divide-foreground/10 divide-y overflow-hidden rounded-xl ring-1'>
+    <div className='divide-y divide-white/[0.06] overflow-hidden rounded-xl bg-black/20 ring-1 ring-white/10'>
       {models.map((model) => (
         <div
           key={model.key}
           className='flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-3 py-2.5'
         >
           <div className='flex min-w-0 items-center gap-1.5'>
-            <code className='truncate font-mono text-sm'>
+            <code className='truncate font-mono text-sm text-zinc-100'>
               {model.model_name}
             </code>
             <CopyButton
               value={model.model_name}
-              className='size-6'
+              className='size-6 text-zinc-400 hover:bg-white/10 hover:text-zinc-100'
               iconClassName='size-3.5'
             />
           </div>
           <div className='flex flex-wrap items-center gap-1.5'>
             {(model.supported_endpoint_types ?? []).map((type) => (
-              <Badge key={type} variant='outline'>
+              <Badge
+                key={type}
+                variant='outline'
+                className='border-white/10 bg-white/5 text-zinc-300 ring-white/10'
+              >
                 {PROTOCOL_LABELS[type] ?? type}
               </Badge>
             ))}

@@ -31,13 +31,17 @@ export function FaqList() {
   const { t } = useTranslation()
 
   return (
-    <Accordion className='ring-foreground/10 rounded-xl px-4 ring-1 sm:px-5'>
+    <Accordion className='rounded-xl bg-black/20 px-4 ring-1 ring-white/10 sm:px-5'>
       {FAQ_ITEMS.map((item) => (
-        <AccordionItem key={item.id} value={item.id}>
-          <AccordionTrigger className='text-start hover:no-underline'>
+        <AccordionItem
+          key={item.id}
+          value={item.id}
+          className='border-white/[0.08]'
+        >
+          <AccordionTrigger className='text-start text-zinc-100 hover:text-white hover:no-underline'>
             {t(item.questionKey)}
           </AccordionTrigger>
-          <AccordionContent className='text-muted-foreground'>
+          <AccordionContent className='text-zinc-400'>
             {t(item.answerKey)}
           </AccordionContent>
         </AccordionItem>

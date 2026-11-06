@@ -30,15 +30,18 @@ import { DOCS_SECTION_IDS, DOCS_SECTION_TITLE_KEYS } from '../constants'
  * `align-items: stretch` would stretch it to the full row height and leave
  * the sticky offset no room to travel. An IntersectionObserver band keeps
  * the section the reader is in highlighted.
+ *
+ * Always-dark styling: the docs page is an immersive dark console that does
+ * not follow the site theme.
  */
 export function DocsIndex() {
   const { t } = useTranslation()
   const [activeId, setActiveId] = useState<string>()
 
   useEffect(() => {
-    const els = DOCS_SECTION_IDS.map((id) => document.getElementById(id)).filter(
-      (el): el is HTMLElement => el != null
-    )
+    const els = DOCS_SECTION_IDS.map((id) =>
+      document.getElementById(id)
+    ).filter((el): el is HTMLElement => el != null)
     if (els.length === 0) return
 
     const observer = new IntersectionObserver(
@@ -61,22 +64,32 @@ export function DocsIndex() {
       aria-label={t('On this page')}
       className='lg:sticky lg:top-24 lg:self-start'
     >
-      <p className='text-muted-foreground/70 mb-3 text-xs font-semibold tracking-wide uppercase'>
+      <p className='mb-3 text-xs font-semibold tracking-[0.2em] text-zinc-500 uppercase'>
         {t('On this page')}
       </p>
-      <ul className='flex flex-wrap gap-x-4 gap-y-2 lg:flex-col lg:gap-y-2.5'>
-        {DOCS_SECTION_IDS.map((id) => (
+      <ul className='flex flex-wrap gap-x-4 gap-y-2 lg:flex-col lg:gap-y-2'>
+        {DOCS_SECTION_IDS.map((id, index) => (
           <li key={id}>
             <a
               href={`#${id}`}
               aria-current={activeId === id ? 'true' : undefined}
               className={cn(
-                'text-sm transition-colors',
+                'group flex items-center gap-2.5 text-sm transition-colors',
                 activeId === id
-                  ? 'text-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'font-medium text-white'
+                  : 'text-zinc-500 hover:text-zinc-200'
               )}
             >
+              <span
+                className={cn(
+                  'font-mono text-[11px] tabular-nums transition-colors',
+                  activeId === id
+                    ? 'text-violet-300'
+                    : 'text-zinc-700 group-hover:text-zinc-500'
+                )}
+              >
+                {String(index + 1).padStart(2, '0')}
+              </span>
               {t(DOCS_SECTION_TITLE_KEYS[id])}
             </a>
           </li>

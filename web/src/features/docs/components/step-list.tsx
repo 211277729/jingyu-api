@@ -41,32 +41,39 @@ export type StepItem = {
 /**
  * Numbered how-to list shared by the quick-start blocks and the tool guide
  * cards, so every setup path on the page looks and behaves the same.
+ *
+ * Always-dark styling: the docs page is an immersive dark console that does
+ * not follow the site theme.
  */
 export function StepList(props: { steps: StepItem[]; className?: string }) {
   return (
-    <ol className={cn('space-y-5', props.className)}>
+    <ol className={cn('space-y-6', props.className)}>
       {props.steps.map((step, index) => (
-        <li key={step.text} className='flex gap-3'>
+        <li key={step.text} className='relative flex gap-3.5'>
+          {index < props.steps.length - 1 && (
+            <span
+              className='absolute top-9 bottom-[-1.5rem] w-px bg-gradient-to-b from-violet-400/40 to-transparent'
+              aria-hidden='true'
+              style={{ left: 15 }}
+            />
+          )}
           <span
-            className='bg-muted text-muted-foreground mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold'
+            className='mt-0 flex size-8 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-sm font-semibold text-violet-300 ring-1 ring-violet-400/30'
             aria-hidden='true'
           >
             {index + 1}
           </span>
-          <div className='min-w-0 flex-1 space-y-2'>
-            <p className='text-sm'>{step.text}</p>
+          <div className='mt-0.5 min-w-0 flex-1 space-y-2'>
+            <p className='text-sm leading-relaxed text-zinc-200'>{step.text}</p>
             {step.snippet != null && (
-              <CodeBlock
-                code={step.snippet.code}
-                label={step.snippet.label}
-              />
+              <CodeBlock code={step.snippet.code} label={step.snippet.label} />
             )}
             {step.image != null && (
               <img
                 src={step.image}
                 alt={step.imageAlt ?? step.text}
                 loading='lazy'
-                className='ring-foreground/10 max-w-md rounded-lg ring-1'
+                className='max-w-md rounded-lg ring-1 ring-white/10'
               />
             )}
           </div>

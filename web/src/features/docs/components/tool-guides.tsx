@@ -73,7 +73,9 @@ export function ToolGuides(props: ToolGuidesProps) {
         snippet: { label: 'Base URL', code: props.openAiBaseUrl },
       },
       {
-        text: t('Switch the model for your agent to a model from this gateway.'),
+        text: t(
+          'Switch the model for your agent to a model from this gateway.'
+        ),
       },
     ]
 
@@ -205,7 +207,9 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('DeepSeek Harness')}
-        logo={<span className='shrink-0'>{getLobeIcon('DeepSeek.Color', 20)}</span>}
+        logo={
+          <span className='shrink-0'>{getLobeIcon('DeepSeek.Color', 20)}</span>
+        }
         intro={t(
           'DeepSeek Harness declares providers in its Models settings page. Add this gateway once and every agent preset can use it.'
         )}
@@ -216,7 +220,9 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('Codex')}
-        logo={<span className='shrink-0'>{getLobeIcon('Codex.Color', 20)}</span>}
+        logo={
+          <span className='shrink-0'>{getLobeIcon('Codex.Color', 20)}</span>
+        }
         intro={t(
           'Codex needs a model that serves the Responses API, so it cannot use models listed above as chat-only.'
         )}
@@ -229,7 +235,11 @@ $env:JINGYU_API_KEY = "sk-xxxxxxxx"    # PowerShell`,
 
       <ToolGuideCard
         name={t('Claude Code')}
-        logo={<span className='shrink-0'>{getLobeIcon('ClaudeCode.Color', 20)}</span>}
+        logo={
+          <span className='shrink-0'>
+            {getLobeIcon('ClaudeCode.Color', 20)}
+          </span>
+        }
         intro={t(
           'Claude Code reads its endpoint and credential from the environment, and takes the origin only.'
         )}

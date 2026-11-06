@@ -39,6 +39,7 @@ vi.mock('../api', async (importOriginal) => ({
 vi.mock('@/components/layout', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/components/layout')>()),
   PublicLayout: (props: { children?: ReactNode }) => props.children,
+  PublicHeader: () => <div data-testid='public-header-stub' />,
 }))
 
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
@@ -157,12 +158,16 @@ describe('quick start and verify sections', () => {
   it('links each tool guide card from the quick-jump chips', () => {
     renderWithCache(<Docs />)
 
-    for (const id of ['cc-switch', 'magpie', 'claude-code', 'codex', 'deepseek-harness']) {
+    for (const id of [
+      'cc-switch',
+      'magpie',
+      'claude-code',
+      'codex',
+      'deepseek-harness',
+    ]) {
       expect(document.querySelector(`#${id}`)).not.toBeNull()
     }
-    expect(
-      screen.getByRole('link', { name: 'CC Switch' })
-    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'CC Switch' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Magpie' })).toBeInTheDocument()
   })
 })
@@ -248,7 +253,9 @@ describe('AI setup card', () => {
       screen.getByRole('button', { name: 'View the full prompt' })
     )
 
-    const prompt = screen.getByText(/Read https:\/\/gateway\.example\/llms\.txt/)
+    const prompt = screen.getByText(
+      /Read https:\/\/gateway\.example\/llms\.txt/
+    )
     expect(prompt.textContent).toContain('ask me for my sk- API key')
   })
 
@@ -281,8 +288,28 @@ describe('AI setup card', () => {
     await userEvent.click(
       screen.getByRole('button', { name: 'View the full prompt' })
     )
-    const prompt = screen.getByText(/My one-time setup code is ABCD2345EFGH6789/)
+    const prompt = screen.getByText(
+      /My one-time setup code is ABCD2345EFGH6789/
+    )
     expect(prompt.textContent).toContain('/api/setup_code/redeem')
+  })
+
+  it('auto-generates a setup code when the prompt is copied without one', async () => {
+    const user = { id: 1, username: 'tester' } as never
+    useAuthStore.getState().auth.setUser(user)
+    vi.mocked(generateSetupCode).mockResolvedValue({
+      success: true,
+      data: { code: 'ZZZZ9999YYYY8888', expires_in: 600 },
+    })
+
+    render(<AiSetupCard origin={ORIGIN} />)
+    const { userEvent } = await import('@testing-library/user-event')
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Copy the prompt' })
+    )
+
+    expect(await screen.findByText('ZZZZ9999YYYY8888')).toBeInTheDocument()
+    expect(generateSetupCode).toHaveBeenCalledTimes(1)
   })
 
   it('renders on the full docs page with the signed-out variant', () => {

@@ -26,6 +26,9 @@ import { useTranslation } from 'react-i18next'
  *
  * Each card links to the section (or page) that carries the detailed steps,
  * so first-time users can follow the page top to bottom without guessing.
+ *
+ * Always-dark styling: the docs page is an immersive dark console that does
+ * not follow the site theme.
  */
 export function QuickStart() {
   const { t } = useTranslation()
@@ -75,26 +78,24 @@ export function QuickStart() {
       {steps.map((step, index) => (
         <li
           key={step.title}
-          className='ring-foreground/10 flex gap-3 rounded-xl p-4 ring-1'
+          className='flex gap-3.5 rounded-xl bg-white/[0.03] p-4 ring-1 ring-white/10 transition-colors hover:bg-violet-500/[0.06] hover:ring-violet-400/40'
         >
           <span
-            className='bg-foreground text-background mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold'
+            className='mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-sm font-semibold text-white shadow-md shadow-violet-500/25'
             aria-hidden='true'
           >
             {index + 1}
           </span>
           <div className='min-w-0 flex-1 space-y-1.5'>
-            <h3 className='flex items-center gap-1.5 text-sm font-semibold'>
+            <h3 className='flex items-center gap-1.5 text-sm font-semibold text-white'>
               {step.icon}
               {step.title}
             </h3>
-            <p className='text-muted-foreground text-xs leading-relaxed'>
-              {step.desc}
-            </p>
+            <p className='text-xs leading-relaxed text-zinc-400'>{step.desc}</p>
             {step.href.startsWith('#') ? (
               <a
                 href={step.href}
-                className='text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline'
+                className='inline-flex items-center gap-1 text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200'
               >
                 {step.cta}
                 <ArrowRight className='size-3' aria-hidden='true' />
@@ -104,7 +105,7 @@ export function QuickStart() {
                 to={step.href}
                 target='_blank'
                 rel='noopener noreferrer'
-                className='text-primary inline-flex items-center gap-1 text-xs font-medium hover:underline'
+                className='inline-flex items-center gap-1 text-xs font-medium text-cyan-300 transition-colors hover:text-cyan-200'
               >
                 {step.cta}
                 <ArrowRight className='size-3' aria-hidden='true' />

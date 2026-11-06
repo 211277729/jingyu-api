@@ -49,10 +49,12 @@ export function CurlExamples(props: { baseUrl: string }) {
 
   return (
     <div className='space-y-3'>
-      <h3 className='text-sm font-semibold'>{t('Verify with cURL')}</h3>
+      <h3 className='text-sm font-semibold text-white'>
+        {t('Verify with cURL')}
+      </h3>
       <CodeBlock label='curl' code={chat} />
       <CodeBlock label='curl' code={messages} />
-      <p className='text-muted-foreground text-xs'>
+      <p className='text-xs text-zinc-400'>
         {t(
           'A 401 means the token is wrong; an insufficient balance error means the account has no quota left.'
         )}
