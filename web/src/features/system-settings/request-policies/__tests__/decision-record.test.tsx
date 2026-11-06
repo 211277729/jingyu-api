@@ -13,7 +13,11 @@ const failedAttempt = {
   error_source: 'upstream',
   elapsed_ms: 5200,
   ttft_ms: 1500,
-  decision: { action: 'failure', reason: 'upstream_failure', source: 'upstream' },
+  decision: {
+    action: 'failure',
+    reason: 'upstream_failure',
+    source: 'upstream',
+  },
 }
 
 const answeredAttempt = {
@@ -34,7 +38,11 @@ const retryDecision = {
   channel_id: 11,
   group: 'default',
   elapsed_ms: 5200,
-  decision: { action: 'retry', reason: 'retry_status_matched', source: 'global' },
+  decision: {
+    action: 'retry',
+    reason: 'retry_status_matched',
+    source: 'global',
+  },
 }
 
 it('shows each attempt its own first-token latency', () => {

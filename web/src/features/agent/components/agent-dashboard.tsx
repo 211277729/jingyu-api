@@ -17,21 +17,39 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useQuery } from '@tanstack/react-query'
-import { BanknoteArrowDown, ChevronLeft, ChevronRight, Users, Wallet } from 'lucide-react'
+import {
+  BanknoteArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+  Wallet,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Dialog } from '@/components/dialog'
-import { InviteLinkCard } from '@/features/invite/components/invite-link-card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getAgentCommissions, getAgentCustomers, getAgentWithdrawals, requestAgentWithdraw } from '@/features/agent/api'
-import type { AgentProfileData, AgentWithdrawalStatus } from '@/features/agent/types'
+import {
+  getAgentCommissions,
+  getAgentCustomers,
+  getAgentWithdrawals,
+  requestAgentWithdraw,
+} from '@/features/agent/api'
+import type {
+  AgentProfileData,
+  AgentWithdrawalStatus,
+} from '@/features/agent/types'
+import { InviteLinkCard } from '@/features/invite/components/invite-link-card'
 import { useAffiliate } from '@/features/wallet/hooks'
-import { formatQuota, parseQuotaFromDollars, quotaUnitsToDollars } from '@/lib/format'
+import {
+  formatQuota,
+  parseQuotaFromDollars,
+  quotaUnitsToDollars,
+} from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
 
 const PAGE_SIZE = 10
@@ -41,7 +59,13 @@ function formatDateTime(timestamp: number): string {
   return new Date(timestamp * 1000).toLocaleString()
 }
 
-function TableShell({ header, children }: { header: React.ReactNode; children: React.ReactNode }) {
+function TableShell({
+  header,
+  children,
+}: {
+  header: React.ReactNode
+  children: React.ReactNode
+}) {
   return (
     <div className='overflow-x-auto rounded-lg border'>
       <table className='w-full text-sm'>
@@ -60,7 +84,10 @@ function EmptyRow({ colSpan }: { colSpan: number }) {
   const { t } = useTranslation()
   return (
     <tr>
-      <td colSpan={colSpan} className='text-muted-foreground py-8 text-center text-xs'>
+      <td
+        colSpan={colSpan}
+        className='text-muted-foreground py-8 text-center text-xs'
+      >
         {t('No data')}
       </td>
     </tr>
@@ -108,7 +135,10 @@ function Pager({
 
 function WithdrawalStatusBadge({ status }: { status: AgentWithdrawalStatus }) {
   const { t } = useTranslation()
-  const map: Record<AgentWithdrawalStatus, { label: string; className: string }> = {
+  const map: Record<
+    AgentWithdrawalStatus,
+    { label: string; className: string }
+  > = {
     pending: {
       label: t('Under review'),
       className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
@@ -152,8 +182,12 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
   const [submitting, setSubmitting] = useState(false)
 
   const profile = data.profile
-  const firstPercent = profile && profile.first_percent > 0 ? profile.first_percent : data.first_percent
-  const percent = profile && profile.percent > 0 ? profile.percent : data.percent
+  const firstPercent =
+    profile && profile.first_percent > 0
+      ? profile.first_percent
+      : data.first_percent
+  const percent =
+    profile && profile.percent > 0 ? profile.percent : data.percent
 
   // 推广物料：与邀请返利页同一个邀请码/链接（generateAffiliateLink 生成），代理直接复制销售
   const {
@@ -184,7 +218,11 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
       return
     }
     if (data.min_withdraw_quota > 0 && withdrawAmountUsd < minWithdrawUsd) {
-      toast.error(t('Withdrawal amount is below the minimum of ${{amount}}', { amount: minWithdrawUsd.toFixed(2) }))
+      toast.error(
+        t('Withdrawal amount is below the minimum of ${{amount}}', {
+          amount: minWithdrawUsd.toFixed(2),
+        })
+      )
       return
     }
     setSubmitting(true)
@@ -236,7 +274,10 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
             {t('Commission Rates')}
           </div>
           <div className='mt-1.5 text-sm font-semibold tabular-nums'>
-            {t('First {{first}}% · Then {{later}}%', { first: firstPercent, later: percent })}
+            {t('First {{first}}% · Then {{later}}%', {
+              first: firstPercent,
+              later: percent,
+            })}
           </div>
         </div>
       </div>
@@ -256,9 +297,13 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
       {/* 三个列表 */}
       <Tabs defaultValue='commissions'>
         <TabsList>
-          <TabsTrigger value='commissions'>{t('Commission Details')}</TabsTrigger>
+          <TabsTrigger value='commissions'>
+            {t('Commission Details')}
+          </TabsTrigger>
           <TabsTrigger value='customers'>{t('My Customers')}</TabsTrigger>
-          <TabsTrigger value='withdrawals'>{t('Withdrawal Records')}</TabsTrigger>
+          <TabsTrigger value='withdrawals'>
+            {t('Withdrawal Records')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value='commissions' className='space-y-2'>
@@ -276,19 +321,27 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
           >
             {(commissions.data?.items ?? []).map((item) => (
               <tr key={item.id} className='whitespace-nowrap'>
-                <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.created_at)}</td>
+                <td className='px-3 py-2 text-xs tabular-nums'>
+                  {formatDateTime(item.created_at)}
+                </td>
                 <td className='px-3 py-2 font-medium'>{item.payer_username}</td>
                 <td className='px-3 py-2'>
-                  <Badge variant='outline'>{item.level === 2 ? t('Level 2') : t('Level 1')}</Badge>
+                  <Badge variant='outline'>
+                    {item.level === 2 ? t('Level 2') : t('Level 1')}
+                  </Badge>
                 </td>
-                <td className='px-3 py-2 tabular-nums'>{formatQuota(item.credited_quota)}</td>
+                <td className='px-3 py-2 tabular-nums'>
+                  {formatQuota(item.credited_quota)}
+                </td>
                 <td className='px-3 py-2 tabular-nums'>{item.percent}%</td>
-                <td className='px-3 py-2 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400'>
+                <td className='px-3 py-2 font-semibold text-emerald-600 tabular-nums dark:text-emerald-400'>
                   +{formatQuota(item.commission_quota)}
                 </td>
               </tr>
             ))}
-            {commissions.data?.items?.length === 0 ? <EmptyRow colSpan={6} /> : null}
+            {commissions.data?.items?.length === 0 ? (
+              <EmptyRow colSpan={6} />
+            ) : null}
           </TableShell>
           <Pager
             page={commissionsPage}
@@ -303,7 +356,9 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
               <>
                 <th className='px-3 py-2 font-medium'>{t('Customer')}</th>
                 <th className='px-3 py-2 font-medium'>{t('Registered At')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Commission Generated')}</th>
+                <th className='px-3 py-2 font-medium'>
+                  {t('Commission Generated')}
+                </th>
               </>
             }
           >
@@ -312,13 +367,17 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
                 <td className='px-3 py-2 font-medium'>
                   {item.display_name || item.username}
                 </td>
-                <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.created_at)}</td>
+                <td className='px-3 py-2 text-xs tabular-nums'>
+                  {formatDateTime(item.created_at)}
+                </td>
                 <td className='px-3 py-2 font-semibold tabular-nums'>
                   {formatQuota(Number(item.total_commission) || 0)}
                 </td>
               </tr>
             ))}
-            {customers.data?.items?.length === 0 ? <EmptyRow colSpan={3} /> : null}
+            {customers.data?.items?.length === 0 ? (
+              <EmptyRow colSpan={3} />
+            ) : null}
           </TableShell>
           <Pager
             page={customersPage}
@@ -340,8 +399,12 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
           >
             {(withdrawals.data?.items ?? []).map((item) => (
               <tr key={item.id} className='whitespace-nowrap'>
-                <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.applied_at)}</td>
-                <td className='px-3 py-2 font-semibold tabular-nums'>{formatQuota(item.amount)}</td>
+                <td className='px-3 py-2 text-xs tabular-nums'>
+                  {formatDateTime(item.applied_at)}
+                </td>
+                <td className='px-3 py-2 font-semibold tabular-nums'>
+                  {formatQuota(item.amount)}
+                </td>
                 <td className='px-3 py-2'>
                   <WithdrawalStatusBadge status={item.status} />
                 </td>
@@ -350,7 +413,9 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
                 </td>
               </tr>
             ))}
-            {withdrawals.data?.items?.length === 0 ? <EmptyRow colSpan={4} /> : null}
+            {withdrawals.data?.items?.length === 0 ? (
+              <EmptyRow colSpan={4} />
+            ) : null}
           </TableShell>
           <Pager
             page={withdrawalsPage}
@@ -387,7 +452,9 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
             onChange={(e) => setWithdrawUsd(e.target.value)}
             placeholder={
               data.min_withdraw_quota > 0
-                ? t('Minimum ${{amount}}', { amount: minWithdrawUsd.toFixed(2) })
+                ? t('Minimum ${{amount}}', {
+                    amount: minWithdrawUsd.toFixed(2),
+                  })
                 : t('Amount in USD')
             }
           />

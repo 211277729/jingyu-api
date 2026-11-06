@@ -46,7 +46,10 @@ import {
   adminClearUserBinding,
   adminUnbindCustomOAuth,
 } from '../../api'
-import { BUILTIN_BINDINGS, type BindingStatusInfo } from '../../lib/binding-presets'
+import {
+  BUILTIN_BINDINGS,
+  type BindingStatusInfo,
+} from '../../lib/binding-presets'
 import type { User } from '../../types'
 import { useUsers } from '../users-provider'
 

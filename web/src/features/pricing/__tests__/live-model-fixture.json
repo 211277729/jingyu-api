@@ -1,0 +1,33 @@
+{
+  "groupRatioKeys": ["0.35", "default", "vip"],
+  "model": {
+    "billing_expr": "len <= 100000 ? tier(\"0_100k\", p * 0.1 + cr * 0.01 + cc * 0.125 + cc1h * 0.2 + c * 0.5) : tier(\"100k_plus\", p * 0.5 + cr * 0.05 + cc * 0.625 + cc1h * 1 + c * 2.5)",
+    "billing_mode": "tiered_expr",
+    "completion_ratio": 1,
+    "description": "快速型 Claude 模型，面向即时响应辅助、分类与轻量智能体",
+    "enable_groups": ["svip", "0.35", "default", "vip"],
+    "icon": "Claude.Color",
+    "key": "claude-haiku-5-5",
+    "model_name": "claude-haiku-5-5",
+    "model_price": 0,
+    "model_ratio": 37.5,
+    "official_price": {
+      "cache_ratio": 0.1,
+      "completion_ratio": 5,
+      "exchange_rate": 7.3,
+      "model_ratio": 0.05
+    },
+    "owner_by": "",
+    "quota_type": 0,
+    "supported_endpoint_types": ["openai", "openai-response", "anthropic"],
+    "tags": "推理,工具,文件,多模态,1M",
+    "vendor_icon": "Claude.Color",
+    "vendor_id": 6,
+    "vendor_name": "Anthropic",
+    "group_ratio": {
+      "0.35": 0.35,
+      "default": 1,
+      "vip": 1
+    }
+  }
+}

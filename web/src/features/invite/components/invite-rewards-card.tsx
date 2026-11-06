@@ -22,9 +22,8 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TitledCard } from '@/components/ui/titled-card'
-import { formatQuotaWithCurrency } from '@/lib/currency'
-
 import type { UserWalletData } from '@/features/wallet/types'
+import { formatQuotaWithCurrency } from '@/lib/currency'
 
 interface InviteRewardsCardProps {
   user: UserWalletData | null
@@ -130,7 +129,7 @@ export function InviteRewardsCard({
           ) : null}
 
           <div className='bg-muted/30 text-muted-foreground rounded-xl border p-3 text-xs'>
-            <div className='mb-1.5 text-foreground text-xs font-semibold'>
+            <div className='text-foreground mb-1.5 text-xs font-semibold'>
               {t('How it works')}
             </div>
             <ul className='list-disc space-y-1 pl-5'>

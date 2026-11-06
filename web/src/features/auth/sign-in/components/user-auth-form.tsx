@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { login, wechatLoginByCode } from '@/features/auth/api'
 import { LegalConsent } from '@/features/auth/components/legal-consent'
 import { OAuthProviders } from '@/features/auth/components/oauth-providers'
@@ -61,7 +62,6 @@ import { isPasskeySupported as detectPasskeySupport } from '@/lib/passkey'
 import { AuthOperationError } from '@/lib/secure-verification'
 import { createServerError } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export function UserAuthForm({
   className,
@@ -350,9 +350,10 @@ export function UserAuthForm({
       <OAuthProviders
         status={status}
         redirectTo={redirectTo}
-        disabled={isLoading || (requiresLegalConsent && !agreedToLegal)}
+        disabled={isLoading}
         onWeChatLogin={hasWeChatLogin ? handleOpenWeChatDialog : undefined}
         isWeChatLoading={isWeChatSubmitting}
+        onBeforeOAuthClick={confirmLegalConsent}
       />
     </>
   )
@@ -388,69 +389,69 @@ export function UserAuthForm({
 
             {passwordLoginEnabled && loginMode === 'password' && (
               <>
-            {/* Username Field */}
-            <FormField
-              control={form.control}
-              name='username'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('Username or Email')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={t('Enter your username or email')}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Password Field */}
-            <FormField
-              control={form.control}
-              name='password'
-              render={({ field }) => (
-                <FormItem className='relative'>
-                  <FormLabel>{t('Password')}</FormLabel>
-                  <FormControl>
-                    <PasswordInput
-                      placeholder={t('Enter password')}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <Link
-                    to='/forgot-password'
-                    className='text-muted-foreground absolute end-0 -top-0.5 z-10 text-sm font-medium hover:opacity-75'
-                  >
-                    {t('Forgot password?')}
-                  </Link>
-                </FormItem>
-              )}
-            />
-
-            {/* Submit Button */}
-            <Button
-              type='submit'
-              className='mt-2 w-full justify-center gap-2'
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-              {t('Sign in')}
-            </Button>
-
-            {/* Turnstile */}
-            {isTurnstileEnabled && (
-              <div className='mt-2'>
-                <Turnstile
-                  key={turnstileWidgetKey}
-                  siteKey={turnstileSiteKey}
-                  onVerify={setTurnstileToken}
-                  onExpire={() => setTurnstileToken('')}
+                {/* Username Field */}
+                <FormField
+                  control={form.control}
+                  name='username'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Username or Email')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={t('Enter your username or email')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-            )}
+
+                {/* Password Field */}
+                <FormField
+                  control={form.control}
+                  name='password'
+                  render={({ field }) => (
+                    <FormItem className='relative'>
+                      <FormLabel>{t('Password')}</FormLabel>
+                      <FormControl>
+                        <PasswordInput
+                          placeholder={t('Enter password')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                      <Link
+                        to='/forgot-password'
+                        className='text-muted-foreground absolute end-0 -top-0.5 z-10 text-sm font-medium hover:opacity-75'
+                      >
+                        {t('Forgot password?')}
+                      </Link>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Submit Button */}
+                <Button
+                  type='submit'
+                  className='mt-2 w-full justify-center gap-2'
+                  disabled={isLoading}
+                >
+                  {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
+                  {t('Sign in')}
+                </Button>
+
+                {/* Turnstile */}
+                {isTurnstileEnabled && (
+                  <div className='mt-2'>
+                    <Turnstile
+                      key={turnstileWidgetKey}
+                      siteKey={turnstileSiteKey}
+                      onVerify={setTurnstileToken}
+                      onExpire={() => setTurnstileToken('')}
+                    />
+                  </div>
+                )}
               </>
             )}
 

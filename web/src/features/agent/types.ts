@@ -18,7 +18,12 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 /** 代理档案状态 */
-export type AgentProfileStatus = 'none' | 'pending' | 'approved' | 'rejected' | 'disabled'
+export type AgentProfileStatus =
+  | 'none'
+  | 'pending'
+  | 'approved'
+  | 'rejected'
+  | 'disabled'
 
 export interface AgentProfile {
   id: number

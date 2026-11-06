@@ -22,6 +22,12 @@ import type {
   ConfirmPaymentComplianceResponse,
   FetchUpstreamRatiosRequest,
   LogCleanupTask,
+  OfficialPriceApplyResponse,
+  OfficialPriceConfigResponse,
+  OfficialPriceEntry,
+  OfficialPriceMappingRef,
+  OfficialPriceRateResponse,
+  OfficialPriceSyncResponse,
   SystemOptionsResponse,
   SystemTaskListResponse,
   SystemTaskFilters,
@@ -122,6 +128,49 @@ export async function fetchUpstreamRatios(request: FetchUpstreamRatiosRequest) {
   const res = await api.post<UpstreamRatiosResponse>(
     '/api/ratio_sync/fetch',
     request
+  )
+  return res.data
+}
+
+export async function getOfficialPriceConfig() {
+  const res = await api.get<OfficialPriceConfigResponse>('/api/official_price')
+  return res.data
+}
+
+export async function updateOfficialPriceExchangeRate(rate: number) {
+  const res = await api.put<OfficialPriceRateResponse>(
+    '/api/official_price/rate',
+    { exchange_rate: rate }
+  )
+  return res.data
+}
+
+export async function updateOfficialPriceConfig(
+  entries: Record<string, OfficialPriceEntry>
+) {
+  const res = await api.put<{ success: boolean; message?: string }>(
+    '/api/official_price',
+    entries
+  )
+  return res.data
+}
+
+// 同步仅做预览:返回每个启用模型的同名候选与启发式默认,写入要等弹框确认
+export async function syncOfficialPrice() {
+  const res = await api.post<OfficialPriceSyncResponse>(
+    '/api/official_price/sync',
+    {}
+  )
+  return res.data
+}
+
+// 弹框确认后的映射才真正写入;未包含的站点模型保留现有配置
+export async function applyOfficialPrice(
+  mappings: Record<string, OfficialPriceMappingRef>
+) {
+  const res = await api.post<OfficialPriceApplyResponse>(
+    '/api/official_price/apply',
+    { mappings }
   )
   return res.data
 }

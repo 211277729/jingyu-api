@@ -37,9 +37,8 @@ import {
   getAgentWithdrawals,
   reviewAgentWithdrawal,
 } from '../api'
-
-import { EmptyRow, Pager, TableShell } from './table-kit'
 import { formatDateTime } from '../format'
+import { EmptyRow, Pager, TableShell } from './table-kit'
 
 const PAGE_SIZE = 10
 
@@ -72,14 +71,21 @@ export function WithdrawalsTable() {
   const [statusFilter, setStatusFilter] = useState('')
   const [payTarget, setPayTarget] = useState<AgentWithdrawalView | null>(null)
   const [payRemark, setPayRemark] = useState('')
-  const [rejectTarget, setRejectTarget] = useState<AgentWithdrawalView | null>(null)
-  const [approveTarget, setApproveTarget] = useState<AgentWithdrawalView | null>(null)
+  const [rejectTarget, setRejectTarget] = useState<AgentWithdrawalView | null>(
+    null
+  )
+  const [approveTarget, setApproveTarget] =
+    useState<AgentWithdrawalView | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
   const query = useQuery({
     queryKey: ['agent-admin-withdrawals', page, statusFilter],
     queryFn: () =>
-      getAgentWithdrawals({ p: page, page_size: PAGE_SIZE, status: statusFilter || undefined }),
+      getAgentWithdrawals({
+        p: page,
+        page_size: PAGE_SIZE,
+        status: statusFilter || undefined,
+      }),
   })
 
   const submitReview = async (
@@ -142,15 +148,24 @@ export function WithdrawalsTable() {
             <td className='px-3 py-2 text-xs tabular-nums'>{item.id}</td>
             <td className='px-3 py-2 font-medium'>
               {item.username}
-              <span className='text-muted-foreground ml-1.5 text-xs'>(#{item.user_id})</span>
+              <span className='text-muted-foreground ml-1.5 text-xs'>
+                (#{item.user_id})
+              </span>
             </td>
-            <td className='px-3 py-2 font-semibold tabular-nums'>{formatQuota(item.amount)}</td>
+            <td className='px-3 py-2 font-semibold tabular-nums'>
+              {formatQuota(item.amount)}
+            </td>
             <td className='px-3 py-2'>
-              <Badge variant='outline' className={STATUS_BADGE[item.status]?.className}>
+              <Badge
+                variant='outline'
+                className={STATUS_BADGE[item.status]?.className}
+              >
                 {t(STATUS_BADGE[item.status]?.labelKey ?? item.status)}
               </Badge>
             </td>
-            <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.applied_at)}</td>
+            <td className='px-3 py-2 text-xs tabular-nums'>
+              {formatDateTime(item.applied_at)}
+            </td>
             <td className='text-muted-foreground max-w-44 truncate px-3 py-2 text-xs'>
               {item.remark || '-'}
             </td>
@@ -197,7 +212,12 @@ export function WithdrawalsTable() {
         ))}
         {items.length === 0 ? <EmptyRow colSpan={7} /> : null}
       </TableShell>
-      <Pager page={page} pageSize={PAGE_SIZE} total={query.data?.total ?? 0} onPageChange={setPage} />
+      <Pager
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={query.data?.total ?? 0}
+        onPageChange={setPage}
+      />
 
       <ConfirmDialog
         open={approveTarget !== null}
@@ -209,7 +229,9 @@ export function WithdrawalsTable() {
           'Approve this withdrawal? The frozen commission stays deducted until you mark it paid.'
         )}
         isLoading={actionLoading}
-        handleConfirm={() => approveTarget && submitReview(approveTarget, 'approve')}
+        handleConfirm={() =>
+          approveTarget && submitReview(approveTarget, 'approve')
+        }
       />
 
       <Dialog
@@ -230,14 +252,19 @@ export function WithdrawalsTable() {
         </div>
         <div className='space-y-1.5'>
           <Label className='text-xs'>{t('Payment reference')}</Label>
-          <Input value={payRemark} onChange={(e) => setPayRemark(e.target.value)} />
+          <Input
+            value={payRemark}
+            onChange={(e) => setPayRemark(e.target.value)}
+          />
         </div>
         <div className='flex justify-end gap-2'>
           <Button variant='outline' onClick={() => setPayTarget(null)}>
             {t('Cancel')}
           </Button>
           <Button
-            onClick={() => payTarget && submitReview(payTarget, 'pay', payRemark.trim())}
+            onClick={() =>
+              payTarget && submitReview(payTarget, 'pay', payRemark.trim())
+            }
             disabled={actionLoading}
           >
             {t('Mark as paid')}
@@ -251,10 +278,14 @@ export function WithdrawalsTable() {
           if (!open) setRejectTarget(null)
         }}
         title={t('Reject Withdrawal')}
-        desc={t('Reject this withdrawal? The frozen commission will be returned to the agent.')}
+        desc={t(
+          'Reject this withdrawal? The frozen commission will be returned to the agent.'
+        )}
         destructive
         isLoading={actionLoading}
-        handleConfirm={() => rejectTarget && submitReview(rejectTarget, 'reject')}
+        handleConfirm={() =>
+          rejectTarget && submitReview(rejectTarget, 'reject')
+        }
       />
     </div>
   )

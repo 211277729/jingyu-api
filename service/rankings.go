@@ -181,14 +181,19 @@ func rankingConfig(period string) (rankingPeriodConfig, error) {
 
 func buildRankingsSnapshot(config rankingPeriodConfig, now time.Time) (*RankingsResponse, error) {
 	startTime, endTime := rankingTimeRange(config, now)
+	meta := buildRankingModelMeta()
+	keep := rankingModelKeepFilter(meta)
+
 	currentTotals, err := model.GetRankingQuotaTotals(startTime, endTime)
 	if err != nil {
 		return nil, err
 	}
+	currentTotals = filterRankingTotals(currentTotals, keep)
 	currentBuckets, err := model.GetRankingQuotaBuckets(startTime, endTime, config.bucketSize)
 	if err != nil {
 		return nil, err
 	}
+	currentBuckets = filterRankingBuckets(currentBuckets, keep)
 
 	var previousTotals []model.RankingQuotaTotal
 	if config.hasPrevious {
@@ -197,9 +202,9 @@ func buildRankingsSnapshot(config rankingPeriodConfig, now time.Time) (*Rankings
 		if err != nil {
 			return nil, err
 		}
+		previousTotals = filterRankingTotals(previousTotals, keep)
 	}
 
-	meta := buildRankingModelMeta()
 	totalTokens := sumRankingTokens(currentTotals)
 	previousRankByModel := rankingRankMap(previousTotals)
 	previousTokensByModel := rankingTokenMap(previousTotals)
@@ -593,4 +598,44 @@ func minInt(a int, b int) int {
 		return a
 	}
 	return b
+}
+
+// rankingModelKeepFilter 返回排行榜的模型保留集合：当前定价表中存在
+// （即仍有启用渠道可路由）且未被下架的模型。历史 quota_data 里的旧模型名
+// （渠道迁移/改名前的残留、已下架模型）不在定价表中，据此一并剔除。
+func rankingModelKeepFilter(meta map[string]rankingModelMeta) map[string]struct{} {
+	keep := make(map[string]struct{}, len(meta))
+	for modelName := range meta {
+		if model.IsModelHidden(modelName) {
+			continue
+		}
+		keep[modelName] = struct{}{}
+	}
+	return keep
+}
+
+// filterRankingTotals 按保留集合过滤榜单总量行；
+// 剔除后的总量会让份额重新归一化。
+func filterRankingTotals(rows []model.RankingQuotaTotal, keep map[string]struct{}) []model.RankingQuotaTotal {
+	filtered := make([]model.RankingQuotaTotal, 0, len(rows))
+	for _, item := range rows {
+		if _, ok := keep[item.ModelName]; !ok {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return filtered
+}
+
+// filterRankingBuckets 按保留集合过滤榜单时间分桶行，
+// 保证历史曲线与厂商份额时间序列同样不含旧模型名。
+func filterRankingBuckets(rows []model.RankingQuotaBucket, keep map[string]struct{}) []model.RankingQuotaBucket {
+	filtered := make([]model.RankingQuotaBucket, 0, len(rows))
+	for _, item := range rows {
+		if _, ok := keep[item.ModelName]; !ok {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return filtered
 }

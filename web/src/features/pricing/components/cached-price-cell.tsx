@@ -29,7 +29,11 @@ import {
   isUnconfiguredTaskUsageModel,
 } from '../lib/dynamic-price'
 import { isTokenBasedModel } from '../lib/model-helpers'
-import { formatPrice, stripTrailingZeros } from '../lib/price'
+import {
+  formatOfficialPrice,
+  formatPrice,
+  stripTrailingZeros,
+} from '../lib/price'
 import type { PricingModel } from '../types'
 import type { ModelPriceCellOptions } from './model-price-cell'
 
@@ -139,10 +143,27 @@ export function CachedPriceCell(props: {
       selectedGroup
     )
   )
+  // 时段计费模型:官方价按当前时段选档
+  const officialCachedPrice = formatOfficialPrice(
+    model,
+    'cache',
+    tokenUnit,
+    billingTime === undefined ? undefined : new Date(billingTime)
+  )
 
   return (
     <div className='max-w-full min-w-0'>
-      <span className='font-mono text-sm tabular-nums'>{cachedPrice}</span>
+      <span className='flex flex-wrap items-baseline gap-x-1'>
+        <span className='font-mono text-sm tabular-nums'>{cachedPrice}</span>
+        {officialCachedPrice && (
+          <span
+            className='text-muted-foreground font-mono text-xs tabular-nums line-through'
+            title={t('Official price')}
+          >
+            {officialCachedPrice}
+          </span>
+        )}
+      </span>
       <div className='text-muted-foreground/50 text-[10px]'>
         / {tokenUnitLabel}
       </div>

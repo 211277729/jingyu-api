@@ -182,7 +182,7 @@ function DevtoolsCloseFix() {
             cancelable: true,
             clientX: event.clientX,
             clientY: event.clientY,
-          }),
+          })
         )
       }
       downTarget = null
@@ -196,7 +196,7 @@ function DevtoolsCloseFix() {
     // 面板关闭走 0.4s 整宽下滑动画，观感上「抬一下、占满全宽才收走」；这里直接禁掉
     // 该过渡，让开合瞬时完成（拖拽调高不受影响，拖拽本身就不走这个过渡）。
     let styleElement = document.querySelector<HTMLStyleElement>(
-      '#devtools-close-fix-style',
+      '#devtools-close-fix-style'
     )
     if (!styleElement) {
       styleElement = document.createElement('style')

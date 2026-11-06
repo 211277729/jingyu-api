@@ -23,11 +23,11 @@ import { toast } from 'sonner'
 
 import { Combobox } from '@/components/ui/combobox'
 import { TitledCard } from '@/components/ui/titled-card'
+import { changeAppLanguage } from '@/i18n/config'
 import {
   INTERFACE_LANGUAGE_OPTIONS,
   normalizeInterfaceLanguage,
 } from '@/i18n/languages'
-import { changeAppLanguage } from '@/i18n/config'
 import { handleServerError } from '@/lib/handle-server-error'
 import { createServerError } from '@/lib/server-error-message'
 import { useAuthStore } from '@/stores/auth-store'

@@ -50,12 +50,16 @@ import { taskUsageUnitLabel } from '@/features/pricing/lib/task-price-display'
 import type { BillingUsageSchema } from '@/features/pricing/types'
 import { getUserAvatarFallback, getUserAvatarStyle } from '@/lib/avatar'
 import { formatBillingCurrencyFromUSD } from '@/lib/currency'
-import { formatLogQuota, formatQuota, formatTimestampToDate } from '@/lib/format'
+import {
+  formatLogQuota,
+  formatQuota,
+  formatTimestampToDate,
+} from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
-import { LOG_TYPE_ALL_VALUE } from '../../constants'
 import { getUserInfo } from '../../api'
+import { LOG_TYPE_ALL_VALUE } from '../../constants'
 import type { UsageLog } from '../../data/schema'
 import {
   formatModelName,
@@ -583,9 +587,13 @@ export function useCommonLogsColumns(
             const balanceText =
               userInfo?.quota !== undefined ? formatQuota(userInfo.quota) : '-'
             const showRemark = sensitiveVisible && remark.length > 0
-            const showBalance = sensitiveVisible && userInfo?.quota !== undefined
+            const showBalance =
+              sensitiveVisible && userInfo?.quota !== undefined
             const hasHoverInfo =
-              log.username.length > 12 || showRemark || showBalance || isFetching
+              log.username.length > 12 ||
+              showRemark ||
+              showBalance ||
+              isFetching
 
             return (
               <button

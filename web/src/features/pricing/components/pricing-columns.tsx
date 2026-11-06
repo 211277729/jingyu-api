@@ -32,6 +32,7 @@ import { parseTags } from '../lib/filters'
 import type { PricingModel } from '../types'
 import { CachedPriceCell } from './cached-price-cell'
 import { ModelBillingModeBadge } from './model-billing-mode-badge'
+import { ModelDiscountBadge } from './model-discount-badge'
 import { ModelPriceCell, type ModelPriceCellOptions } from './model-price-cell'
 
 // ----------------------------------------------------------------------------
@@ -75,9 +76,15 @@ export function usePricingColumns(
       accessorKey: 'quota_type',
       header: t('Type'),
       cell: ({ row }) => (
-        <ModelBillingModeBadge model={row.original} className='-ml-1.5' />
+        <span className='flex flex-wrap items-center gap-1'>
+          <ModelBillingModeBadge model={row.original} className='-ml-1.5' />
+          <ModelDiscountBadge
+            model={row.original}
+            selectedGroup={options.selectedGroup}
+          />
+        </span>
       ),
-      size: 110,
+      size: 150,
       enableSorting: false,
     },
 

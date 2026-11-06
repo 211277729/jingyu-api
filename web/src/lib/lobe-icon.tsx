@@ -30,13 +30,13 @@ For commercial licensing, please contact support@quantumnous.com
  */
 import { useSyncExternalStore, type ReactNode } from 'react'
 
-import { LobeIconView } from './lobe-icon-view'
 import {
   catalogNames,
   getIconCatalogSnapshot,
   loadLobeIconCatalog,
   subscribeCatalog,
 } from './lobe-icon-internal'
+import { LobeIconView } from './lobe-icon-view'
 
 export { loadLobeIconCatalog } from './lobe-icon-internal'
 

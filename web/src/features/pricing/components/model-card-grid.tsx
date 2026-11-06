@@ -22,8 +22,8 @@ import { memo, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { MetricsScopeNote } from '@/features/performance-metrics/components/metrics-scope-note'
 import { getPerfMetricsSummary } from '@/features/performance-metrics/api'
+import { MetricsScopeNote } from '@/features/performance-metrics/components/metrics-scope-note'
 import { requireServerSuccess } from '@/lib/server-error-message'
 
 import { DEFAULT_PRICING_PAGE_SIZE, DEFAULT_TOKEN_UNIT } from '../constants'

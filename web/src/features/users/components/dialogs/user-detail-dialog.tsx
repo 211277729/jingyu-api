@@ -25,12 +25,12 @@ import { StatusBadge } from '@/components/status-badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import { UserSubscriptionsDialog } from '@/features/subscriptions/components/dialogs/user-subscriptions-dialog'
 import { getCurrencyDisplay } from '@/lib/currency'
 import { formatQuota, formatTimestampToDate } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
 import type { CustomOAuthBinding } from '@/lib/oauth'
 import { requireServerSuccess } from '@/lib/server-error-message'
-import { UserSubscriptionsDialog } from '@/features/subscriptions/components/dialogs/user-subscriptions-dialog'
 
 import { getUser, getUserOAuthBindings } from '../../api'
 import {
@@ -41,9 +41,9 @@ import {
 } from '../../constants'
 import { THIRD_PARTY_BINDINGS } from '../../lib/binding-presets'
 import type { User } from '../../types'
-import { UserBindingDialog } from './user-binding-dialog'
 import { UserQuotaDialog } from '../user-quota-dialog'
 import { useUsers } from '../users-provider'
+import { UserBindingDialog } from './user-binding-dialog'
 
 interface Props {
   open: boolean
@@ -58,7 +58,7 @@ function DetailItem(props: { label: string; children: React.ReactNode }) {
       <span className='text-muted-foreground shrink-0 text-sm'>
         {props.label}
       </span>
-      <div className='min-w-0 break-all text-right text-sm'>
+      <div className='min-w-0 text-right text-sm break-all'>
         {props.children}
       </div>
     </div>
@@ -129,7 +129,8 @@ export function UserDetailDialog(props: Props) {
   const statusConfig = deleted
     ? USER_STATUSES[USER_STATUS.DELETED]
     : USER_STATUSES[props.initialUser.status as keyof typeof USER_STATUSES]
-  const roleConfig = USER_ROLES[props.initialUser.role as keyof typeof USER_ROLES]
+  const roleConfig =
+    USER_ROLES[props.initialUser.role as keyof typeof USER_ROLES]
 
   const boundBindings = THIRD_PARTY_BINDINGS.map((binding) => ({
     ...binding,
@@ -206,9 +207,7 @@ export function UserDetailDialog(props: Props) {
                   {statusConfig ? (
                     <StatusBadge
                       label={t(statusConfig.labelKey)}
-                      variant={
-                        deleted ? 'neutral' : statusConfig.variant
-                      }
+                      variant={deleted ? 'neutral' : statusConfig.variant}
                       copyable={false}
                       size='sm'
                     />
@@ -286,8 +285,7 @@ export function UserDetailDialog(props: Props) {
                           <span className='text-muted-foreground'>
                             <Link2 className='h-4 w-4' />
                           </span>
-                          {binding.provider_name ||
-                            String(binding.provider_id)}
+                          {binding.provider_name || String(binding.provider_id)}
                         </span>
                         <span className='min-w-0 truncate text-sm'>
                           {binding.provider_user_id || '-'}

@@ -89,6 +89,8 @@ export type PricingModel = {
   billing_usage_examples?: BillingUsageExample[]
   /** Pricing version returned by backend, useful for cache busting */
   pricing_version?: string
+  /** Display-only official (list) price for comparison; token-based models only */
+  official_price?: OfficialPrice | null
   /**
    * Optional model metadata fields reserved for backend-provided catalog data.
    * Keep them data-driven; do not synthesize display values on the client.
@@ -101,6 +103,30 @@ export type PricingModel = {
   input_modalities?: Modality[]
   output_modalities?: Modality[]
   capabilities?: ModelCapability[]
+}
+
+/**
+ * Official (list) price fields in ratio units, same semantics as billing ratios.
+ *
+ * `exchange_rate` is the official-price USD exchange rate (real USD → display
+ * currency). Site prices are quota-denominated (often a 1:1 recharge rate), so
+ * the official price must be converted with the real rate to stay comparable.
+ */
+export type OfficialPrice = {
+  model_ratio: number
+  completion_ratio: number
+  exchange_rate?: number
+  cache_ratio?: number | null
+  create_cache_ratio?: number | null
+  /**
+   * Peak-period official prices (optional), for time-tiered models whose
+   * billing expression branches on hour()/weekday(). When present, the
+   * display picks the tier matching the current billing period; the base
+   * fields hold the off-peak tier.
+   */
+  peak_model_ratio?: number
+  peak_completion_ratio?: number
+  peak_cache_ratio?: number | null
 }
 
 /** Input/output modalities supported by a model. */

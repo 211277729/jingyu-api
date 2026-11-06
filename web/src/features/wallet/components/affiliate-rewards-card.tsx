@@ -16,9 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { Link } from '@tanstack/react-router'
 import { ArrowRight, Share2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Link } from '@tanstack/react-router'
 
 import { CopyButton } from '@/components/copy-button'
 import { Button } from '@/components/ui/button'

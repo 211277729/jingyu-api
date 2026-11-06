@@ -1036,18 +1036,11 @@ func shouldReplaceModelsDevCandidate(current, next modelsDevCandidate) bool {
 	return next.Provider < current.Provider
 }
 
-// convertModelsDevToRatioData parses models.dev /api.json and converts
-// provider pricing metadata into local ratio format.
-// models.dev costs are USD per 1M tokens:
-//
-//	model_ratio = input_cost_per_1M / 2
-//	completion_ratio = output_cost / input_cost
-//	cache_ratio = cache_read_cost / input_cost
-//
-// Duplicate model keys across providers are resolved by selecting the
-// cheapest non-zero input cost. If only zero-priced candidates exist,
-// a zero ratio is kept.
-func convertModelsDevToRatioData(reader io.Reader) (map[string]any, error) {
+// collectModelsDevCandidates parses models.dev /api.json and returns every
+// valid pricing candidate grouped by model name. The same model name often
+// exists under several providers; each group keeps all of them, in provider
+// name order (providers and model names are iterated in sorted order).
+func collectModelsDevCandidates(reader io.Reader) (map[string][]modelsDevCandidate, error) {
 	var upstreamData map[string]modelsDevProvider
 	if err := common.DecodeJson(reader, &upstreamData); err != nil {
 		return nil, fmt.Errorf("failed to decode models.dev response: %w", err)
@@ -1062,7 +1055,7 @@ func convertModelsDevToRatioData(reader io.Reader) (map[string]any, error) {
 	}
 	sort.Strings(providers)
 
-	selectedCandidates := make(map[string]modelsDevCandidate)
+	allCandidates := make(map[string][]modelsDevCandidate)
 	for _, provider := range providers {
 		providerData := upstreamData[provider]
 		if len(providerData.Models) == 0 {
@@ -1080,15 +1073,53 @@ func convertModelsDevToRatioData(reader io.Reader) (map[string]any, error) {
 			if !ok {
 				continue
 			}
-			current, exists := selectedCandidates[modelName]
-			if !exists || shouldReplaceModelsDevCandidate(current, candidate) {
-				selectedCandidates[modelName] = candidate
-			}
+			allCandidates[modelName] = append(allCandidates[modelName], candidate)
 		}
 	}
 
-	if len(selectedCandidates) == 0 {
+	if len(allCandidates) == 0 {
 		return nil, fmt.Errorf("no valid models.dev pricing entries found")
+	}
+	return allCandidates, nil
+}
+
+// selectModelsDevCandidates parses models.dev /api.json and selects, for each
+// model name, the best candidate across providers: cheapest non-zero input
+// cost, tie-broken by provider name for determinism.
+func selectModelsDevCandidates(reader io.Reader) (map[string]modelsDevCandidate, error) {
+	allCandidates, err := collectModelsDevCandidates(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	selectedCandidates := make(map[string]modelsDevCandidate, len(allCandidates))
+	for modelName, list := range allCandidates {
+		best := list[0]
+		for _, candidate := range list[1:] {
+			if shouldReplaceModelsDevCandidate(best, candidate) {
+				best = candidate
+			}
+		}
+		selectedCandidates[modelName] = best
+	}
+	return selectedCandidates, nil
+}
+
+// convertModelsDevToRatioData parses models.dev /api.json and converts
+// provider pricing metadata into local ratio format.
+// models.dev costs are USD per 1M tokens:
+//
+//	model_ratio = input_cost_per_1M / 2
+//	completion_ratio = output_cost / input_cost
+//	cache_ratio = cache_read_cost / input_cost
+//
+// Duplicate model keys across providers are resolved by selecting the
+// cheapest non-zero input cost. If only zero-priced candidates exist,
+// a zero ratio is kept.
+func convertModelsDevToRatioData(reader io.Reader) (map[string]any, error) {
+	selectedCandidates, err := selectModelsDevCandidates(reader)
+	if err != nil {
+		return nil, err
 	}
 
 	modelRatioMap := make(map[string]any)

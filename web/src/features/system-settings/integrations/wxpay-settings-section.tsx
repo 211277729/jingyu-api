@@ -79,7 +79,7 @@ export function WxPaySettingsSection(props: Props) {
       <Alert>
         <AlertDescription className='text-xs'>
           {t('Webhook URL:')}{' '}
-          <code className='rounded bg-muted px-1 py-0.5 text-xs'>
+          <code className='bg-muted rounded px-1 py-0.5 text-xs'>
             {'<ServerAddress>/api/user/wxpay/notify'}
           </code>
         </AlertDescription>
@@ -139,9 +139,7 @@ export function WxPaySettingsSection(props: Props) {
             }
           />
           <p className='text-muted-foreground text-xs'>
-            {t(
-              'Used to decrypt webhook payloads in both credential modes.'
-            )}
+            {t('Used to decrypt webhook payloads in both credential modes.')}
           </p>
         </div>
         <div className='grid gap-1.5'>
@@ -195,7 +193,9 @@ export function WxPaySettingsSection(props: Props) {
         <Textarea
           rows={4}
           className='font-mono text-xs'
-          placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
+          placeholder={
+            '-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'
+          }
           value={values.WxPayPrivateKey}
           onChange={(event) =>
             props.onValueChange('WxPayPrivateKey', event.target.value)

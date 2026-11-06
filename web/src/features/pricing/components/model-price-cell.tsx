@@ -31,7 +31,13 @@ import {
   isUnconfiguredTaskUsageModel,
 } from '../lib/dynamic-price'
 import { isTokenBasedModel } from '../lib/model-helpers'
-import { formatPrice, formatRequestPrice } from '../lib/price'
+import {
+  formatOfficialPrice,
+  formatPrice,
+  formatRequestPrice,
+  getOfficialTimeTier,
+  officialPriceTypeForDynamicField,
+} from '../lib/price'
 import { taskUsageUnitLabel } from '../lib/task-price-display'
 import type { PricingModel, TokenUnit } from '../types'
 
@@ -83,7 +89,11 @@ export function ModelPriceCell(props: {
       currency,
     ]
   )
-  let metrics: Array<{ label: string; value: string }>
+  let metrics: Array<{
+    label: string
+    value: string
+    officialValue?: string
+  }>
   const providerCaption = dynamic?.providerCount
     ? t('{{count}} providers', { count: dynamic.providerCount })
     : ''
@@ -120,6 +130,23 @@ export function ModelPriceCell(props: {
     const hasRequestPrice = dynamic.primaryEntries.some(
       (entry) => entry.unit === 'request' || entry.unit === 'image'
     )
+    // Dynamic (expression-billed) token entries still map to official prices;
+    // time-tiered models resolve the tier matching the current billing period.
+    const officialNow =
+      billingTime === undefined ? undefined : new Date(billingTime)
+    const officialTierLabel = getOfficialTimeTier(props.model, officialNow)
+    const officialByField: Partial<Record<string, string>> = {}
+    for (const entry of dynamic.primaryEntries) {
+      const type = officialPriceTypeForDynamicField(entry.field)
+      if (!type) continue
+      const formatted = formatOfficialPrice(
+        props.model,
+        type,
+        tokenUnit,
+        officialNow
+      )
+      if (formatted) officialByField[entry.field] = formatted
+    }
     metrics = dynamic.primaryEntries
       .slice(0, hasRequestPrice ? 3 : 2)
       .map((entry) => {
@@ -139,6 +166,7 @@ export function ModelPriceCell(props: {
               ? entry.shortLabel
               : t(entry.shortLabel),
           value: `${entry.formattedRange ?? entry.formatted}${suffix}`,
+          officialValue: officialByField[entry.field],
         }
       })
     if (metrics.length === 0) {
@@ -188,9 +216,29 @@ export function ModelPriceCell(props: {
       )
     }
     if (tokenBased) {
+      const officialNow =
+        billingTime === undefined ? undefined : new Date(billingTime)
+      const officialTierLabel = getOfficialTimeTier(props.model, officialNow)
+      const officialInput = formatOfficialPrice(
+        props.model,
+        'input',
+        tokenUnit,
+        officialNow
+      )
+      const officialOutput = formatOfficialPrice(
+        props.model,
+        'output',
+        tokenUnit,
+        officialNow
+      )
+      const tierSuffix = officialTierLabel
+        ? ` (${t(
+            officialTierLabel === 'peak' ? 'Peak period' : 'Off-peak period'
+          )})`
+        : ''
       metrics = [
         {
-          label: t('Input'),
+          label: `${t('Input')}${tierSuffix}`,
           value: formatPrice(
             props.model,
             'input',
@@ -201,9 +249,10 @@ export function ModelPriceCell(props: {
             options.selectedGroup,
             false
           ),
+          officialValue: officialInput || undefined,
         },
         {
-          label: t('Output'),
+          label: `${t('Output')}${tierSuffix}`,
           value: formatPrice(
             props.model,
             'output',
@@ -214,6 +263,7 @@ export function ModelPriceCell(props: {
             options.selectedGroup,
             false
           ),
+          officialValue: officialOutput || undefined,
         },
       ]
     } else {
@@ -255,6 +305,14 @@ export function ModelPriceCell(props: {
             >
               {metric.value}
             </span>
+            {metric.officialValue && (
+              <span
+                className='text-muted-foreground font-mono text-xs tabular-nums line-through'
+                title={t('Official price')}
+              >
+                {metric.officialValue}
+              </span>
+            )}
           </span>
         ))}
       </span>

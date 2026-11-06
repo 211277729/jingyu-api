@@ -24,6 +24,20 @@ type PricingPluginVariant struct {
 	BillingUsageExamples []jsplugin.UsageExample              `json:"billing_usage_examples,omitempty"`
 }
 
+// OfficialPriceFields 官方价展示字段(倍率单位与计费字段一致),仅用于前台对比展示。
+// ExchangeRate 是官方价美元汇率(真实 USD -> 站内展示货币),与站点显示汇率无关:
+// 本站价格是额度口径(常见 1:1 充值),官方价是真实美元,必须按真实汇率折算才可比。
+type OfficialPriceFields struct {
+	ModelRatio          float64  `json:"model_ratio"`
+	CompletionRatio     float64  `json:"completion_ratio"`
+	ExchangeRate        float64  `json:"exchange_rate"`
+	CacheRatio          *float64 `json:"cache_ratio,omitempty"`
+	CreateCacheRatio    *float64 `json:"create_cache_ratio,omitempty"`
+	PeakModelRatio      float64  `json:"peak_model_ratio,omitempty"`
+	PeakCompletionRatio float64  `json:"peak_completion_ratio,omitempty"`
+	PeakCacheRatio      *float64 `json:"peak_cache_ratio,omitempty"`
+}
+
 type Pricing struct {
 	BillingPluginVariants  []PricingPluginVariant               `json:"billing_plugin_variants,omitempty"`
 	ModelName              string                               `json:"model_name"`
@@ -48,6 +62,7 @@ type Pricing struct {
 	BillingUsageSchema     map[string]jsplugin.UsageFieldSchema `json:"billing_usage_schema,omitempty"`
 	BillingUsageExamples   []jsplugin.UsageExample              `json:"billing_usage_examples,omitempty"`
 	PricingVersion         string                               `json:"pricing_version,omitempty"`
+	OfficialPrice          *OfficialPriceFields                 `json:"official_price,omitempty"`
 }
 
 type PricingVendor struct {
@@ -353,6 +368,24 @@ func updatePricing() {
 			pricing.ModelRatio = modelRatio
 			pricing.CompletionRatio = ratio_setting.GetCompletionRatio(model)
 			pricing.QuotaType = 0
+		}
+		// 官方价仅用于展示,只对按 token 计费模型下发
+		if pricing.QuotaType == 0 {
+			if official, ok := ratio_setting.GetOfficialPrice(model); ok {
+				pricing.OfficialPrice = &OfficialPriceFields{
+					ModelRatio:       official.ModelRatio,
+					CompletionRatio:  official.CompletionRatio,
+					ExchangeRate:     ratio_setting.GetOfficialPriceExchangeRate(),
+					CacheRatio:       official.CacheRatio,
+					CreateCacheRatio: official.CreateCacheRatio,
+				}
+				// 高峰期官方价(可选):时段计费模型由前端按当前时段选档展示
+				if official.HasPeakPrice() {
+					pricing.OfficialPrice.PeakModelRatio = official.PeakModelRatio
+					pricing.OfficialPrice.PeakCompletionRatio = official.PeakCompletionRatio
+					pricing.OfficialPrice.PeakCacheRatio = official.PeakCacheRatio
+				}
+			}
 		}
 		if cacheRatio, ok := ratio_setting.GetCacheRatio(model); ok {
 			pricing.CacheRatio = &cacheRatio

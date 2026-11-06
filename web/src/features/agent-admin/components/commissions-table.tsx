@@ -23,7 +23,11 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { getAgentCommissions } from '@/features/agent-admin/api'
-import { EmptyRow, Pager, TableShell } from '@/features/agent-admin/components/table-kit'
+import {
+  EmptyRow,
+  Pager,
+  TableShell,
+} from '@/features/agent-admin/components/table-kit'
 import { formatDateTime } from '@/features/agent-admin/format'
 import { formatQuota } from '@/lib/format'
 
@@ -83,22 +87,34 @@ export function CommissionsTable() {
               {item.payer_username || `#${item.payer_user_id}`}
             </td>
             <td className='px-3 py-2'>
-              <Badge variant='outline'>{item.level === 2 ? t('Level 2') : t('Level 1')}</Badge>
+              <Badge variant='outline'>
+                {item.level === 2 ? t('Level 2') : t('Level 1')}
+              </Badge>
             </td>
             <td className='text-muted-foreground max-w-40 truncate px-3 py-2 font-mono text-xs'>
-              {item.trade_no || (item.redemption_id ? `R-${item.redemption_id}` : '-')}
+              {item.trade_no ||
+                (item.redemption_id ? `R-${item.redemption_id}` : '-')}
             </td>
-            <td className='px-3 py-2 tabular-nums'>{formatQuota(item.credited_quota)}</td>
+            <td className='px-3 py-2 tabular-nums'>
+              {formatQuota(item.credited_quota)}
+            </td>
             <td className='px-3 py-2 tabular-nums'>{item.percent}%</td>
-            <td className='px-3 py-2 font-semibold tabular-nums text-emerald-600 dark:text-emerald-400'>
+            <td className='px-3 py-2 font-semibold text-emerald-600 tabular-nums dark:text-emerald-400'>
               +{formatQuota(item.commission_quota)}
             </td>
-            <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.created_at)}</td>
+            <td className='px-3 py-2 text-xs tabular-nums'>
+              {formatDateTime(item.created_at)}
+            </td>
           </tr>
         ))}
         {items.length === 0 ? <EmptyRow colSpan={9} /> : null}
       </TableShell>
-      <Pager page={page} pageSize={PAGE_SIZE} total={query.data?.total ?? 0} onPageChange={setPage} />
+      <Pager
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={query.data?.total ?? 0}
+        onPageChange={setPage}
+      />
     </div>
   )
 }

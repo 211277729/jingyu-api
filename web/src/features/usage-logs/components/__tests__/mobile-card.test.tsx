@@ -22,16 +22,23 @@ import {
   useReactTable,
   type VisibilityState,
 } from '@tanstack/react-table'
-import { cleanup, render, screen, within, waitFor } from '@testing-library/react'
+import {
+  cleanup,
+  render,
+  screen,
+  within,
+  waitFor,
+} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, it, vi } from 'vitest'
+
+import { ROLE } from '@/lib/roles'
+import { useAuthStore } from '@/stores/auth-store'
 
 import { usageLogSchema, type UsageLog } from '../../data/schema'
 import { useCommonLogsColumns } from '../columns/common-logs-columns'
 import { UsageLogsMobileList } from '../usage-logs-mobile-card'
 import { UsageLogsProvider, useUsageLogsContext } from '../usage-logs-provider'
-import { ROLE } from '@/lib/roles'
-import { useAuthStore } from '@/stores/auth-store'
 
 const longName = 'enterprise-production-failover-2026-without-any-short-alias'
 const log = usageLogSchema.parse({
@@ -86,13 +93,11 @@ function Fixture(props: {
 }
 
 function renderLogs(props: Parameters<typeof Fixture>[0] = {}) {
-  useAuthStore
-    .getState()
-    .auth.setUser({
-      id: 1,
-      username: 'production-admin',
-      role: (props.admin ?? true) ? ROLE.ADMIN : ROLE.USER,
-    })
+  useAuthStore.getState().auth.setUser({
+    id: 1,
+    username: 'production-admin',
+    role: (props.admin ?? true) ? ROLE.ADMIN : ROLE.USER,
+  })
   return render(
     <QueryClientProvider
       client={

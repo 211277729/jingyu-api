@@ -16,8 +16,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { useTranslation } from 'react-i18next'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { SectionPageLayout } from '@/components/layout'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -36,17 +36,25 @@ export function AgentAdmin() {
 
   return (
     <SectionPageLayout>
-      <SectionPageLayout.Title>{t('Agent Distribution')}</SectionPageLayout.Title>
+      <SectionPageLayout.Title>
+        {t('Agent Distribution')}
+      </SectionPageLayout.Title>
       <SectionPageLayout.Content>
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
             <TabsTrigger value='applications'>{t('Applications')}</TabsTrigger>
             <TabsTrigger value='agents'>{t('Agents')}</TabsTrigger>
-            <TabsTrigger value='withdrawals'>{t('Withdrawal Review')}</TabsTrigger>
-            <TabsTrigger value='commissions'>{t('Commission Details')}</TabsTrigger>
+            <TabsTrigger value='withdrawals'>
+              {t('Withdrawal Review')}
+            </TabsTrigger>
+            <TabsTrigger value='commissions'>
+              {t('Commission Details')}
+            </TabsTrigger>
           </TabsList>
           <TabsContent value='applications'>
-            {tab === 'applications' ? <ProfilesTable mode='applications' /> : null}
+            {tab === 'applications' ? (
+              <ProfilesTable mode='applications' />
+            ) : null}
           </TabsContent>
           <TabsContent value='agents'>
             {tab === 'agents' ? <ProfilesTable mode='manage' /> : null}

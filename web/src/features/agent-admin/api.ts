@@ -16,10 +16,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import type {
+  AgentCommission,
+  AgentProfile,
+  AgentWithdrawal,
+  Paged,
+} from '@/features/agent/types'
 import { api } from '@/lib/api'
 import { requireServerSuccess } from '@/lib/server-error-message'
-
-import type { AgentCommission, AgentProfile, AgentWithdrawal, Paged } from '@/features/agent/types'
 
 export interface AgentProfileView extends AgentProfile {
   username: string
@@ -81,7 +85,10 @@ export async function reviewAgentWithdrawal(payload: {
   action: 'approve' | 'pay' | 'reject'
   remark?: string
 }) {
-  const res = await api.post('/api/user/agent/admin/withdrawals/review', payload)
+  const res = await api.post(
+    '/api/user/agent/admin/withdrawals/review',
+    payload
+  )
   return requireServerSuccess(res.data)
 }
 

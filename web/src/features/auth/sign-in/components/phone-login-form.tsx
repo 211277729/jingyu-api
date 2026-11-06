@@ -21,9 +21,9 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
+import { Turnstile } from '@/components/turnstile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Turnstile } from '@/components/turnstile'
 import { phoneLogin, sendPhoneVerification } from '@/features/auth/api'
 import { EMAIL_VERIFICATION_COUNTDOWN } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
@@ -186,9 +186,7 @@ export function PhoneLoginForm({
             disabled={isSending || (isActive && secondsLeft > 0)}
             onClick={handleSendCode}
           >
-            {isSending ? (
-              <Loader2 className='h-4 w-4 animate-spin' />
-            ) : null}
+            {isSending ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
             {isActive && secondsLeft > 0
               ? t('{{seconds}}s', { seconds: secondsLeft })
               : t('Send code')}

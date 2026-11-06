@@ -23,10 +23,15 @@ import { Dialog } from '@/components/dialog'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-import { RevealCells } from './reveal-cells'
-import { COST_RANGE, FLICKER_LEAD_MS, RARITY_STYLES, REVEAL_INTERVAL_MS } from '../constants'
+import {
+  COST_RANGE,
+  FLICKER_LEAD_MS,
+  RARITY_STYLES,
+  REVEAL_INTERVAL_MS,
+} from '../constants'
 import { drawOnce } from '../lib/draw'
 import type { DrawResult } from '../types'
+import { RevealCells } from './reveal-cells'
 
 type LuckyDrawPhase = 'idle' | 'drawing' | 'done'
 

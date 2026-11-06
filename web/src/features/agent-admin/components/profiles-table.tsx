@@ -28,9 +28,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  NativeSelect,
-} from '@/components/ui/native-select'
+import { NativeSelect } from '@/components/ui/native-select'
 import {
   type AgentProfileView,
   adjustAgentQuota,
@@ -39,7 +37,11 @@ import {
   getAgentProfiles,
   reviewAgentProfile,
 } from '@/features/agent-admin/api'
-import { EmptyRow, Pager, TableShell } from '@/features/agent-admin/components/table-kit'
+import {
+  EmptyRow,
+  Pager,
+  TableShell,
+} from '@/features/agent-admin/components/table-kit'
 import { formatDateTime } from '@/features/agent-admin/format'
 import { parseQuotaFromDollars } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
@@ -77,14 +79,26 @@ interface ProfilesTableProps {
 export function ProfilesTable({ mode }: ProfilesTableProps) {
   const { t } = useTranslation()
   const [page, setPage] = useState(1)
-  const [statusFilter, setStatusFilter] = useState(mode === 'applications' ? 'pending' : '')
+  const [statusFilter, setStatusFilter] = useState(
+    mode === 'applications' ? 'pending' : ''
+  )
   const [keyword, setKeyword] = useState('')
 
-  const [reviewTarget, setReviewTarget] = useState<AgentProfileView | null>(null)
-  const [rejectTarget, setRejectTarget] = useState<AgentProfileView | null>(null)
-  const [disableTarget, setDisableTarget] = useState<AgentProfileView | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<AgentProfileView | null>(null)
-  const [enableTarget, setEnableTarget] = useState<AgentProfileView | null>(null)
+  const [reviewTarget, setReviewTarget] = useState<AgentProfileView | null>(
+    null
+  )
+  const [rejectTarget, setRejectTarget] = useState<AgentProfileView | null>(
+    null
+  )
+  const [disableTarget, setDisableTarget] = useState<AgentProfileView | null>(
+    null
+  )
+  const [deleteTarget, setDeleteTarget] = useState<AgentProfileView | null>(
+    null
+  )
+  const [enableTarget, setEnableTarget] = useState<AgentProfileView | null>(
+    null
+  )
   const [quotaTarget, setQuotaTarget] = useState<AgentProfileView | null>(null)
   const [bindTarget, setBindTarget] = useState<AgentProfileView | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -191,7 +205,10 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
     }
     setActionLoading(true)
     try {
-      await bindAgentCustomer({ user_id: userId, agent_user_id: bindTarget.user_id })
+      await bindAgentCustomer({
+        user_id: userId,
+        agent_user_id: bindTarget.user_id,
+      })
       toast.success(t('Customer bound to agent'))
       setBindTarget(null)
       setCustomerUserId('')
@@ -224,7 +241,9 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
             onClick={() => {
               setReviewTarget(item)
               setTier(String(item.tier || 1))
-              setFirstPercent(item.first_percent ? String(item.first_percent) : '')
+              setFirstPercent(
+                item.first_percent ? String(item.first_percent) : ''
+              )
               setPercent(item.percent ? String(item.percent) : '')
               setReviewRemark('')
             }}
@@ -252,7 +271,9 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
           onClick={() => {
             // 启用走 approved 通道会回写费率，先把档案当前值填入表单，避免被默认值覆盖
             setTier(String(item.tier || 1))
-            setFirstPercent(item.first_percent ? String(item.first_percent) : '')
+            setFirstPercent(
+              item.first_percent ? String(item.first_percent) : ''
+            )
             setPercent(item.percent ? String(item.percent) : '')
             setEnableTarget(item)
           }}
@@ -274,7 +295,9 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
           onClick={() => {
             setReviewTarget(item)
             setTier(String(item.tier || 1))
-            setFirstPercent(item.first_percent ? String(item.first_percent) : '')
+            setFirstPercent(
+              item.first_percent ? String(item.first_percent) : ''
+            )
             setPercent(item.percent ? String(item.percent) : '')
             setReviewRemark('')
           }}
@@ -369,18 +392,24 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
             <td className='px-3 py-2 text-xs tabular-nums'>{item.id}</td>
             <td className='px-3 py-2 font-medium'>
               {item.display_name || item.username}
-              <span className='text-muted-foreground ml-1.5 text-xs'>(#{item.user_id})</span>
+              <span className='text-muted-foreground ml-1.5 text-xs'>
+                (#{item.user_id})
+              </span>
             </td>
             <td className='px-3 py-2'>{statusBadge(item.status)}</td>
             <td className='text-muted-foreground max-w-36 truncate px-3 py-2 text-xs'>
               {item.contact || '-'}
             </td>
-            <td className='px-3 py-2 text-xs tabular-nums'>{formatDateTime(item.applied_at)}</td>
+            <td className='px-3 py-2 text-xs tabular-nums'>
+              {formatDateTime(item.applied_at)}
+            </td>
             <td className='text-muted-foreground max-w-44 truncate px-3 py-2 text-xs'>
               {item.remark || '-'}
             </td>
             <td className='px-3 py-2'>
-              <div className='flex items-center gap-1'>{renderActions(item)}</div>
+              <div className='flex items-center gap-1'>
+                {renderActions(item)}
+              </div>
             </td>
           </tr>
         ))}
@@ -442,14 +471,19 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
         </div>
         <div className='space-y-1.5'>
           <Label className='text-xs'>{t('Remark')}</Label>
-          <Input value={reviewRemark} onChange={(e) => setReviewRemark(e.target.value)} />
+          <Input
+            value={reviewRemark}
+            onChange={(e) => setReviewRemark(e.target.value)}
+          />
         </div>
         <div className='flex justify-end gap-2'>
           <Button variant='outline' onClick={() => setReviewTarget(null)}>
             {t('Cancel')}
           </Button>
           <Button
-            onClick={() => reviewTarget && submitProfileReview(reviewTarget, 'approved')}
+            onClick={() =>
+              reviewTarget && submitProfileReview(reviewTarget, 'approved')
+            }
             disabled={actionLoading}
           >
             {t('Confirm Approval')}
@@ -464,7 +498,9 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
           if (!open) setRejectTarget(null)
         }}
         title={t('Reject Application')}
-        desc={t('Reject this agent application? The user can apply again later.')}
+        desc={t(
+          'Reject this agent application? The user can apply again later.'
+        )}
         destructive
         isLoading={actionLoading}
         handleConfirm={() =>
@@ -479,7 +515,9 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
           if (!open) setDisableTarget(null)
         }}
         title={t('Disable Agent')}
-        desc={t('Disable this agent? Their customers will stop generating commission.')}
+        desc={t(
+          'Disable this agent? Their customers will stop generating commission.'
+        )}
         destructive
         isLoading={actionLoading}
         handleConfirm={() =>
@@ -547,7 +585,10 @@ export function ProfilesTable({ mode }: ProfilesTableProps) {
         </div>
         <div className='space-y-1.5'>
           <Label className='text-xs'>{t('Remark')}</Label>
-          <Input value={quotaRemark} onChange={(e) => setQuotaRemark(e.target.value)} />
+          <Input
+            value={quotaRemark}
+            onChange={(e) => setQuotaRemark(e.target.value)}
+          />
         </div>
         <div className='flex justify-end gap-2'>
           <Button variant='outline' onClick={() => setQuotaTarget(null)}>

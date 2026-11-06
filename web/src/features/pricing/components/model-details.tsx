@@ -56,12 +56,13 @@ import {
   getSuccessRateTextClass,
 } from '@/features/performance-metrics/lib/format'
 import { PluginIcon } from '@/features/task-plugins/components/plugin-icon'
+import { formatBillingCurrencyFromUSD } from '@/lib/currency'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { requireServerSuccess } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
-import { DEFAULT_TOKEN_UNIT } from '../constants'
+import { DEFAULT_TOKEN_UNIT, TOKEN_UNIT_DIVISORS } from '../constants'
 import { useBillingTime } from '../hooks/use-billing-time'
 import { usePricingData } from '../hooks/use-pricing-data'
 import type { ParsedTaskTier } from '../lib/billing-expr'
@@ -80,7 +81,14 @@ import {
 import { parseTags } from '../lib/filters'
 import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
 import { withPluginPricing } from '../lib/plugin-pricing'
-import { formatFixedPrice, formatGroupPrice } from '../lib/price'
+import {
+  formatFixedPrice,
+  formatGroupPrice,
+  formatOfficialPrice,
+  getOfficialExchangeRate,
+  getOfficialTimeTier,
+  officialPriceTypeForDynamicField,
+} from '../lib/price'
 import {
   evaluateTaskUsageExamples,
   getTaskEnumFields,
@@ -712,6 +720,83 @@ function PriceSection(props: {
     },
   ]
 
+  // 官方价对比块:与卡片一致——「官方X」标签 + 划线价,置于本站价格上方。
+  // 时段计费模型:当前时段档在前(与卡片一致),另一档以小字附在后面。
+  const officialBlock = (type: PriceType, label: string) => {
+    const now = billingTime === undefined ? undefined : new Date(billingTime)
+    const formatted = formatOfficialPrice(
+      props.model,
+      type,
+      props.tokenUnit,
+      now
+    )
+    if (!formatted) return null
+    const tier = getOfficialTimeTier(props.model, now)
+    const tierLabel = tier
+      ? tier === 'peak'
+        ? 'Peak period'
+        : 'Off-peak period'
+      : null
+    const otherTier =
+      tier === 'peak' ? 'off_peak' : tier === 'off_peak' ? 'peak' : null
+    const otherTierLabel = otherTier
+      ? otherTier === 'peak'
+        ? 'Peak period'
+        : 'Off-peak period'
+      : null
+    // 另一档直接从官方价字段取值换算(formatOfficialPrice 只能按当前时段选档)
+    const otherValue = (() => {
+      const official = props.model.official_price
+      if (!official || !otherTier) return ''
+      const modelRatio =
+        otherTier === 'peak' ? official.peak_model_ratio : official.model_ratio
+      if (!modelRatio || modelRatio <= 0) return ''
+      const ratio =
+        type === 'input'
+          ? 1
+          : type === 'output'
+            ? otherTier === 'peak'
+              ? official.peak_completion_ratio
+              : official.completion_ratio
+            : otherTier === 'peak'
+              ? (official.peak_cache_ratio ?? Number.NaN)
+              : (official.cache_ratio ?? Number.NaN)
+      if (!Number.isFinite(ratio)) return ''
+      return formatBillingCurrencyFromUSD(
+        (modelRatio * ratio * 2 * getOfficialExchangeRate(props.model)) /
+          TOKEN_UNIT_DIVISORS[props.tokenUnit],
+        { showSymbol: true, digitsLarge: 4, digitsSmall: 6, abbreviate: false }
+      )
+    })()
+    return (
+      <div className='text-muted-foreground flex flex-wrap items-baseline gap-x-1 text-xs'>
+        <span>
+          {t('Official {{label}}', { label })}
+          {tierLabel && <> ({t(tierLabel)})</>}
+        </span>
+        <span
+          className='font-mono tabular-nums line-through'
+          title={t('Official price')}
+        >
+          {formatted} / {tokenUnitLabel}
+        </span>
+        {otherValue && (
+          <>
+            <span className='text-muted-foreground/60'>
+              ({t(otherTierLabel!)})
+            </span>
+            <span
+              className='text-muted-foreground/60 font-mono tabular-nums line-through'
+              title={t('Official price')}
+            >
+              {otherValue} / {tokenUnitLabel}
+            </span>
+          </>
+        )}
+      </div>
+    )
+  }
+
   if (dynamicSummary) {
     if (dynamicSummary.isSpecialExpression) {
       return (
@@ -771,6 +856,10 @@ function PriceSection(props: {
                 i18n.language,
                 unitLabelKey ? t(unitLabelKey) : tokenUnitLabel
               )
+              const officialType = officialPriceTypeForDynamicField(entry.field)
+              const official = officialType
+                ? officialBlock(officialType, t(entry.shortLabel))
+                : null
               return (
                 <div
                   key={entry.key}
@@ -779,6 +868,7 @@ function PriceSection(props: {
                   <div className='text-muted-foreground text-xs'>
                     <DynamicPriceEntryLabel entry={entry} />
                   </div>
+                  {official}
                   <div className='text-foreground mt-1 font-mono text-base font-semibold tabular-nums'>
                     {entry.formattedRange ?? entry.formatted}
                     <span className='text-muted-foreground/40 ml-1 text-xs font-normal'>
@@ -806,6 +896,9 @@ function PriceSection(props: {
                   i18n.language,
                   unitLabelKey ? t(unitLabelKey) : tokenUnitLabel
                 )
+                const officialType = officialPriceTypeForDynamicField(
+                  entry.field
+                )
                 return (
                   <div
                     key={entry.key}
@@ -814,10 +907,14 @@ function PriceSection(props: {
                     <span className='text-muted-foreground/70 text-sm'>
                       <DynamicPriceEntryLabel entry={entry} />
                     </span>
-                    <span className='text-muted-foreground font-mono text-sm tabular-nums'>
-                      {entry.formattedRange ?? entry.formatted}
-                      <span className='text-muted-foreground/40 ml-1 text-xs font-normal'>
-                        / {unitLabel}
+                    <span className='flex flex-wrap items-baseline justify-end gap-x-2'>
+                      {officialType &&
+                        officialBlock(officialType, t(entry.shortLabel))}
+                      <span className='text-muted-foreground font-mono text-sm tabular-nums'>
+                        {entry.formattedRange ?? entry.formatted}
+                        <span className='text-muted-foreground/40 ml-1 text-xs font-normal'>
+                          / {unitLabel}
+                        </span>
                       </span>
                     </span>
                   </div>
@@ -888,6 +985,7 @@ function PriceSection(props: {
         {primaryPriceTypes.map((item) => (
           <div key={item.type} className='bg-muted/20 rounded-lg border p-3'>
             <div className='text-muted-foreground text-xs'>{item.label}</div>
+            {officialBlock(item.type, item.label)}
             <div className='text-foreground mt-1 font-mono text-base font-semibold tabular-nums'>
               {renderPrice(item.type)}
             </div>
@@ -905,8 +1003,11 @@ function PriceSection(props: {
                 <span className='text-muted-foreground/70 text-sm'>
                   {item.label}
                 </span>
-                <span className='text-muted-foreground font-mono text-sm tabular-nums'>
-                  {renderPrice(item.type)}
+                <span className='flex flex-wrap items-baseline justify-end gap-x-2'>
+                  {officialBlock(item.type, item.label)}
+                  <span className='text-muted-foreground font-mono text-sm tabular-nums'>
+                    {renderPrice(item.type)}
+                  </span>
                 </span>
               </div>
             ))}

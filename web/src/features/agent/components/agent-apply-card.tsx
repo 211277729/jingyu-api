@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Activity,
   Banknote,
@@ -29,9 +30,9 @@ import {
   Undo2,
   Users,
 } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -40,7 +41,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { applyAgent } from '@/features/agent/api'
 import type { AgentProfile, AgentProfileData } from '@/features/agent/types'
 import { handleServerError } from '@/lib/handle-server-error'
-import { toast } from 'sonner'
 
 interface AgentApplyCardProps {
   /** none = 从未申请；rejected/disabled 可重新申请；pending 审核中 */
@@ -93,12 +93,16 @@ export function AgentApplyCard({
   if (status === 'pending') {
     return (
       <div className='border-border/60 bg-muted/30 flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-14 text-center'>
-        <span className='bg-amber-500/10 text-amber-600 dark:text-amber-400 flex size-12 items-center justify-center rounded-full'>
+        <span className='flex size-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400'>
           <Hourglass className='size-6' />
         </span>
-        <div className='text-lg font-semibold'>{t('Application under review')}</div>
+        <div className='text-lg font-semibold'>
+          {t('Application under review')}
+        </div>
         <p className='text-muted-foreground max-w-md text-sm'>
-          {t('Your agent application has been submitted. We will review it as soon as possible.')}
+          {t(
+            'Your agent application has been submitted. We will review it as soon as possible.'
+          )}
         </p>
       </div>
     )
@@ -107,12 +111,17 @@ export function AgentApplyCard({
   if (status === 'disabled') {
     return (
       <div className='border-border/60 bg-muted/30 flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-14 text-center'>
-        <span className='bg-red-500/10 text-red-600 dark:text-red-400 flex size-12 items-center justify-center rounded-full'>
+        <span className='flex size-12 items-center justify-center rounded-full bg-red-500/10 text-red-600 dark:text-red-400'>
           <OctagonX className='size-6' />
         </span>
-        <div className='text-lg font-semibold'>{t('Agent account disabled')}</div>
+        <div className='text-lg font-semibold'>
+          {t('Agent account disabled')}
+        </div>
         <p className='text-muted-foreground max-w-md text-sm'>
-          {profile?.remark || t('Your agent account has been disabled. Contact support if you have questions.')}
+          {profile?.remark ||
+            t(
+              'Your agent account has been disabled. Contact support if you have questions.'
+            )}
         </p>
       </div>
     )
@@ -158,7 +167,9 @@ export function AgentApplyCard({
     {
       icon: ShieldCheck,
       title: t('Get approved'),
-      desc: t('Once approved, your agent center and invite link are ready to go.'),
+      desc: t(
+        'Once approved, your agent center and invite link are ready to go.'
+      ),
     },
     {
       icon: Share2,
@@ -172,12 +183,14 @@ export function AgentApplyCard({
   return (
     <div className='space-y-5'>
       {/* 费率横幅 */}
-      <div className='border-amber-500/20 from-amber-500/15 via-orange-500/8 to-transparent rounded-2xl border bg-gradient-to-r p-5 sm:p-6'>
+      <div className='rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/15 via-orange-500/8 to-transparent p-5 sm:p-6'>
         <div className='flex items-center gap-2.5'>
-          <span className='bg-amber-500/15 text-amber-600 dark:text-amber-400 flex size-10 items-center justify-center rounded-xl'>
+          <span className='flex size-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400'>
             <Handshake className='size-5' />
           </span>
-          <div className='text-lg font-bold sm:text-xl'>{t('Become an Agent')}</div>
+          <div className='text-lg font-bold sm:text-xl'>
+            {t('Become an Agent')}
+          </div>
         </div>
         <p className='text-muted-foreground mt-2.5 text-sm'>
           {t('No caps, no expiry — withdraw your commission as cash.')}
@@ -192,7 +205,7 @@ export function AgentApplyCard({
               key={item.label}
               className='bg-background/80 border-border/60 rounded-xl border px-3 py-3.5 text-center shadow-sm backdrop-blur'
             >
-              <div className='from-amber-600 to-orange-500 dark:from-amber-400 dark:to-orange-400 bg-gradient-to-br bg-clip-text text-xl font-bold tabular-nums text-transparent sm:text-2xl'>
+              <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-xl font-bold text-transparent tabular-nums sm:text-2xl dark:from-amber-400 dark:to-orange-400'>
                 {item.value}%
               </div>
               <div className='text-muted-foreground mt-1 text-[11px] font-medium sm:text-xs'>
@@ -203,7 +216,8 @@ export function AgentApplyCard({
         </div>
         {status === 'rejected' && profile ? (
           <div className='mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400'>
-            {profile.remark || t('Your previous application was rejected. You can apply again.')}
+            {profile.remark ||
+              t('Your previous application was rejected. You can apply again.')}
           </div>
         ) : null}
       </div>
@@ -217,10 +231,10 @@ export function AgentApplyCard({
               {benefits.map((item) => (
                 <div
                   key={item.title}
-                  className='border-border/60 bg-muted/30 hover:border-amber-500/40 rounded-xl border p-4 transition-colors'
+                  className='border-border/60 bg-muted/30 rounded-xl border p-4 transition-colors hover:border-amber-500/40'
                 >
                   <div className='flex items-center gap-2'>
-                    <span className='bg-amber-500/10 text-amber-600 dark:text-amber-400 flex size-7 items-center justify-center rounded-md'>
+                    <span className='flex size-7 items-center justify-center rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400'>
                       <item.icon className='size-3.5' />
                     </span>
                     <div className='text-sm font-semibold'>{item.title}</div>
@@ -241,7 +255,7 @@ export function AgentApplyCard({
                   key={step.title}
                   className='border-border/60 bg-muted/30 flex items-start gap-3 rounded-xl border p-4'
                 >
-                  <span className='bg-amber-500/15 text-amber-600 dark:text-amber-400 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold'>
+                  <span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-sm font-bold text-amber-600 dark:text-amber-400'>
                     {index + 1}
                   </span>
                   <div className='min-w-0'>
@@ -283,12 +297,18 @@ export function AgentApplyCard({
             <Textarea
               value={remark}
               onChange={(e) => setRemark(e.target.value)}
-              placeholder={t('Briefly describe how you plan to promote our service.')}
+              placeholder={t(
+                'Briefly describe how you plan to promote our service.'
+              )}
               rows={3}
               maxLength={255}
             />
           </div>
-          <Button className='w-full' onClick={handleSubmit} disabled={submitting}>
+          <Button
+            className='w-full'
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
             {submitting ? t('Submitting') : t('Submit Application')}
           </Button>
           {status === 'rejected' ? (

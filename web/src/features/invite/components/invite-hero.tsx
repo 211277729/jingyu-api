@@ -59,7 +59,7 @@ export function InviteHero({
       <div className='pointer-events-none absolute -top-16 -right-10 size-52 rounded-full bg-white/10 blur-2xl' />
       <div className='pointer-events-none absolute -bottom-24 -left-10 size-56 rounded-full bg-fuchsia-300/20 blur-2xl' />
       <div className='pointer-events-none absolute top-5 right-36 hidden size-20 rounded-full border border-white/15 sm:block' />
-      <div className='pointer-events-none absolute bottom-4 right-10 hidden size-3 rounded-full bg-white/40 sm:block' />
+      <div className='pointer-events-none absolute right-10 bottom-4 hidden size-3 rounded-full bg-white/40 sm:block' />
       <div className='pointer-events-none absolute top-10 right-16 hidden size-2 rounded-full bg-white/50 sm:block' />
 
       <div className='relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between'>

@@ -22,12 +22,20 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 
-export function TableShell({ header, children }: { header: ReactNode; children: ReactNode }) {
+export function TableShell({
+  header,
+  children,
+}: {
+  header: ReactNode
+  children: ReactNode
+}) {
   return (
     <div className='overflow-x-auto rounded-lg border'>
       <table className='w-full text-sm'>
         <thead>
-          <tr className='bg-muted/50 border-b text-left text-xs whitespace-nowrap'>{header}</tr>
+          <tr className='bg-muted/50 border-b text-left text-xs whitespace-nowrap'>
+            {header}
+          </tr>
         </thead>
         <tbody className='divide-y'>{children}</tbody>
       </table>
@@ -39,7 +47,10 @@ export function EmptyRow({ colSpan }: { colSpan: number }) {
   const { t } = useTranslation()
   return (
     <tr>
-      <td colSpan={colSpan} className='text-muted-foreground py-8 text-center text-xs'>
+      <td
+        colSpan={colSpan}
+        className='text-muted-foreground py-8 text-center text-xs'
+      >
         {t('No data')}
       </td>
     </tr>

@@ -22,8 +22,8 @@ import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
 import { formatQuota } from '@/lib/format'
-import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth-store'
 
 /**
  * The "Recharge | balance" pill shown next to the Daily Rewards entry.
@@ -64,11 +64,11 @@ export function RechargeButton({ className }: { className?: string }) {
       title={t('Recharge')}
     >
       <Wallet className='text-primary size-3.5' />
-      <span className='max-sm:hidden group-data-[scrolled]/header:hidden'>
+      <span className='group-data-[scrolled]/header:hidden max-sm:hidden'>
         {t('Recharge')}
       </span>
-      <span className='bg-border mx-0.5 h-4 w-px max-sm:hidden group-data-[scrolled]/header:hidden' />
-      <span className='text-primary tabular-nums max-sm:hidden group-data-[scrolled]/header:hidden'>
+      <span className='bg-border mx-0.5 h-4 w-px group-data-[scrolled]/header:hidden max-sm:hidden' />
+      <span className='text-primary tabular-nums group-data-[scrolled]/header:hidden max-sm:hidden'>
         {formatQuota(quota)}
       </span>
     </Button>

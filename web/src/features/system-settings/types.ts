@@ -534,3 +534,79 @@ export type UpstreamRatiosResponse = {
     test_results: TestResult[]
   }
 }
+
+export type OfficialPriceEntry = {
+  official_model_name: string
+  model_ratio: number
+  completion_ratio: number
+  /** 条目来源:"sync"=models.dev 同步、"manual"=人工修改(同步默认不覆盖) */
+  source?: string
+  cache_ratio?: number | null
+  create_cache_ratio?: number | null
+  /** 高峰期官方价(可选):时段计费模型按当前时段选档展示;基础字段是低峰档 */
+  peak_model_ratio?: number
+  peak_completion_ratio?: number
+  peak_cache_ratio?: number | null
+}
+
+export type OfficialPriceCandidate = {
+  model_name: string
+  provider: string
+  input: number
+  output?: number | null
+  cache_read?: number | null
+}
+
+// models.dev 上同一个模型名可能出现在多个 provider 下,Options 保留全部同名
+// 候选;Auto 是「最便宜非零输入价」启发式的默认选择(可能选错,弹框里可改)。
+// existing_source 为 "manual" 表示当前配置人工修改过,弹框默认不勾选。
+export type OfficialPriceSyncModel = {
+  site_model: string
+  options: OfficialPriceCandidate[]
+  auto?: OfficialPriceCandidate | null
+  existing_source?: string
+}
+
+export type OfficialPriceSyncReport = {
+  models: OfficialPriceSyncModel[]
+  candidates: OfficialPriceCandidate[]
+}
+
+export type OfficialPriceMappingRef = {
+  provider: string
+  model_name: string
+}
+
+export type OfficialPriceApplyReport = {
+  applied: string[]
+  skipped: { site_model: string; reason: string }[]
+}
+
+export type OfficialPriceSyncResponse = {
+  success: boolean
+  message?: string
+  data: OfficialPriceSyncReport
+  truncated?: boolean
+}
+
+export type OfficialPriceApplyResponse = {
+  success: boolean
+  message?: string
+  data: OfficialPriceApplyReport
+}
+
+export type OfficialPriceConfigResponse = {
+  success: boolean
+  message?: string
+  data: {
+    entries: Record<string, OfficialPriceEntry>
+    /** 官方价美元汇率(真实 USD -> 展示货币),仅影响前台官方价对比展示 */
+    exchange_rate: number
+  }
+}
+
+export type OfficialPriceRateResponse = {
+  success: boolean
+  message?: string
+  data: { exchange_rate: number }
+}

@@ -32,7 +32,12 @@ import {
 import { useRankings } from './hooks/use-rankings'
 import type { RankingPeriod } from './types'
 
-const VALID_PERIODS: Set<RankingPeriod> = new Set(['today', 'week', 'month', 'year'])
+const VALID_PERIODS: Set<RankingPeriod> = new Set([
+  'today',
+  'week',
+  'month',
+  'year',
+])
 
 export function Rankings() {
   const { t } = useTranslation()

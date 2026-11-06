@@ -38,10 +38,17 @@ import {
 } from '../lib/dynamic-price'
 import { parseTags } from '../lib/filters'
 import { isTokenBasedModel } from '../lib/model-helpers'
-import { formatPrice, formatRequestPrice } from '../lib/price'
+import {
+  formatOfficialPrice,
+  formatPrice,
+  formatRequestPrice,
+  getOfficialTimeTier,
+  officialPriceTypeForDynamicField,
+} from '../lib/price'
 import { taskPriceLabel, taskUsageUnitLabel } from '../lib/task-price-display'
 import type { PricingModel, PriceType, TokenUnit } from '../types'
 import { ModelBillingModeBadge } from './model-billing-mode-badge'
+import { ModelDiscountBadge } from './model-discount-badge'
 import { ModelPerfBadge, type ModelPerfBadgeData } from './model-perf-badge'
 
 export interface ModelCardProps {
@@ -126,6 +133,26 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
       dynamicSummary.primaryEntries.length > 0 ||
       cacheReadEntries.length > 0
     ) {
+      // 时段计费模型:官方价按当前时段选档,标签带「高峰/低峰」
+      const officialTierLabel = getOfficialTimeTier(
+        props.model,
+        billingTime === undefined ? undefined : new Date(billingTime)
+      )
+      const officialByField: Partial<Record<string, string>> = {}
+      for (const entry of [
+        ...dynamicSummary.primaryEntries,
+        ...cacheReadEntries,
+      ]) {
+        const type = officialPriceTypeForDynamicField(entry.field)
+        if (!type) continue
+        const formatted = formatOfficialPrice(
+          props.model,
+          type,
+          tokenUnit,
+          billingTime === undefined ? undefined : new Date(billingTime)
+        )
+        if (formatted) officialByField[entry.field] = formatted
+      }
       priceSummary = (
         <>
           {[
@@ -153,26 +180,54 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
                   i18n.language
                 )
               }
+              const officialValue = officialByField[entry.field]
               return (
                 <div
                   key={entry.key}
                   className={cn(
-                    'flex min-w-0 flex-col gap-1',
+                    'flex min-w-0 flex-col gap-2',
                     dynamicSummary.isTaskUsage && 'col-span-full'
                   )}
                 >
-                  {label && (
-                    <span className='text-muted-foreground text-xs break-words whitespace-normal'>
-                      {label}
-                    </span>
+                  {officialValue && (
+                    <div className='flex min-w-0 flex-col gap-0.5'>
+                      <span className='text-muted-foreground text-xs break-words whitespace-normal'>
+                        {t('Official {{label}}', { label })}
+                        {officialTierLabel && (
+                          <>
+                            {' '}
+                            (
+                            {t(
+                              officialTierLabel === 'peak'
+                                ? 'Peak period'
+                                : 'Off-peak period'
+                            )}
+                            )
+                          </>
+                        )}
+                      </span>
+                      <span
+                        className='text-muted-foreground font-mono text-xs tabular-nums line-through'
+                        title={t('Official price')}
+                      >
+                        {officialValue} / {unitLabel}
+                      </span>
+                    </div>
                   )}
-                  <span className='flex flex-wrap items-baseline gap-x-1 font-mono text-sm font-semibold tabular-nums'>
-                    <span>{entry.formattedRange ?? entry.formatted}</span>
-                    <span className='text-muted-foreground text-xs font-normal whitespace-nowrap'>
-                      {' '}
-                      / {unitLabel}
+                  <div className='flex min-w-0 flex-col gap-0.5'>
+                    {label && (
+                      <span className='text-muted-foreground text-xs break-words whitespace-normal'>
+                        {label}
+                      </span>
+                    )}
+                    <span className='flex flex-wrap items-baseline gap-x-1 font-mono text-sm font-semibold tabular-nums'>
+                      <span>{entry.formattedRange ?? entry.formatted}</span>
+                      <span className='text-muted-foreground text-xs font-normal whitespace-nowrap'>
+                        {' '}
+                        / {unitLabel}
+                      </span>
                     </span>
-                  </span>
+                  </div>
                 </div>
               )
             })}
@@ -219,6 +274,11 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
       </span>
     )
   } else if (isTokenBased) {
+    // 时段计费模型:官方价按当前时段选档,标签带「高峰/低峰」
+    const officialTierLabel = getOfficialTimeTier(
+      props.model,
+      billingTime === undefined ? undefined : new Date(billingTime)
+    )
     const prices: { type: PriceType; label: string }[] = [
       { type: 'input', label: t('Input') },
       { type: 'output', label: t('Output') },
@@ -226,26 +286,63 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         ? [{ type: 'cache' as const, label: t('Cached') }]
         : []),
     ]
-    priceSummary = prices.map((price) => (
-      <div key={price.type} className='flex min-w-0 flex-col gap-1'>
-        <span className='text-muted-foreground text-xs'>{price.label}</span>
-        <span className='font-mono text-sm font-semibold tabular-nums'>
-          {formatPrice(
-            props.model,
-            price.type,
-            tokenUnit,
-            showRechargePrice,
-            priceRate,
-            usdExchangeRate,
-            props.selectedGroup
+    priceSummary = prices.map((price) => {
+      const officialValue = formatOfficialPrice(
+        props.model,
+        price.type,
+        tokenUnit,
+        billingTime === undefined ? undefined : new Date(billingTime)
+      )
+      return (
+        <div key={price.type} className='flex min-w-0 flex-col gap-2'>
+          {officialValue && (
+            <div className='flex min-w-0 flex-col gap-0.5'>
+              <span className='text-muted-foreground text-xs break-words whitespace-normal'>
+                {t('Official {{label}}', { label: price.label })}
+                {officialTierLabel && (
+                  <>
+                    {' '}
+                    (
+                    {t(
+                      officialTierLabel === 'peak'
+                        ? 'Peak period'
+                        : 'Off-peak period'
+                    )}
+                    )
+                  </>
+                )}
+              </span>
+              <span
+                className='text-muted-foreground font-mono text-xs tabular-nums line-through'
+                title={t('Official price')}
+              >
+                {officialValue} / {tokenUnitLabel}
+              </span>
+            </div>
           )}
-          <span className='text-muted-foreground text-xs font-normal'>
-            {' '}
-            / {tokenUnitLabel}
-          </span>
-        </span>
-      </div>
-    ))
+          <div className='flex min-w-0 flex-col gap-0.5'>
+            <span className='text-muted-foreground text-xs'>{price.label}</span>
+            <span className='flex flex-wrap items-baseline gap-x-1'>
+              <span className='font-mono text-sm font-semibold tabular-nums'>
+                {formatPrice(
+                  props.model,
+                  price.type,
+                  tokenUnit,
+                  showRechargePrice,
+                  priceRate,
+                  usdExchangeRate,
+                  props.selectedGroup
+                )}
+              </span>
+              <span className='text-muted-foreground text-xs font-normal'>
+                {' '}
+                / {tokenUnitLabel}
+              </span>
+            </span>
+          </div>
+        </div>
+      )
+    })
   } else {
     priceSummary = (
       <div className='col-span-full flex min-w-0 flex-col gap-1'>
@@ -331,6 +428,12 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
           className='mt-auto flex min-w-0 flex-col gap-1.5'
         >
           <ModelBillingModeBadge model={props.model} appearance='caption' />
+          <ModelDiscountBadge
+            model={props.model}
+            selectedGroup={props.selectedGroup}
+            appearance='caption'
+            now={billingTime === undefined ? undefined : new Date(billingTime)}
+          />
           {dynamicSummary?.providerCount && (
             <span className='text-muted-foreground text-xs break-words'>
               {t('{{count}} providers', {

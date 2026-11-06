@@ -272,7 +272,12 @@ export function PaymentSettingsSection({
       ...waffoPancakeDefaultValues,
       ...wxPayDefaultValues,
     }),
-    [defaultValues, waffoDefaultValues, waffoPancakeDefaultValues, wxPayDefaultValues]
+    [
+      defaultValues,
+      waffoDefaultValues,
+      waffoPancakeDefaultValues,
+      wxPayDefaultValues,
+    ]
   )
   const initialRef = React.useRef(initialFormValues)
   const defaultsSignature = React.useMemo(
@@ -796,7 +801,10 @@ export function PaymentSettingsSection({
       updates.push({ key: 'WxPayMchId', value: sanitized.WxPayMchId })
     }
     if (sanitized.WxPayMchApiV3Key) {
-      updates.push({ key: 'WxPayMchApiV3Key', value: sanitized.WxPayMchApiV3Key })
+      updates.push({
+        key: 'WxPayMchApiV3Key',
+        value: sanitized.WxPayMchApiV3Key,
+      })
     }
     if (sanitized.WxPaySerialNo !== initial.WxPaySerialNo) {
       updates.push({ key: 'WxPaySerialNo', value: sanitized.WxPaySerialNo })

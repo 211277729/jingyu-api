@@ -16,14 +16,16 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { beforeAll, describe, expect, it, vi } from 'vitest'
 import i18next from 'i18next'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 // The locale JSON files wrap their flat key maps in a `translation`
 // namespace; ensureLocale must unwrap it before registering the bundle
 // (registering the wrapper hides every key and the UI falls back to English).
 vi.mock('./locales/zh.json', () => ({
-  default: { translation: { 'Unified API Gateway for': '统一 API 网关，面向' } },
+  default: {
+    translation: { 'Unified API Gateway for': '统一 API 网关，面向' },
+  },
 }))
 vi.mock('./locales/zh-TW.json', () => ({
   default: {
@@ -54,9 +56,7 @@ describe('lazy locale loading', () => {
   it('falls back to English for disabled locales instead of loading them', async () => {
     const { changeAppLanguage } = await import('./config')
     await changeAppLanguage('fr')
-    expect(i18next.t('Unified API Gateway for')).toBe(
-      'Unified API Gateway for'
-    )
+    expect(i18next.t('Unified API Gateway for')).toBe('Unified API Gateway for')
   })
 
   it('resolves unsupported language codes without throwing', async () => {

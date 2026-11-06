@@ -19,9 +19,8 @@ For commercial licensing, please contact support@quantumnous.com
 import { useEffect, useState } from 'react'
 
 import type { ComboboxInputOption } from '@/components/ui/combobox-input'
-import { useDebounce } from '@/hooks/use-debounce'
-
 import { searchUsers } from '@/features/users/api'
+import { useDebounce } from '@/hooks/use-debounce'
 
 import { isApiSuccess } from '../api'
 

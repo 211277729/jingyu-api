@@ -39,6 +39,11 @@ type OAuthProvidersProps = {
   onWeChatLogin?: () => void
   isWeChatLoading?: boolean
   redirectTo?: string
+  /**
+   * Optional click guard (e.g. legal-consent popup). Return false to abort
+   * the OAuth flow; the buttons stay clickable regardless of consent state.
+   */
+  onBeforeOAuthClick?: () => Promise<boolean>
 }
 
 type ProviderButton = {
@@ -56,6 +61,7 @@ export function OAuthProviders({
   onWeChatLogin,
   isWeChatLoading = false,
   redirectTo,
+  onBeforeOAuthClick,
 }: OAuthProvidersProps) {
   const { t } = useTranslation()
   const {
@@ -69,6 +75,11 @@ export function OAuthProviders({
     handleTelegramLogin,
     handleCustomOAuthLogin,
   } = useOAuthLogin(status, redirectTo)
+
+  const handleProviderClick = async (onClick: () => void | Promise<void>) => {
+    if (onBeforeOAuthClick && !(await onBeforeOAuthClick())) return
+    await onClick()
+  }
 
   const providerButtons: ProviderButton[] = []
 
@@ -165,7 +176,7 @@ export function OAuthProviders({
               variant='outline'
               type='button'
               disabled={disabled || isLoading || extraDisabled}
-              onClick={onClick}
+              onClick={() => handleProviderClick(onClick)}
               className='h-11 w-full justify-center gap-2 rounded-lg'
             >
               {icon}

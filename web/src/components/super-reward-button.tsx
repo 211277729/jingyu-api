@@ -36,14 +36,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { LuckyDrawDialog } from '@/features/lucky-draw'
 import { useCheckin } from '@/features/profile/hooks'
 import type { CheckinRecord } from '@/features/profile/types'
-import { LuckyDrawDialog } from '@/features/lucky-draw'
 import { useStatus } from '@/hooks/use-status'
 import { formatQuotaWithCurrency } from '@/lib/currency'
 import { formatQuota } from '@/lib/format'
-import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
+import { useAuthStore } from '@/stores/auth-store'
 
 /**
  * The "Daily Rewards" pill shown in the site header.
@@ -115,11 +115,11 @@ export function SuperRewardButton({ className }: { className?: string }) {
       <span className='pointer-events-none absolute right-3 bottom-1 size-1.5 rounded-full bg-white/40' />
       <Gift className='size-4 sm:size-3.5' />
       {/* Mobile H5 与顶栏滚动收缩时只留图标，保持导航一行放得下 */}
-      <span className='hidden sm:inline group-data-[scrolled]/header:hidden'>
+      <span className='hidden group-data-[scrolled]/header:hidden sm:inline'>
         {t('Daily Rewards')}
       </span>
       {checkinEnabled && !checkinStatusLoading && !checkedToday ? (
-        <span className='bg-red-500 ring-background absolute -top-0.5 -right-1 size-2 rounded-full ring-2' />
+        <span className='ring-background absolute -top-0.5 -right-1 size-2 rounded-full bg-red-500 ring-2' />
       ) : null}
     </Button>
   )
@@ -171,7 +171,9 @@ export function SuperRewardButton({ className }: { className?: string }) {
             <div className='space-y-4 py-1'>
               <Button
                 onClick={() => doCheckin()}
-                disabled={checkinLoading || checkedToday || checkinStatusLoading}
+                disabled={
+                  checkinLoading || checkedToday || checkinStatusLoading
+                }
                 size='lg'
                 className='h-12 w-full text-base font-semibold'
               >
@@ -231,115 +233,122 @@ export function SuperRewardButton({ className }: { className?: string }) {
       {isAuthenticated ? (
         <>
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-          <PopoverTrigger render={pill} className={className} />
-          <PopoverContent align='start' sideOffset={8} className='w-72 p-1.5'>
-            <button
-              type='button'
-              className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
-              onClick={() => {
-                setPopoverOpen(false)
-                setDialogOpen(true)
-              }}
-            >
-              <span className='bg-violet-500/10 text-violet-600 dark:text-violet-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
-                <CalendarCheck className='size-4' />
-              </span>
-              <span className='min-w-0 flex-1'>
-                <span className='flex items-center gap-1.5 text-sm font-semibold'>
-                  {t('Daily Check-in')}
-                  {checkinEnabled && !checkinStatusLoading && !checkedToday ? (
-                    <span className='size-1.5 rounded-full bg-red-500' />
-                  ) : null}
+            <PopoverTrigger render={pill} className={className} />
+            <PopoverContent align='start' sideOffset={8} className='w-72 p-1.5'>
+              <button
+                type='button'
+                className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
+                onClick={() => {
+                  setPopoverOpen(false)
+                  setDialogOpen(true)
+                }}
+              >
+                <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400'>
+                  <CalendarCheck className='size-4' />
                 </span>
-                <span className='text-muted-foreground block truncate text-xs'>
-                  {checkedToday
-                    ? `${t('Checked in')}${todayAward !== undefined ? ` · +${formatQuotaWithCurrency(todayAward)}` : ''}`
-                    : t('Check in daily to receive random quota rewards')}
+                <span className='min-w-0 flex-1'>
+                  <span className='flex items-center gap-1.5 text-sm font-semibold'>
+                    {t('Daily Check-in')}
+                    {checkinEnabled &&
+                    !checkinStatusLoading &&
+                    !checkedToday ? (
+                      <span className='size-1.5 rounded-full bg-red-500' />
+                    ) : null}
+                  </span>
+                  <span className='text-muted-foreground block truncate text-xs'>
+                    {checkedToday
+                      ? `${t('Checked in')}${todayAward !== undefined ? ` · +${formatQuotaWithCurrency(todayAward)}` : ''}`
+                      : t('Check in daily to receive random quota rewards')}
+                  </span>
                 </span>
-              </span>
-              <ChevronRight className='text-muted-foreground size-4 shrink-0' />
-            </button>
+                <ChevronRight className='text-muted-foreground size-4 shrink-0' />
+              </button>
 
-            {/* 邀请返利属独立页面，参照导航约定在新标签打开，避免离开当前操作流 */}
-            <Link
-              to='/invite'
-              target='_blank'
-              rel='noopener noreferrer'
-              onClick={() => setPopoverOpen(false)}
-              className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
-            >
-              <span className='bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
-                <Users className='size-4' />
-              </span>
-              <span className='min-w-0 flex-1'>
-                <span className='flex items-center gap-1.5 text-sm font-semibold'>
-                  {t('Invite & Earn')}
-                  {pendingRewards > 0 ? (
-                    <span className='size-1.5 rounded-full bg-red-500' />
-                  ) : null}
-                </span>
-                <span className='text-muted-foreground block truncate text-xs'>
-                  {pendingRewards > 0
-                    ? `${t('Pending rewards')} ${formatQuota(pendingRewards)}`
-                    : t(
-                        'Earn rewards when your invitees register and use the service.'
-                      )}
-                </span>
-              </span>
-              <ChevronRight className='text-muted-foreground size-4 shrink-0' />
-            </Link>
-
-            {/* 代理合作在新标签打开，与导航栏「代理合作」行为一致 */}
-            {agentEnabled ? (
+              {/* 邀请返利属独立页面，参照导航约定在新标签打开，避免离开当前操作流 */}
               <Link
-                to='/agent'
+                to='/invite'
                 target='_blank'
                 rel='noopener noreferrer'
                 onClick={() => setPopoverOpen(false)}
                 className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
               >
-                <span className='bg-orange-500/10 text-orange-600 dark:text-orange-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
-                  <Handshake className='size-4' />
+                <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400'>
+                  <Users className='size-4' />
                 </span>
                 <span className='min-w-0 flex-1'>
                   <span className='flex items-center gap-1.5 text-sm font-semibold'>
-                    {t('Partner Agent')}
+                    {t('Invite & Earn')}
+                    {pendingRewards > 0 ? (
+                      <span className='size-1.5 rounded-full bg-red-500' />
+                    ) : null}
                   </span>
                   <span className='text-muted-foreground block truncate text-xs'>
-                    {t(
-                      'Share your invite link — commission credits automatically on every customer top-up.'
-                    )}
+                    {pendingRewards > 0
+                      ? `${t('Pending rewards')} ${formatQuota(pendingRewards)}`
+                      : t(
+                          'Earn rewards when your invitees register and use the service.'
+                        )}
                   </span>
                 </span>
                 <ChevronRight className='text-muted-foreground size-4 shrink-0' />
               </Link>
-            ) : null}
 
-            <button
-              type='button'
-              className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
-              onClick={() => {
-                setPopoverOpen(false)
-                setDrawDialogOpen(true)
-              }}
-            >
-              <span className='bg-amber-500/10 text-amber-600 dark:text-amber-400 flex size-9 shrink-0 items-center justify-center rounded-lg'>
-                <Sparkles className='size-4' />
-              </span>
-              <span className='min-w-0 flex-1'>
-                <span className='flex items-center gap-1.5 text-sm font-semibold'>
-                  {t('Lucky Draw')}
+              {/* 代理合作在新标签打开，与导航栏「代理合作」行为一致 */}
+              {agentEnabled ? (
+                <Link
+                  to='/agent'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  onClick={() => setPopoverOpen(false)}
+                  className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
+                >
+                  <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:text-orange-400'>
+                    <Handshake className='size-4' />
+                  </span>
+                  <span className='min-w-0 flex-1'>
+                    <span className='flex items-center gap-1.5 text-sm font-semibold'>
+                      {t('Partner Agent')}
+                    </span>
+                    <span className='text-muted-foreground block truncate text-xs'>
+                      {t(
+                        'Share your invite link — commission credits automatically on every customer top-up.'
+                      )}
+                    </span>
+                  </span>
+                  <ChevronRight className='text-muted-foreground size-4 shrink-0' />
+                </Link>
+              ) : null}
+
+              <button
+                type='button'
+                className='hover:bg-accent flex w-full items-center gap-3 rounded-lg p-2.5 text-left outline-none'
+                onClick={() => {
+                  setPopoverOpen(false)
+                  setDrawDialogOpen(true)
+                }}
+              >
+                <span className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400'>
+                  <Sparkles className='size-4' />
                 </span>
-                <span className='text-muted-foreground block truncate text-xs'>
-                  {t('Random grid draw: the rarer the reward, the longer it flickers')}
+                <span className='min-w-0 flex-1'>
+                  <span className='flex items-center gap-1.5 text-sm font-semibold'>
+                    {t('Lucky Draw')}
+                  </span>
+                  <span className='text-muted-foreground block truncate text-xs'>
+                    {t(
+                      'Random grid draw: the rarer the reward, the longer it flickers'
+                    )}
+                  </span>
                 </span>
-              </span>
-              <ChevronRight className='text-muted-foreground size-4 shrink-0' />
-            </button>
-          </PopoverContent>
+                <ChevronRight className='text-muted-foreground size-4 shrink-0' />
+              </button>
+            </PopoverContent>
           </Popover>
 
-          <LuckyDrawDialog open={drawDialogOpen} onOpenChange={setDrawDialogOpen} />
+          <LuckyDrawDialog
+            open={drawDialogOpen}
+            onOpenChange={setDrawDialogOpen}
+          />
         </>
       ) : (
         <span className={cn('inline-flex', className)}>{pill}</span>

@@ -46,29 +46,26 @@ import { useUpdateOption } from '../hooks/use-update-option'
 
 // 代理佣金按客户到账 quota 的百分比计算；二级佣金只发给「也是代理」的上级
 const schema = (t: (key: string) => string) =>
-  z
-    .object({
-      enabled: z.boolean(),
-      firstPercent: z.coerce
-        .number()
-        .min(0, t('Rebate percentage cannot be negative'))
-        .max(100, t('Rebate percentage cannot exceed 100')),
-      percent: z.coerce
-        .number()
-        .min(0, t('Rebate percentage cannot be negative'))
-        .max(100, t('Rebate percentage cannot exceed 100')),
-      secondPercent: z.coerce
-        .number()
-        .min(0, t('Rebate percentage cannot be negative'))
-        .max(100, t('Rebate percentage cannot exceed 100')),
-      firstDays: z.coerce
-        .number()
-        .int(t('Days must be a whole number'))
-        .min(0, t('Days cannot be negative')),
-      minWithdraw: z.coerce
-        .number()
-        .min(0, t('Amount cannot be negative')),
-    })
+  z.object({
+    enabled: z.boolean(),
+    firstPercent: z.coerce
+      .number()
+      .min(0, t('Rebate percentage cannot be negative'))
+      .max(100, t('Rebate percentage cannot exceed 100')),
+    percent: z.coerce
+      .number()
+      .min(0, t('Rebate percentage cannot be negative'))
+      .max(100, t('Rebate percentage cannot exceed 100')),
+    secondPercent: z.coerce
+      .number()
+      .min(0, t('Rebate percentage cannot be negative'))
+      .max(100, t('Rebate percentage cannot exceed 100')),
+    firstDays: z.coerce
+      .number()
+      .int(t('Days must be a whole number'))
+      .min(0, t('Days cannot be negative')),
+    minWithdraw: z.coerce.number().min(0, t('Amount cannot be negative')),
+  })
 
 type FormValues = {
   enabled: boolean
@@ -114,7 +111,9 @@ export function AgentDistributionSettingsSection({
       percent: formatPercent(defaultValues.percent),
       secondPercent: formatPercent(defaultValues.secondPercent),
       firstDays: defaultValues.firstDays,
-      minWithdraw: quotaUnitsToDollars(defaultValues.minWithdrawQuotaUnits).toFixed(2),
+      minWithdraw: quotaUnitsToDollars(
+        defaultValues.minWithdrawQuotaUnits
+      ).toFixed(2),
     },
   })
 
@@ -125,23 +124,41 @@ export function AgentDistributionSettingsSection({
     const updates: Array<{ key: string; value: string }> = []
 
     if (values.enabled !== defaultValues.enabled) {
-      updates.push({ key: 'agent_setting.enabled', value: String(values.enabled) })
+      updates.push({
+        key: 'agent_setting.enabled',
+        value: String(values.enabled),
+      })
     }
     if (values.firstPercent !== defaultValues.firstPercent) {
-      updates.push({ key: 'agent_setting.first_percent', value: String(values.firstPercent) })
+      updates.push({
+        key: 'agent_setting.first_percent',
+        value: String(values.firstPercent),
+      })
     }
     if (values.percent !== defaultValues.percent) {
-      updates.push({ key: 'agent_setting.percent', value: String(values.percent) })
+      updates.push({
+        key: 'agent_setting.percent',
+        value: String(values.percent),
+      })
     }
     if (values.secondPercent !== defaultValues.secondPercent) {
-      updates.push({ key: 'agent_setting.second_percent', value: String(values.secondPercent) })
+      updates.push({
+        key: 'agent_setting.second_percent',
+        value: String(values.secondPercent),
+      })
     }
     if (values.firstDays !== defaultValues.firstDays) {
-      updates.push({ key: 'agent_setting.first_days', value: String(values.firstDays) })
+      updates.push({
+        key: 'agent_setting.first_days',
+        value: String(values.firstDays),
+      })
     }
     const minWithdrawQuota = parseQuotaFromDollars(values.minWithdraw)
     if (minWithdrawQuota !== defaultValues.minWithdrawQuotaUnits) {
-      updates.push({ key: 'agent_setting.min_withdraw_quota', value: String(minWithdrawQuota) })
+      updates.push({
+        key: 'agent_setting.min_withdraw_quota',
+        value: String(minWithdrawQuota),
+      })
     }
 
     if (updates.length === 0) {
@@ -211,9 +228,18 @@ export function AgentDistributionSettingsSection({
                 name='firstPercent'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('Agent first top-up commission (%)')}</FormLabel>
+                    <FormLabel>
+                      {t('Agent first top-up commission (%)')}
+                    </FormLabel>
                     <FormControl>
-                      <Input type='number' min={0} max={100} step={0.1} placeholder='20' {...field} />
+                      <Input
+                        type='number'
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder='20'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       {t(
@@ -232,7 +258,14 @@ export function AgentDistributionSettingsSection({
                   <FormItem>
                     <FormLabel>{t('Agent recurring commission (%)')}</FormLabel>
                     <FormControl>
-                      <Input type='number' min={0} max={100} step={0.1} placeholder='10' {...field} />
+                      <Input
+                        type='number'
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder='10'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       {t(
@@ -251,7 +284,14 @@ export function AgentDistributionSettingsSection({
                   <FormItem>
                     <FormLabel>{t('Second-level commission (%)')}</FormLabel>
                     <FormControl>
-                      <Input type='number' min={0} max={100} step={0.1} placeholder='5' {...field} />
+                      <Input
+                        type='number'
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        placeholder='5'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       {t(
@@ -270,7 +310,13 @@ export function AgentDistributionSettingsSection({
                   <FormItem>
                     <FormLabel>{t('First top-up window (days)')}</FormLabel>
                     <FormControl>
-                      <Input type='number' min={0} step={1} placeholder='0' {...field} />
+                      <Input
+                        type='number'
+                        min={0}
+                        step={1}
+                        placeholder='0'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       {t(
@@ -289,10 +335,18 @@ export function AgentDistributionSettingsSection({
                   <FormItem>
                     <FormLabel>{t('Minimum withdrawal amount ($)')}</FormLabel>
                     <FormControl>
-                      <Input type='number' min={0} step={0.01} placeholder='1.00' {...field} />
+                      <Input
+                        type='number'
+                        min={0}
+                        step={0.01}
+                        placeholder='1.00'
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
-                      {t('Minimum commission balance an agent needs to request a withdrawal; 0 means no limit')}
+                      {t(
+                        'Minimum commission balance an agent needs to request a withdrawal; 0 means no limit'
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

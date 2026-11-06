@@ -130,9 +130,8 @@ const buildFormDefaults = (
 export function SmsSettingsSection({ defaultValues }: SmsSettingsSectionProps) {
   const { t } = useTranslation()
   const updateOption = useUpdateOption()
-  const baselineRef = useRef<SmsSettingsSectionProps['defaultValues']>(
-    defaultValues
-  )
+  const baselineRef =
+    useRef<SmsSettingsSectionProps['defaultValues']>(defaultValues)
 
   const formDefaults = useMemo(
     () => buildFormDefaults(defaultValues),
@@ -247,7 +246,10 @@ export function SmsSettingsSection({ defaultValues }: SmsSettingsSectionProps) {
                         items={[
                           { value: 'aliyun', label: t('Alibaba Cloud SMS') },
                           { value: 'tencent', label: t('Tencent Cloud SMS') },
-                          { value: 'debug', label: t('Debug (print code to server log)') },
+                          {
+                            value: 'debug',
+                            label: t('Debug (print code to server log)'),
+                          },
                         ]}
                         value={field.value}
                         onValueChange={field.onChange}

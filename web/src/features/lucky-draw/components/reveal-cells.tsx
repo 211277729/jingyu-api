@@ -19,9 +19,10 @@ For commercial licensing, please contact support@quantumnous.com
 import { Gem } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
+import { cn } from '@/lib/utils'
+
 import { RARITY_STYLES } from '../constants'
 import type { LuckyRarity } from '../types'
-import { cn } from '@/lib/utils'
 
 interface RevealCellsProps {
   /** 抽中的格子数（1~12），决定网格列数与揭示总时长 */

@@ -25,10 +25,7 @@ import { Turnstile } from '@/components/turnstile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TitledCard } from '@/components/ui/titled-card'
-import {
-  phoneBind,
-  sendPhoneBindVerification,
-} from '@/features/auth/api'
+import { phoneBind, sendPhoneBindVerification } from '@/features/auth/api'
 import { EMAIL_VERIFICATION_COUNTDOWN } from '@/features/auth/constants'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 import {
@@ -178,9 +175,7 @@ export function PhoneBindCard({ phone, enabled }: PhoneBindCardProps) {
             disabled={isSubmitting}
             onClick={handleBind}
           >
-            {isSubmitting ? (
-              <Loader2 className='h-4 w-4 animate-spin' />
-            ) : null}
+            {isSubmitting ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
             {currentPhone ? t('Update') : t('Bind')}
           </Button>
         </div>
