@@ -46,8 +46,8 @@ type DialogProps = React.ComponentProps<typeof DialogRoot> & {
   showCloseButton?: boolean
 }
 
-const dialogContentMotionClassName =
-  'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 duration-100'
+// 动画统一由 ui/dialog 的 DialogContent 提供（淡入+缩放+自下而上浮现），
+// 这里不再重复注入 motion 类，避免 twMerge 覆盖基础组件的时长与缓动
 
 export function Dialog({
   title,
@@ -72,8 +72,7 @@ export function Dialog({
       <DialogContent
         className={cn(
           'flex w-full flex-col gap-4 overflow-x-hidden overflow-y-auto p-4 sm:max-w-2xl sm:p-6',
-          contentClassName,
-          dialogContentMotionClassName
+          contentClassName
         )}
         initialFocus={initialFocus}
         showCloseButton={showCloseButton}
@@ -86,7 +85,9 @@ export function Dialog({
         <DialogHeader
           className={cn('flex-shrink-0 text-start', headerClassName)}
         >
-          <DialogTitle className={titleClassName}>{title}</DialogTitle>
+          <DialogTitle className={cn('tracking-tight', titleClassName)}>
+            {title}
+          </DialogTitle>
           {description ? (
             <DialogDescription className={descriptionClassName}>
               {description}

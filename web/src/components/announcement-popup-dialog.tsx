@@ -17,7 +17,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { Bell, Megaphone } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type UIEvent } from 'react'
+
 import { useTranslation } from 'react-i18next'
 
 import { Dialog } from '@/components/dialog'
@@ -35,6 +36,11 @@ import { useNotificationStore } from '@/stores/notification-store'
 
 // 时间线分页渲染：Markdown（shiki 高亮）渲染开销大，首屏只渲染一部分
 const TIMELINE_PAGE_SIZE = 5
+// 滚动到距底部该像素内即视为触底，避免用户必须精确滚到最后一像素
+const SCROLL_BOTTOM_THRESHOLD_PX = 32
+// 触底后额外允许的上滚余量：按钮渲染/卸载会改变 scrollHeight，若无迟滞，
+// 在阈值附近滚动会造成按钮闪烁；超过「阈值+迟滞」才认为用户真的离开了底部
+const SCROLL_BOTTOM_HYSTERESIS_PX = 64
 
 /**
  * 全局公告弹窗：登录后检测到未读内容时在屏幕中央弹出。
@@ -72,6 +78,9 @@ export function AnnouncementPopupDialog() {
   // 本次布局生命周期内用户已手动关闭过，避免数据刷新后再次自动弹出
   const [dismissed, setDismissed] = useState(false)
   const [timelineCount, setTimelineCount] = useState(TIMELINE_PAGE_SIZE)
+  // 「查看更多」不默认显示，用户把时间线滚到底部才出现
+  const [timelineAtBottom, setTimelineAtBottom] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   // 系统公告非空且内容与上次已读不一致时视为未读
   const hasUnreadNotice = Boolean(notice) && unreadNoticeCount > 0
@@ -137,9 +146,11 @@ export function AnnouncementPopupDialog() {
     hasUnreadNotice,
   ])
 
-  // 打开时把滚动条强制回到顶部，避免焦点移动等浏览器行为把内容滚到底部
+  // 打开时把滚动条强制回到顶部，避免焦点移动等浏览器行为把内容滚到底部；
+  // 触底状态同步复位，「查看更多」重新回到隐藏
   useEffect(() => {
     if (!open) return
+    setTimelineAtBottom(false)
     const raf = requestAnimationFrame(() => {
       document
         .querySelectorAll<HTMLElement>(
@@ -151,6 +162,34 @@ export function AnnouncementPopupDialog() {
     })
     return () => cancelAnimationFrame(raf)
   }, [open])
+
+  // 滚动触底检测：距底部不足阈值即认为到底，「查看更多」才允许出现；
+  // 已触底时须上滚超过迟滞余量才隐藏，避免按钮自身的渲染/卸载引起闪烁
+  const handleTimelineScroll = (event: UIEvent<HTMLDivElement>) => {
+    const el = event.currentTarget
+    const distanceToBottom =
+      el.scrollHeight - el.scrollTop - el.clientHeight
+    if (distanceToBottom <= SCROLL_BOTTOM_THRESHOLD_PX) {
+      setTimelineAtBottom(true)
+    } else if (
+      timelineAtBottom &&
+      distanceToBottom >
+        SCROLL_BOTTOM_THRESHOLD_PX + SCROLL_BOTTOM_HYSTERESIS_PX
+    ) {
+      setTimelineAtBottom(false)
+    }
+  }
+
+  // 按钮刚触底出现时把滚动条吸附到底，让它完整露出而不是半截压在视口下沿
+  useEffect(() => {
+    if (!open || !timelineAtBottom) return
+    const el = scrollRef.current
+    if (!el) return
+    const raf = requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [open, timelineAtBottom])
 
   // 今日关闭：当天不再因「已知内容」自动弹出，未读角标仍保留；
   // 关闭后新发布的公告不受影响，仍会照常弹出
@@ -208,7 +247,9 @@ export function AnnouncementPopupDialog() {
           dialog-content，系统公告异步加载后外层滚动条会被带过头；普通 div 的
           max-h + overflow-y-auto 自带约束，滚动始终发生在自身。 */}
       <div
+        ref={scrollRef}
         data-slot='announcement-popup-scroll'
+        onScroll={handleTimelineScroll}
         className='max-h-[min(58vh,520px)] overflow-y-auto overscroll-contain pr-4'
       >
         <div className='space-y-5'>
@@ -279,24 +320,26 @@ export function AnnouncementPopupDialog() {
                   </div>
                 )
               })}
+              {/* 「查看更多」作为列表最后一项放在滚动容器内：出现/消失都在
+                  max-h 滚动区内部，不会引起弹窗高度抖动；仅在滚动触底后渲染，
+                  此时用户已在底部，即使被焦点管理聚焦也不会再把时间线滚走 */}
+              {hasMoreAnnouncements && timelineAtBottom && (
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='w-full'
+                  onClick={() => {
+                    setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)
+                    setTimelineAtBottom(false)
+                  }}
+                >
+                  {t('Show more announcements')}
+                </Button>
+              )}
             </div>
           )}
         </div>
       </div>
-      {/* 「查看更多」放在滚动容器外：避免它成为容器内唯一的可聚焦元素，
-          否则 Base UI 弹窗的焦点管理聚焦它时，浏览器会把时间线滚到最底部 */}
-      {hasMoreAnnouncements && (
-        <Button
-          variant='ghost'
-          size='sm'
-          className='w-full'
-          onClick={() =>
-            setTimelineCount((count) => count + TIMELINE_PAGE_SIZE)
-          }
-        >
-          {t('Show more announcements')}
-        </Button>
-      )}
     </Dialog>
   )
 }
