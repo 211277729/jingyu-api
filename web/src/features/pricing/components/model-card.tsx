@@ -364,14 +364,18 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
   }
 
   return (
-    <Card className='hover:ring-foreground/20 h-full min-w-0 gap-3 transition-colors'>
+    <Card className='group hover:border-primary/40 hover:shadow-primary/10 relative h-full min-w-0 gap-3 overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl'>
+      <div
+        aria-hidden
+        className='via-primary/80 pointer-events-none absolute inset-x-4 top-0 h-px bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100'
+      />
       <CardHeader className='flex flex-row items-start gap-3'>
         <div
           aria-hidden
-          className='bg-muted/50 flex size-10 shrink-0 items-center justify-center rounded-lg'
+          className='from-primary/15 to-chart-2/15 ring-primary/20 flex size-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ring-1'
         >
           {modelIcon || (
-            <span className='text-muted-foreground text-sm font-bold'>
+            <span className='text-primary/80 font-mono text-sm font-bold'>
               {initial}
             </span>
           )}
@@ -385,7 +389,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
           </h3>
           {props.model.vendor_name && (
             <p
-              className='text-muted-foreground mt-1 truncate text-xs'
+              className='text-muted-foreground mt-1 truncate font-mono text-[11px] tracking-wide uppercase'
               title={props.model.vendor_name}
             >
               {props.model.vendor_name}
@@ -408,15 +412,23 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             <div
               role='group'
               aria-label={t('Tags')}
-              className='text-muted-foreground flex min-w-0 items-baseline gap-1.5 text-xs'
+              className='flex min-w-0 flex-wrap items-center gap-1'
             >
-              <span className='shrink-0'>{t('Tags')}</span>
-              <span className='truncate' title={tags.join(', ')}>
-                {tags.slice(0, 2).join(', ')}
-              </span>
-              {tags.length > 2 && (
-                <span className='shrink-0' title={tags.slice(2).join(', ')}>
-                  +{tags.length - 2}
+              {tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className='border-border/60 bg-muted/60 text-muted-foreground rounded-md border px-1.5 py-0.5 font-mono text-[11px]'
+                  title={tag}
+                >
+                  {tag}
+                </span>
+              ))}
+              {tags.length > 3 && (
+                <span
+                  className='text-muted-foreground text-[11px]'
+                  title={tags.slice(3).join(', ')}
+                >
+                  +{tags.length - 3}
                 </span>
               )}
             </div>
@@ -425,15 +437,16 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
         <div
           role='group'
           aria-label={t('Pricing')}
-          className='mt-auto flex min-w-0 flex-col gap-1.5'
+          className='border-border/50 mt-auto flex min-w-0 flex-col gap-1.5 border-t pt-3'
         >
-          <ModelBillingModeBadge model={props.model} appearance='caption' />
-          <ModelDiscountBadge
-            model={props.model}
-            selectedGroup={props.selectedGroup}
-            appearance='caption'
-            now={billingTime === undefined ? undefined : new Date(billingTime)}
-          />
+          <div className='flex flex-wrap items-center gap-x-1.5 gap-y-1'>
+            <ModelBillingModeBadge model={props.model} appearance='caption' />
+            <ModelDiscountBadge
+              model={props.model}
+              selectedGroup={props.selectedGroup}
+              now={billingTime === undefined ? undefined : new Date(billingTime)}
+            />
+          </div>
           {dynamicSummary?.providerCount && (
             <span className='text-muted-foreground text-xs break-words'>
               {t('{{count}} providers', {
@@ -456,7 +469,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
           >
             {groups.length > 0 && (
               <div className='flex min-w-0 items-baseline gap-1.5'>
-                <dt className='text-muted-foreground shrink-0'>
+                <dt className='text-muted-foreground shrink-0 font-mono text-[11px] tracking-wide uppercase'>
                   {t('Groups')}
                 </dt>
                 <dd className='flex min-w-0 items-baseline gap-1'>
@@ -476,7 +489,7 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             )}
             {endpoints.length > 0 && (
               <div className='flex min-w-0 items-baseline gap-1.5'>
-                <dt className='text-muted-foreground shrink-0'>
+                <dt className='text-muted-foreground shrink-0 font-mono text-[11px] tracking-wide uppercase'>
                   {t('Endpoints')}
                 </dt>
                 <dd className='flex min-w-0 items-baseline gap-1'>
@@ -506,9 +519,13 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             variant='ghost'
             size='sm'
             onClick={() => props.onClick(props.model.model_name || '')}
+            className='-mr-2 text-xs'
           >
             {t('Details')}
-            <ChevronRight aria-hidden className='size-3.5' />
+            <ChevronRight
+              aria-hidden
+              className='size-3.5 transition-transform duration-200 group-hover:translate-x-0.5'
+            />
           </Button>
         </ModelPerfBadge>
       </CardFooter>

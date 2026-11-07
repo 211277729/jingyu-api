@@ -92,11 +92,15 @@ function FilterChip(props: {
   return (
     <Button
       type='button'
-      variant={props.active ? 'secondary' : 'outline'}
+      variant='outline'
       size='sm'
       onClick={props.onClick}
       aria-pressed={props.active}
-      className='h-auto max-w-full gap-1.5 px-2 py-1 text-xs'
+      className={cn(
+        'h-auto max-w-full gap-1.5 rounded-lg px-2 py-1 text-xs transition-all',
+        props.active &&
+          'border-primary/50 bg-primary/10 text-primary shadow-[0_0_14px_-6px_var(--primary)] hover:bg-primary/15'
+      )}
       title={props.option.label}
     >
       {props.option.icon && (
@@ -106,9 +110,9 @@ function FilterChip(props: {
       {(props.option.suffix || props.option.count != null) && (
         <span
           className={cn(
-            'rounded-md px-1.5 py-0.5 text-[12px]',
+            'rounded-md px-1.5 py-0.5 font-mono text-[11px] tabular-nums',
             props.active
-              ? 'bg-background text-foreground'
+              ? 'bg-primary/15 text-primary'
               : 'bg-muted text-muted-foreground'
           )}
         >
@@ -123,11 +127,19 @@ function FilterSection(props: FilterSectionProps) {
   return (
     <Collapsible
       defaultOpen
-      className='border-border/70 border-b pb-3 last:border-b-0'
+      className='border-border/50 border-b pb-3 last:border-b-0'
     >
       <CollapsibleTrigger className='group flex w-full items-center justify-between py-2.5 text-left'>
-        <span className='text-foreground text-sm font-semibold'>
-          {props.title}
+        <span className='flex items-baseline gap-1.5'>
+          <span
+            aria-hidden
+            className='text-primary/70 font-mono text-[11px] font-bold'
+          >
+            //
+          </span>
+          <span className='text-foreground text-sm font-semibold tracking-wide'>
+            {props.title}
+          </span>
         </span>
         <ChevronDown className='text-muted-foreground size-4 transition-transform group-data-[panel-open]:rotate-180' />
       </CollapsibleTrigger>
@@ -259,10 +271,25 @@ export const PricingSidebar = memo(function PricingSidebar(
   ]
 
   return (
-    <aside className={cn('bg-card rounded-xl border p-3', props.className)}>
-      <div className='mb-2.5 flex items-center justify-between gap-2'>
+    <aside
+      className={cn(
+        'border-border/60 bg-card/60 rounded-2xl border p-3 backdrop-blur-sm',
+        props.className
+      )}
+    >
+      <div className='mb-2.5 flex items-start justify-between gap-2'>
         <div>
-          <h2 className='text-foreground text-sm font-bold'>{t('Filter')}</h2>
+          <h2 className='flex items-baseline gap-1.5'>
+            <span
+              aria-hidden
+              className='text-primary/70 font-mono text-[11px] font-bold'
+            >
+              //
+            </span>
+            <span className='font-mono text-sm font-bold tracking-[0.14em] uppercase'>
+              {t('Filter')}
+            </span>
+          </h2>
           <p className='text-muted-foreground mt-1 text-xs'>
             {t('Refine models by provider, group, type, and tags.')}
           </p>

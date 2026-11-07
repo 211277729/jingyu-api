@@ -16,11 +16,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { Activity, ArrowLeftRight } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { PublicLayout } from '@/components/layout'
 import { PageTransition } from '@/components/page-transition'
+import { cn } from '@/lib/utils'
 
 import {
   LoadingSkeleton,
@@ -35,6 +37,7 @@ import {
 import { EXCLUDED_GROUPS, VIEW_MODES } from './constants'
 import { useFilters } from './hooks/use-filters'
 import { usePricingData } from './hooks/use-pricing-data'
+import { getModelQuotaType } from './lib/filters'
 
 export function Pricing() {
   const { t } = useTranslation()
@@ -110,6 +113,37 @@ export function Pricing() {
     clearSearch()
   }, [clearFilters, clearSearch])
 
+  const stats = useMemo(() => {
+    const list = models || []
+    const vendors = new Set<string>()
+    const endpoints = new Set<string>()
+    const billingModes = new Set<string>()
+    for (const model of list) {
+      if (model.vendor_name) vendors.add(model.vendor_name)
+      for (const endpoint of model.supported_endpoint_types ?? []) {
+        endpoints.add(endpoint)
+      }
+      const quotaType = getModelQuotaType(model)
+      if (quotaType) billingModes.add(quotaType)
+    }
+    return {
+      models: list.length,
+      vendors: vendors.size,
+      endpoints: endpoints.size,
+      billingModes: billingModes.size,
+    }
+  }, [models])
+
+  const statItems = useMemo(
+    () => [
+      { label: t('Models'), value: stats.models },
+      { label: t('Providers'), value: stats.vendors },
+      { label: t('Endpoint types'), value: stats.endpoints },
+      { label: t('Billing modes'), value: stats.billingModes },
+    ],
+    [t, stats]
+  )
+
   const renderPricingContent = () => {
     if (filteredModels.length === 0) {
       return (
@@ -161,27 +195,55 @@ export function Pricing() {
   return (
     <PublicLayout showMainContainer={false}>
       <div className='relative'>
+        {/* 背景层：细网格 + 极光晕，全部静态绘制，避免动画开销 */}
         <div
           aria-hidden
-          className='pointer-events-none absolute inset-x-0 top-0 h-[600px] opacity-20 dark:opacity-[0.10]'
-          style={{
-            background: [
-              'radial-gradient(ellipse 60% 50% at 20% 20%, oklch(0.72 0.18 250 / 80%) 0%, transparent 70%)',
-              'radial-gradient(ellipse 50% 40% at 80% 15%, oklch(0.65 0.15 200 / 60%) 0%, transparent 70%)',
-              'radial-gradient(ellipse 40% 35% at 50% 70%, oklch(0.70 0.12 280 / 40%) 0%, transparent 70%)',
-            ].join(', '),
-            maskImage:
-              'linear-gradient(to bottom, black 40%, transparent 100%)',
-            WebkitMaskImage:
-              'linear-gradient(to bottom, black 40%, transparent 100%)',
-          }}
-        />
+          className='pointer-events-none absolute inset-x-0 top-0 h-[760px] overflow-hidden'
+        >
+          <div
+            className='absolute inset-0 opacity-[0.5] dark:opacity-100'
+            style={{
+              backgroundImage: [
+                'linear-gradient(to right, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px)',
+                'linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px)',
+              ].join(', '),
+              backgroundSize: '44px 44px',
+              maskImage:
+                'radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(ellipse 90% 70% at 50% 0%, black 30%, transparent 100%)',
+            }}
+          />
+          <div
+            className='absolute inset-0 opacity-25 dark:opacity-40'
+            style={{
+              background: [
+                'radial-gradient(ellipse 55% 45% at 18% 8%, color-mix(in oklch, var(--chart-1) 70%, transparent) 0%, transparent 70%)',
+                'radial-gradient(ellipse 45% 38% at 82% 4%, color-mix(in oklch, var(--chart-4) 55%, transparent) 0%, transparent 70%)',
+                'radial-gradient(ellipse 60% 40% at 50% 30%, color-mix(in oklch, var(--chart-3) 40%, transparent) 0%, transparent 75%)',
+              ].join(', '),
+              maskImage:
+                'linear-gradient(to bottom, black 45%, transparent 100%)',
+              WebkitMaskImage:
+                'linear-gradient(to bottom, black 45%, transparent 100%)',
+            }}
+          />
+        </div>
         <PageTransition className='relative mx-auto w-full max-w-[1800px] px-3 pt-16 pb-8 sm:px-6 sm:pt-20 sm:pb-10 xl:px-8'>
-          <header className='mx-auto mb-5 max-w-3xl pt-5 text-center sm:mb-10 sm:pt-10'>
-            <h1 className='text-[clamp(2rem,5.5vw,3.5rem)] leading-[1.15] font-bold tracking-tight'>
+          <header className='mx-auto mb-6 max-w-3xl pt-4 text-center sm:mb-10 sm:pt-10'>
+            <div className='border-border/60 bg-background/60 mx-auto inline-flex items-center gap-2 rounded-full border px-3 py-1 shadow-sm backdrop-blur-sm'>
+              <span className='relative flex size-1.5'>
+                <span className='bg-success absolute inline-flex h-full w-full animate-ping rounded-full opacity-60' />
+                <span className='bg-success relative inline-flex size-1.5 rounded-full' />
+              </span>
+              <span className='text-muted-foreground font-mono text-[11px] tracking-[0.18em] uppercase'>
+                {t('Live model index')}
+              </span>
+            </div>
+            <h1 className='mt-4 bg-gradient-to-r from-[#3b82f6] via-[#6d5cf5] to-[#a855f7] bg-clip-text text-[clamp(2.1rem,5.5vw,3.6rem)] leading-[1.12] font-bold tracking-tight text-transparent dark:from-[#60a5fa] dark:via-[#8f7bff] dark:to-[#c084fc] sm:mt-5'>
               {t('Model Square')}
             </h1>
-            <p className='text-muted-foreground/80 mt-3 text-sm sm:mt-4 sm:text-base'>
+            <p className='text-muted-foreground/90 mt-3 font-mono text-xs tracking-wide sm:mt-4 sm:text-sm'>
               {t('This site currently has {{count}} models enabled', {
                 count: models?.length || 0,
               })}
@@ -198,8 +260,55 @@ export function Pricing() {
               placeholder={t(
                 'Search model name, provider, endpoint, or tag...'
               )}
-              className='mx-auto mt-4 max-w-2xl sm:mt-6'
+              className='mx-auto mt-5 max-w-2xl sm:mt-7'
             />
+
+            {/* 数据读数条 */}
+            <dl className='mx-auto mt-5 grid max-w-2xl grid-cols-2 gap-2 sm:mt-7 sm:grid-cols-4 sm:gap-3'>
+              {statItems.map((item, index) => (
+                <div
+                  key={item.label}
+                  className={cn(
+                    'border-border/60 bg-card/50 relative overflow-hidden rounded-xl border px-3 py-2.5 text-left backdrop-blur-sm',
+                    'transition-colors hover:border-primary/40'
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      'absolute inset-y-3 left-0 w-0.5 rounded-full',
+                      index % 2 === 0 ? 'bg-primary/60' : 'bg-chart-2/60'
+                    )}
+                  />
+                  <dd className='font-mono text-xl leading-none font-semibold tabular-nums'>
+                    {item.value.toLocaleString()}
+                  </dd>
+                  <dt className='text-muted-foreground mt-1.5 text-[11px] tracking-wide'>
+                    {item.label}
+                  </dt>
+                </div>
+              ))}
+            </dl>
+            <div className='mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:mt-4'>
+              <div className='text-muted-foreground/50 flex items-center gap-1.5 font-mono text-[10px] tracking-[0.2em] uppercase'>
+                <Activity aria-hidden className='size-3' />
+                {t('Prices refresh with the live catalog')}
+              </div>
+              <span
+                title={t(
+                  'Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥'
+                )}
+                className='border-primary/30 bg-primary/5 text-muted-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] tracking-wide'
+              >
+                <ArrowLeftRight
+                  aria-hidden
+                  className='text-primary/70 size-3'
+                />
+                {t(
+                  'Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥'
+                )}
+              </span>
+            </div>
           </header>
 
           <div className='grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]'>

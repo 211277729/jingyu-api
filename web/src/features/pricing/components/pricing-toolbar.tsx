@@ -86,7 +86,8 @@ export function PricingToolbar(props: PricingToolbarProps) {
   const sortLabels = getSortLabels(t)
 
   return (
-    <div className='bg-card rounded-xl border p-3'>
+    <div className='sticky top-[calc(var(--app-header-height)+0.75rem)] z-20'>
+      <div className='border-border/60 bg-background/85 rounded-2xl border p-2.5 shadow-lg shadow-black/[0.04] backdrop-blur-md dark:shadow-black/20'>
       <div className='flex flex-wrap items-center justify-between gap-3'>
         <div className='flex items-center gap-2'>
           <Button
@@ -105,14 +106,18 @@ export function PricingToolbar(props: PricingToolbarProps) {
             )}
           </Button>
 
-          <div className='text-muted-foreground flex items-baseline gap-1 text-sm'>
+          <div className='text-muted-foreground flex items-baseline gap-1 font-mono text-sm'>
+            <span
+              aria-hidden
+              className='bg-primary/70 mr-0.5 inline-block h-3.5 w-0.5 self-center rounded-full'
+            />
             <span className='text-foreground font-semibold tabular-nums'>
               {props.filteredCount.toLocaleString()}
             </span>
             <span>{props.filteredCount === 1 ? t('model') : t('models')}</span>
             {props.totalCount != null &&
               props.filteredCount !== props.totalCount && (
-                <span className='text-muted-foreground/60 text-xs'>
+                <span className='text-muted-foreground/60 text-xs tabular-nums'>
                   / {props.totalCount.toLocaleString()}
                 </span>
               )}
@@ -189,6 +194,7 @@ export function PricingToolbar(props: PricingToolbarProps) {
             onChange={props.onViewModeChange}
           />
         </div>
+      </div>
       </div>
 
       <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>

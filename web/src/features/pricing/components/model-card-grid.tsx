@@ -116,8 +116,8 @@ export const ModelCardGrid = memo(function ModelCardGrid(
       </div>
 
       {totalPages > 1 && (
-        <div className='text-muted-foreground flex flex-col items-center justify-between gap-3 border-t px-4 py-3 text-sm sm:flex-row'>
-          <p className='text-muted-foreground'>
+        <div className='border-border/50 text-muted-foreground flex flex-col items-center justify-between gap-3 border-t px-4 py-3 text-sm sm:flex-row'>
+          <p className='text-muted-foreground font-mono text-xs tracking-wide'>
             {t('Page {{current}} of {{total}}', {
               current: currentPage,
               total: totalPages,

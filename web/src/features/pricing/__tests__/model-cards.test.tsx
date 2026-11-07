@@ -292,10 +292,14 @@ describe('model cards', () => {
       within(endpointField).getByText('openai-response, openai')
     ).toHaveAttribute('title', endpoints.join(', '))
     expect(within(endpointField).getByText('+3')).toBeVisible()
-    expect(
-      within(tagField).getByText('video-generation, high-resolution')
-    ).toHaveAttribute('title', tags.join(', '))
-    expect(within(tagField).getByText('+4')).toBeVisible()
+    // 标签改为 pill 徽标：前 3 个逐个展示，其余折叠进 +N 并保留完整列表提示
+    for (const tag of tags.slice(0, 3)) {
+      expect(within(tagField).getByText(tag)).toHaveAttribute('title', tag)
+    }
+    expect(within(tagField).getByText('+3')).toHaveAttribute(
+      'title',
+      tags.slice(3).join(', ')
+    )
     expect(
       within(screen.getByRole('group', { name: 'Pricing' })).getByText(
         'Token-based'

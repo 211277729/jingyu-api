@@ -32,8 +32,23 @@ export function EmptyState(props: EmptyStateProps) {
   const hasSearch = Boolean(props.searchQuery?.trim())
 
   return (
-    <div className='flex min-h-[320px] flex-col items-center justify-center rounded-lg border border-dashed px-6 py-12 text-center'>
-      <Search className='text-muted-foreground/40 mb-3 size-10' />
+    <div className='border-border/60 bg-card/40 relative flex min-h-[320px] flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed px-6 py-12 text-center'>
+      <div
+        aria-hidden
+        className='pointer-events-none absolute inset-0 opacity-40'
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 6%, transparent) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+          maskImage:
+            'radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 70% 70% at 50% 50%, black 20%, transparent 100%)',
+        }}
+      />
+      <div className='border-border/60 bg-background relative mb-3 flex size-12 items-center justify-center rounded-xl border shadow-sm'>
+        <Search className='text-muted-foreground/50 size-5' />
+      </div>
 
       <h3 className='text-foreground mb-1 text-base font-semibold'>
         {t('No models found')}
