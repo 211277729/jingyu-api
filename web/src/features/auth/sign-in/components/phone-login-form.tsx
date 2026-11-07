@@ -54,6 +54,7 @@ export function PhoneLoginForm({
   const [turnstileWidgetKey, setTurnstileWidgetKey] = useState(0)
   const {
     isTurnstileEnabled,
+    showTurnstileWidget,
     turnstileSiteKey,
     turnstileToken,
     setTurnstileToken,
@@ -207,7 +208,7 @@ export function PhoneLoginForm({
       </Button>
 
       {/* Turnstile */}
-      {isTurnstileEnabled && (
+      {showTurnstileWidget && (
         <div className='mt-2'>
           <Turnstile
             key={turnstileWidgetKey}

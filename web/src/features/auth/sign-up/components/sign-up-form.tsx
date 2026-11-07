@@ -18,7 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -70,6 +70,7 @@ export function SignUpForm({
   const { status } = useStatus()
   const {
     isTurnstileEnabled,
+    showTurnstileWidget,
     turnstileSiteKey,
     turnstileToken,
     setTurnstileToken,
@@ -95,6 +96,9 @@ export function SignUpForm({
       confirmPassword: '',
     },
   })
+
+  // 蜜罐：视觉隐藏输入框，机器人整页自动填表会填上这个字段。
+  const honeypotRef = useRef<HTMLInputElement | null>(null)
 
   const emailValue = form.watch('email')
   const emailVerificationRequired = !!status?.email_verification
@@ -150,6 +154,7 @@ export function SignUpForm({
         verification_code: verificationCode || undefined,
         aff_code: getAffiliateCode(),
         turnstile: turnstileToken,
+        website: honeypotRef.current?.value || undefined,
       })
 
       if (res?.success) {
@@ -328,7 +333,7 @@ export function SignUpForm({
         )}
 
         {/* Turnstile */}
-        {isTurnstileEnabled && (
+        {showTurnstileWidget && (
           <div className='mt-2'>
             <Turnstile
               key={turnstileWidgetKey}
@@ -337,6 +342,17 @@ export function SignUpForm({
             />
           </div>
         )}
+
+        {/* 蜜罐字段：对用户不可见，机器人自动填表时会被后端拒绝 */}
+        <input
+          ref={honeypotRef}
+          type='text'
+          name='website'
+          tabIndex={-1}
+          autoComplete='off'
+          aria-hidden='true'
+          className='absolute h-0 w-0 opacity-0'
+        />
 
         <LegalConsent status={status} className='mt-1' />
 

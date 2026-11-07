@@ -50,6 +50,7 @@ export function PhoneBindCard({ phone, enabled }: PhoneBindCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const {
     isTurnstileEnabled,
+    showTurnstileWidget,
     turnstileSiteKey: siteKey,
     turnstileToken,
     setTurnstileToken,
@@ -179,7 +180,7 @@ export function PhoneBindCard({ phone, enabled }: PhoneBindCardProps) {
             {currentPhone ? t('Update') : t('Bind')}
           </Button>
         </div>
-        {isTurnstileEnabled && (
+        {showTurnstileWidget && (
           <Turnstile
             siteKey={siteKey}
             onVerify={setTurnstileToken}

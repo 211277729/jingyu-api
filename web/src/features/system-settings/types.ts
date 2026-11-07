@@ -195,6 +195,14 @@ export type AuthSettings = {
   TurnstileCheckEnabled: boolean
   TurnstileSiteKey: string
   TurnstileSecretKey: string
+  'captcha_setting.provider': 'none' | 'turnstile' | 'pow'
+  'captcha_setting.pow_difficulty': string
+  'captcha_setting.pow_challenge_ttl': string
+  'register_limit_setting.enabled': boolean
+  'register_limit_setting.ip_num': string
+  'register_limit_setting.ip_duration_seconds': string
+  'register_limit_setting.global_num': string
+  'register_limit_setting.global_duration_seconds': string
   'passkey.enabled': boolean
   'passkey.rp_display_name': string
   'passkey.rp_id': string

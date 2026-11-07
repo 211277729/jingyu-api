@@ -43,6 +43,8 @@ export interface RegisterPayload {
   verification_code?: string
   aff_code?: string
   turnstile?: string
+  /** 蜜罐字段：视觉隐藏，正常用户不会填写；非空即机器人。 */
+  website?: string
 }
 
 export interface PasswordResetPayload {
@@ -117,6 +119,7 @@ export interface SystemStatus {
     WeChatAccountQRCodeImageURL?: string
     turnstile_check?: boolean
     turnstile_site_key?: string
+    captcha_provider?: 'none' | 'turnstile' | 'pow'
     email_verification?: boolean
     self_use_mode_enabled?: boolean
     display_in_currency?: boolean
@@ -164,6 +167,7 @@ export interface SystemStatus {
   WeChatAccountQRCodeImageURL?: string
   turnstile_check?: boolean
   turnstile_site_key?: string
+  captcha_provider?: 'none' | 'turnstile' | 'pow'
   email_verification?: boolean
   self_use_mode_enabled?: boolean
   display_in_currency?: boolean

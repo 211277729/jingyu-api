@@ -229,6 +229,11 @@ func Register(c *gin.Context) {
 		common.ApiErrorT(c, "Invalid parameters")
 		return
 	}
+	// 蜜罐字段：正常用户看不到也不会填，非空即机器人。
+	if user.Website != "" {
+		common.ApiErrorT(c, "Invalid parameters")
+		return
+	}
 	user.Username = strings.TrimSpace(user.Username)
 	user.Email = model.NormalizeEmail(user.Email)
 	if user.Username == "" {

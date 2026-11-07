@@ -56,6 +56,7 @@ export function ForgotPasswordForm({
 
   const {
     isTurnstileEnabled,
+    showTurnstileWidget,
     turnstileSiteKey,
     turnstileToken,
     setTurnstileToken,
@@ -129,7 +130,7 @@ export function ForgotPasswordForm({
           {isLoading ? <Loader2 className='animate-spin' /> : <ArrowRight />}
         </Button>
 
-        {isTurnstileEnabled && (
+        {showTurnstileWidget && (
           <div className='mt-2'>
             <Turnstile
               siteKey={turnstileSiteKey}
