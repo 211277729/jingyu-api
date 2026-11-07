@@ -16,129 +16,129 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
 
-import type { NavCategory } from '../../types'
-import { NavSearch } from '../nav-search'
+import type { NavCategory } from "../../types";
+import { NavSearch } from "../nav-search";
 
 const categories: NavCategory[] = [
   {
-    id: 'chat',
-    labelKey: 'Chat Assistants',
+    id: "chat",
+    labelKey: "Chat Assistants",
     sites: [
-      { name: 'ChatGPT', url: 'https://chatgpt.com' },
-      { name: 'Claude', url: 'https://claude.ai' },
+      { name: "ChatGPT", url: "https://chatgpt.com" },
+      { name: "Claude", url: "https://claude.ai" },
     ],
   },
   {
-    id: 'coding',
-    labelKey: 'Coding',
+    id: "coding",
+    labelKey: "Coding",
     sites: [
-      { name: 'GitHub Copilot', url: 'https://github.com/features/copilot' },
+      { name: "GitHub Copilot", url: "https://github.com/features/copilot" },
     ],
   },
-]
+];
 
 function setup() {
-  const onPreview = vi.fn()
-  const onSelect = vi.fn()
+  const onPreview = vi.fn();
+  const onSelect = vi.fn();
   render(
     <NavSearch
       categories={categories}
       onPreview={onPreview}
       onSelect={onSelect}
-    />
-  )
+    />,
+  );
   return {
     onPreview,
     onSelect,
-    input: screen.getByRole('combobox'),
-  }
+    input: screen.getByRole("combobox"),
+  };
 }
 
-describe('directory search field', () => {
-  it('lists the sites a query matches', async () => {
-    const { input } = setup()
-    const user = userEvent.setup()
+describe("directory search field", () => {
+  it("lists the sites a query matches", async () => {
+    const { input } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'claude')
+    await user.type(input, "claude");
 
-    expect(await screen.findByRole('option', { name: /Claude/ })).toBeVisible()
-    expect(screen.getAllByRole('option')).toHaveLength(1)
-  })
+    expect(await screen.findByRole("option", { name: /Claude/ })).toBeVisible();
+    expect(screen.getAllByRole("option")).toHaveLength(1);
+  });
 
-  it('does not open a result list before anything is typed', () => {
-    setup()
+  it("does not open a result list before anything is typed", () => {
+    setup();
 
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-  })
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
 
-  it('selects the best match on Enter', async () => {
-    const { input, onSelect } = setup()
-    const user = userEvent.setup()
+  it("selects the best match on Enter", async () => {
+    const { input, onSelect } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'github{Enter}')
+    await user.type(input, "github{Enter}");
 
-    expect(onSelect).toHaveBeenCalledTimes(1)
+    expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0]).toMatchObject({
-      kind: 'site',
-      site: { name: 'GitHub Copilot' },
-    })
-  })
+      kind: "site",
+      site: { name: "GitHub Copilot" },
+    });
+  });
 
-  it('moves the active option with the arrow keys', async () => {
-    const { input } = setup()
-    const user = userEvent.setup()
+  it("moves the active option with the arrow keys", async () => {
+    const { input } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'a')
-    const options = await screen.findAllByRole('option')
-    expect(options.length).toBeGreaterThan(1)
-    expect(options[0]).toHaveAttribute('aria-selected', 'true')
+    await user.type(input, "a");
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toBeGreaterThan(1);
+    expect(options[0]).toHaveAttribute("aria-selected", "true");
 
-    await user.keyboard('{ArrowDown}')
+    await user.keyboard("{ArrowDown}");
 
-    expect(screen.getAllByRole('option')[1]).toHaveAttribute(
-      'aria-selected',
-      'true'
-    )
-  })
+    expect(screen.getAllByRole("option")[1]).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
 
-  it('clears the query and the preview on Escape', async () => {
-    const { input, onPreview } = setup()
-    const user = userEvent.setup()
+  it("clears the query and the preview on Escape", async () => {
+    const { input, onPreview } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'claude')
-    onPreview.mockClear()
+    await user.type(input, "claude");
+    onPreview.mockClear();
 
-    await user.keyboard('{Escape}')
+    await user.keyboard("{Escape}");
 
-    expect(input).toHaveValue('')
-    expect(onPreview).toHaveBeenCalledWith(null)
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-  })
+    expect(input).toHaveValue("");
+    expect(onPreview).toHaveBeenCalledWith(null);
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
 
-  it('previews the best match while typing, without waiting for Enter', async () => {
-    const { input, onPreview } = setup()
-    const user = userEvent.setup()
+  it("previews the best match while typing, without waiting for Enter", async () => {
+    const { input, onPreview } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'claude')
+    await user.type(input, "claude");
 
     await waitFor(() =>
       expect(onPreview).toHaveBeenCalledWith(
-        expect.objectContaining({ kind: 'site' })
-      )
-    )
-  })
+        expect.objectContaining({ kind: "site" }),
+      ),
+    );
+  });
 
-  it('reports when nothing matches', async () => {
-    const { input } = setup()
-    const user = userEvent.setup()
+  it("reports when nothing matches", async () => {
+    const { input } = setup();
+    const user = userEvent.setup();
 
-    await user.type(input, 'midjourney')
+    await user.type(input, "midjourney");
 
-    expect(await screen.findByText('No matching tools')).toBeVisible()
-    expect(screen.queryAllByRole('option')).toHaveLength(0)
-  })
-})
+    expect(await screen.findByText("No matching tools")).toBeVisible();
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+  });
+});

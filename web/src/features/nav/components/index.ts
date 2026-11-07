@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-export { CategoryNav } from './category-nav'
-export { NavSearch } from './nav-search'
-export { SiteCard } from './site-card'
+export { BackToTopButton } from "./back-to-top";
+export { CategoryNav } from "./category-nav";
+export { NavSearch } from "./nav-search";
+export { SiteCard } from "./site-card";

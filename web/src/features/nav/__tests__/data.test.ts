@@ -16,65 +16,65 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from "vitest";
 
-import { NAV_CATEGORIES, NAV_SITE_COUNT } from '../constants'
+import { NAV_CATEGORIES, NAV_SITE_COUNT } from "../constants";
 
-describe('AI navigation data', () => {
-  it('keeps every category id and label key unique', () => {
-    const ids = NAV_CATEGORIES.map((category) => category.id)
-    const labels = NAV_CATEGORIES.map((category) => category.labelKey)
+describe("AI navigation data", () => {
+  it("keeps every category id and label key unique", () => {
+    const ids = NAV_CATEGORIES.map((category) => category.id);
+    const labels = NAV_CATEGORIES.map((category) => category.labelKey);
 
-    expect(new Set(ids).size).toBe(ids.length)
-    expect(new Set(labels).size).toBe(labels.length)
-  })
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(new Set(labels).size).toBe(labels.length);
+  });
 
-  it('keeps every category id usable as a DOM anchor', () => {
+  it("keeps every category id usable as a DOM anchor", () => {
     for (const category of NAV_CATEGORIES) {
-      expect(category.id).toMatch(/^[a-z][a-z0-9-]*$/)
-      expect(category.sites.length).toBeGreaterThan(0)
+      expect(category.id).toMatch(/^[a-z][a-z0-9-]*$/);
+      expect(category.sites.length).toBeGreaterThan(0);
     }
-  })
+  });
 
-  it('lists sites whose target is an absolute https URL', () => {
+  it("lists sites whose target is an absolute https URL", () => {
     for (const category of NAV_CATEGORIES) {
       for (const site of category.sites) {
-        const url = new URL(site.url)
+        const url = new URL(site.url);
 
-        expect(url.protocol).toBe('https:')
-        expect(site.name.trim()).not.toBe('')
+        expect(url.protocol).toBe("https:");
+        expect(site.name.trim()).not.toBe("");
       }
     }
-  })
+  });
 
-  it('lists every site once', () => {
+  it("lists every site once", () => {
     const urls = NAV_CATEGORIES.flatMap((category) =>
-      category.sites.map((site) => site.url)
-    )
+      category.sites.map((site) => site.url),
+    );
 
-    expect(new Set(urls).size).toBe(urls.length)
-    expect(NAV_SITE_COUNT).toBe(urls.length)
-  })
+    expect(new Set(urls).size).toBe(urls.length);
+    expect(NAV_SITE_COUNT).toBe(urls.length);
+  });
 
-  it('does not repeat a curated site when the directory lists it too', () => {
-    const chat = NAV_CATEGORIES.find((category) => category.id === 'chat')
+  it("does not repeat a curated site when the directory lists it too", () => {
+    const chat = NAV_CATEGORIES.find((category) => category.id === "chat");
 
     const chatgpt = chat?.sites.filter(
-      (site) => site.url === 'https://chatgpt.com'
-    )
+      (site) => site.url === "https://chatgpt.com",
+    );
 
-    expect(chatgpt).toHaveLength(1)
-  })
+    expect(chatgpt).toHaveLength(1);
+  });
 
-  it('renders curated entries before the generated directory', () => {
-    const chat = NAV_CATEGORIES.find((category) => category.id === 'chat')
+  it("renders curated entries before the generated directory", () => {
+    const chat = NAV_CATEGORIES.find((category) => category.id === "chat");
 
-    expect(chat?.sites[0]?.name).toBe('ChatGPT')
-    expect(chat?.sites.length).toBeGreaterThan(8)
-  })
+    expect(chat?.sites[0]?.name).toBe("ChatGPT");
+    expect(chat?.sites.length).toBeGreaterThan(8);
+  });
 
-  it('covers the generated directory beyond the curated picks', () => {
-    expect(NAV_CATEGORIES.length).toBeGreaterThanOrEqual(16)
-    expect(NAV_SITE_COUNT).toBeGreaterThan(300)
-  })
-})
+  it("covers the generated directory beyond the curated picks", () => {
+    expect(NAV_CATEGORIES.length).toBeGreaterThanOrEqual(16);
+    expect(NAV_SITE_COUNT).toBeGreaterThan(300);
+  });
+});
