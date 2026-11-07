@@ -23,7 +23,6 @@ import type { Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import * as z from 'zod'
 
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -55,17 +54,11 @@ import { SettingsSection } from '../components/settings-section'
 import { useSettingsForm } from '../hooks/use-settings-form'
 import { useUpdateOption } from '../hooks/use-update-option'
 
-// 这三个字段后端仍以原始 quota 整数存储；表单层按站点显示货币金额换算
-const QUOTA_AMOUNT_KEYS = new Set([
-  'QuotaForNewUser',
-  'QuotaForInviter',
-  'QuotaForInvitee',
-])
+// 此字段后端仍以原始 quota 整数存储；表单层按站点显示货币金额换算
+const QUOTA_AMOUNT_KEYS = new Set(['QuotaForNewUser'])
 
 const quotaSchema = z.object({
   QuotaForNewUser: z.coerce.number().min(0),
-  QuotaForInviter: z.coerce.number().min(0),
-  QuotaForInvitee: z.coerce.number().min(0),
   TopUpLink: z.string(),
   quota_setting: z.object({
     enable_free_model_pre_consume: z.boolean(),
@@ -92,13 +85,11 @@ type QuotaFormValues = z.infer<typeof quotaSchema>
 type QuotaInputValue = number | ''
 
 type QuotaSettingsSectionProps = {
-  // defaultValues 中三个 Quota* 字段为原始 quota 整数；表单内部以货币金额表示
+  // defaultValues 中 Quota* 字段为原始 quota 整数；表单内部以货币金额表示
   defaultValues: QuotaFormValues
-  complianceConfirmed?: boolean
 }
 export function QuotaSettingsSection({
   defaultValues,
-  complianceConfirmed = true,
 }: QuotaSettingsSectionProps) {
   const { t } = useTranslation()
   const updateOption = useUpdateOption()
@@ -119,8 +110,6 @@ export function QuotaSettingsSection({
       defaultValues: {
         ...defaultValues,
         QuotaForNewUser: quotaUnitsToDollars(defaultValues.QuotaForNewUser),
-        QuotaForInviter: quotaUnitsToDollars(defaultValues.QuotaForInviter),
-        QuotaForInvitee: quotaUnitsToDollars(defaultValues.QuotaForInvitee),
       },
       onSubmit: async (_data, changedFields) => {
         for (const [key, value] of Object.entries(changedFields)) {
@@ -137,16 +126,6 @@ export function QuotaSettingsSection({
   return (
     <SettingsSection title={t('Quota Settings')}>
       <FormNavigationGuard when={isDirty} />
-
-      {!complianceConfirmed ? (
-        <Alert variant='destructive'>
-          <AlertDescription>
-            {t(
-              'Non-zero invitation rewards require compliance confirmation in Payment Gateway settings.'
-            )}
-          </AlertDescription>
-        </Alert>
-      ) : null}
 
       <Form {...form}>
         <SettingsForm onSubmit={handleSubmit}>
@@ -264,60 +243,6 @@ export function QuotaSettingsSection({
                     {t(
                       'Extra multiplier applied only when quota is deducted. It multiplies the effective group ratio, so 1.2 charges 20% more while every user-facing price, group ratio, and usage log still shows the configured value. Set to 1 to disable.'
                     )}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='QuotaForInviter'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('Inviter Reward')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      min={0}
-                      step='0.01'
-                      value={formatAmountInput(field.value)}
-                      onChange={handleNumberChange(field.onChange)}
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {t(
-                      'Actual amount given to users who invite others (0 disables)'
-                    )}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='QuotaForInvitee'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('Invitee Reward')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      min={0}
-                      step='0.01'
-                      value={formatAmountInput(field.value)}
-                      onChange={handleNumberChange(field.onChange)}
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    {t('Actual amount given to invited users (0 disables)')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

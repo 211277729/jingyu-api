@@ -20,6 +20,11 @@ type GeneralSetting struct {
 	CustomCurrencySymbol string `json:"custom_currency_symbol"`
 	// 自定义货币与美元汇率（1 USD = X Custom）
 	CustomCurrencyExchangeRate float64 `json:"custom_currency_exchange_rate"`
+	// 同步折算汇率：同步上游倍率时，源价格（真实美元）折算成本站价格的汇率
+	// （1 真实 USD = X 本站额度单位）。<=0 表示跟随站点展示货币汇率。
+	// 与展示汇率分开：站点采用"1 单位额度 = 1 人民币"之类 1:1 计价时，
+	// 展示汇率为 1，而同步上游美元价需要真实汇率（如 6.7）。
+	RealUsdExchangeRate float64 `json:"real_usd_exchange_rate"`
 	// HideMappedModelName 隐藏模型映射：开启后，命中渠道模型映射的请求
 	// 其返回给客户端的响应 JSON 里 model/modelVersion 字段会被改写为请求模型名，
 	// 上游真实路由仅保留在管理员使用日志的 admin_info 中。
@@ -36,6 +41,8 @@ var generalSetting = GeneralSetting{
 	QuotaDisplayType:           QuotaDisplayTypeUSD,
 	CustomCurrencySymbol:       "¤",
 	CustomCurrencyExchangeRate: 1.0,
+	// 默认 0：跟随站点展示货币汇率，保持上游同步的既有行为
+	RealUsdExchangeRate: 0,
 	// 默认开启：模型映射属于路由细节，客户端不应从响应体回推出上游模型。
 	HideMappedModelName: true,
 }

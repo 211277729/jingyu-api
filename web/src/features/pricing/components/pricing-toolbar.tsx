@@ -88,113 +88,121 @@ export function PricingToolbar(props: PricingToolbarProps) {
   return (
     <div className='sticky top-[calc(var(--app-header-height)+0.75rem)] z-20'>
       <div className='border-border/60 bg-background/85 rounded-2xl border p-2.5 shadow-lg shadow-black/[0.04] backdrop-blur-md dark:shadow-black/20'>
-      <div className='flex flex-wrap items-center justify-between gap-3'>
-        <div className='flex items-center gap-2'>
-          <Button
-            type='button'
-            variant='outline'
-            size='sm'
-            onClick={() => setMobileFiltersOpen(true)}
-            className='gap-1.5 xl:hidden'
-          >
-            <Filter className='size-4' />
-            {t('Filter')}
-            {props.activeFilterCount > 0 && (
-              <Badge className='ml-0.5 size-5 justify-center p-0 text-[10px]'>
-                {props.activeFilterCount}
-              </Badge>
-            )}
-          </Button>
-
-          <div className='text-muted-foreground flex items-baseline gap-1 font-mono text-sm'>
-            <span
-              aria-hidden
-              className='bg-primary/70 mr-0.5 inline-block h-3.5 w-0.5 self-center rounded-full'
-            />
-            <span className='text-foreground font-semibold tabular-nums'>
-              {props.filteredCount.toLocaleString()}
-            </span>
-            <span>{props.filteredCount === 1 ? t('model') : t('models')}</span>
-            {props.totalCount != null &&
-              props.filteredCount !== props.totalCount && (
-                <span className='text-muted-foreground/60 text-xs tabular-nums'>
-                  / {props.totalCount.toLocaleString()}
-                </span>
+        <div className='flex flex-wrap items-center justify-between gap-3'>
+          <div className='flex items-center gap-2'>
+            <Button
+              type='button'
+              variant='outline'
+              size='sm'
+              onClick={() => setMobileFiltersOpen(true)}
+              className='gap-1.5 xl:hidden'
+            >
+              <Filter className='size-4' />
+              {t('Filter')}
+              {props.activeFilterCount > 0 && (
+                <Badge className='ml-0.5 size-5 justify-center p-0 text-[10px]'>
+                  {props.activeFilterCount}
+                </Badge>
               )}
+            </Button>
+
+            <div className='text-muted-foreground flex items-baseline gap-1 font-mono text-sm'>
+              <span
+                aria-hidden
+                className='bg-primary/70 mr-0.5 inline-block h-3.5 w-0.5 self-center rounded-full'
+              />
+              <span className='text-foreground font-semibold tabular-nums'>
+                {props.filteredCount.toLocaleString()}
+              </span>
+              <span>
+                {props.filteredCount === 1 ? t('model') : t('models')}
+              </span>
+              {props.totalCount != null &&
+                props.filteredCount !== props.totalCount && (
+                  <span className='text-muted-foreground/60 text-xs tabular-nums'>
+                    / {props.totalCount.toLocaleString()}
+                  </span>
+                )}
+            </div>
+          </div>
+
+          <div className='flex min-w-0 flex-wrap items-center gap-2'>
+            <ToggleGroup
+              value={[props.showRechargePrice ? 'recharge' : 'standard']}
+              onValueChange={(values) => {
+                if (values.length > 0) {
+                  props.onRechargePriceChange(values[0] === 'recharge')
+                }
+              }}
+              variant='outline'
+              size='sm'
+              aria-label={t('Price display mode')}
+            >
+              <ToggleGroupItem value='standard'>
+                {t('Standard')}
+              </ToggleGroupItem>
+              <ToggleGroupItem value='recharge'>
+                {t('Recharge')}
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <ToggleGroup
+              value={[props.tokenUnit]}
+              onValueChange={(values) => {
+                if (values[0] === 'M' || values[0] === 'K') {
+                  props.onTokenUnitChange(values[0])
+                }
+              }}
+              variant='outline'
+              size='sm'
+              aria-label={t('Token unit')}
+            >
+              <ToggleGroupItem value='M'>/1M</ToggleGroupItem>
+              <ToggleGroupItem value='K'>/1K</ToggleGroupItem>
+            </ToggleGroup>
+
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    className='h-8 gap-1.5 px-3 text-xs'
+                  />
+                }
+              >
+                <ArrowUpDown className='size-3.5' />
+                <span>
+                  {sortLabels[props.sortBy as SortOption] || t('Sort')}
+                </span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end' className='w-44'>
+                <DropdownMenuGroup>
+                  {Object.entries(sortLabels).map(([value, label]) => (
+                    <DropdownMenuItem
+                      key={value}
+                      onClick={() => props.onSortChange(value)}
+                      className='gap-2'
+                    >
+                      <Check
+                        className={cn(
+                          'size-4 shrink-0',
+                          props.sortBy === value ? 'opacity-100' : 'opacity-0'
+                        )}
+                      />
+                      {label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DataTableViewModeToggle
+              value={props.viewMode}
+              onChange={props.onViewModeChange}
+            />
           </div>
         </div>
-
-        <div className='flex min-w-0 flex-wrap items-center gap-2'>
-          <ToggleGroup
-            value={[props.showRechargePrice ? 'recharge' : 'standard']}
-            onValueChange={(values) => {
-              if (values.length > 0) {
-                props.onRechargePriceChange(values[0] === 'recharge')
-              }
-            }}
-            variant='outline'
-            size='sm'
-            aria-label={t('Price display mode')}
-          >
-            <ToggleGroupItem value='standard'>{t('Standard')}</ToggleGroupItem>
-            <ToggleGroupItem value='recharge'>{t('Recharge')}</ToggleGroupItem>
-          </ToggleGroup>
-          <ToggleGroup
-            value={[props.tokenUnit]}
-            onValueChange={(values) => {
-              if (values[0] === 'M' || values[0] === 'K') {
-                props.onTokenUnitChange(values[0])
-              }
-            }}
-            variant='outline'
-            size='sm'
-            aria-label={t('Token unit')}
-          >
-            <ToggleGroupItem value='M'>/1M</ToggleGroupItem>
-            <ToggleGroupItem value='K'>/1K</ToggleGroupItem>
-          </ToggleGroup>
-
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  className='h-8 gap-1.5 px-3 text-xs'
-                />
-              }
-            >
-              <ArrowUpDown className='size-3.5' />
-              <span>{sortLabels[props.sortBy as SortOption] || t('Sort')}</span>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end' className='w-44'>
-              <DropdownMenuGroup>
-                {Object.entries(sortLabels).map(([value, label]) => (
-                  <DropdownMenuItem
-                    key={value}
-                    onClick={() => props.onSortChange(value)}
-                    className='gap-2'
-                  >
-                    <Check
-                      className={cn(
-                        'size-4 shrink-0',
-                        props.sortBy === value ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    {label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DataTableViewModeToggle
-            value={props.viewMode}
-            onChange={props.onViewModeChange}
-          />
-        </div>
-      </div>
       </div>
 
       <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>

@@ -461,7 +461,7 @@ export function RatioSettingsCard({
     groups: 'Group ratios',
     'tool-prices': 'Tool prices',
     'upstream-sync': 'Upstream price sync',
-    'official-price': 'Official price',
+    'official-price': 'Model official price',
   }
   const tabsGridClass =
     {

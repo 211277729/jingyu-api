@@ -63,8 +63,6 @@ const BILLING_SECTIONS = [
       <QuotaSettingsSection
         defaultValues={{
           QuotaForNewUser: settings.QuotaForNewUser,
-          QuotaForInviter: settings.QuotaForInviter,
-          QuotaForInvitee: settings.QuotaForInvitee,
           TopUpLink: settings.TopUpLink,
           quota_setting: {
             trust_quota_usd: settings['quota_setting.trust_quota_usd'],
@@ -77,10 +75,6 @@ const BILLING_SECTIONS = [
             markup: settings['hidden_markup_setting.markup'] ?? 1,
           },
         }}
-        complianceConfirmed={
-          (settings['payment_setting.compliance_confirmed'] ?? false) &&
-          settings['payment_setting.compliance_terms_version'] === 'v1'
-        }
       />
     ),
   },
@@ -238,7 +232,13 @@ const BILLING_SECTIONS = [
           firstPercent: settings['aff_rebate_setting.first_percent'],
           percent: settings['aff_rebate_setting.percent'],
           firstDays: settings['aff_rebate_setting.first_days'],
+          QuotaForInviter: settings.QuotaForInviter,
+          QuotaForInvitee: settings.QuotaForInvitee,
         }}
+        complianceConfirmed={
+          (settings['payment_setting.compliance_confirmed'] ?? false) &&
+          settings['payment_setting.compliance_terms_version'] === 'v1'
+        }
       />
     ),
   },

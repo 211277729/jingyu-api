@@ -25,6 +25,7 @@ import { toast } from 'sonner'
 import { ErrorState } from '@/components/error-state'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
+import { Input } from '@/components/ui/input'
 import {
   buildPricingChanges,
   getModelPricing,
@@ -46,6 +47,8 @@ import {
 import { useSystemConfigStore } from '@/stores/system-config-store'
 
 import { fetchUpstreamRatios, getUpstreamChannels } from '../api'
+import { getOptionValue, useSystemOptions } from '../hooks/use-system-options'
+import { useUpdateOption } from '../hooks/use-update-option'
 import type {
   DifferencesMap,
   PricingSyncModels,
@@ -94,6 +97,10 @@ type SyncPreview = {
   exchangeRateSummary?: string
 }
 
+// 同步折算汇率 option key（general_setting.real_usd_exchange_rate）：
+// 源价格是真实美元，折算到本站价格不能直接用展示汇率（站点 1:1 计价时展示汇率为 1）。
+const SYNC_RATE_OPTION_KEY = 'general_setting.real_usd_exchange_rate'
+
 export function UpstreamRatioSync() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
@@ -102,7 +109,55 @@ export function UpstreamRatioSync() {
     () => getSitePricingCurrency(currencyConfig),
     [currencyConfig]
   )
-  const rate = isValidPricingCurrency(currency) ? currency.exchangeRate : null
+  // 有效同步折算汇率：优先取配置值（真实 USD -> 本站额度单位），
+  // 未配置（<=0）时回落站点展示货币汇率，保持既有行为。
+  const { data: optionsData } = useSystemOptions()
+  const syncRateSetting = useMemo(() => {
+    const options = optionsData?.data
+    // /api/option/ 的 data 才是 [{key,value}] 数组；其它形状（含测试兜底
+    // mock 返回的定价结构）一律按未配置处理，避免误读或崩溃。
+    return getOptionValue(Array.isArray(options) ? options : undefined, {
+      [SYNC_RATE_OPTION_KEY]: 0,
+    })[SYNC_RATE_OPTION_KEY]
+  }, [optionsData])
+  const rate = useMemo(() => {
+    const configured = Number(syncRateSetting)
+    if (Number.isFinite(configured) && configured > 0) return configured
+    return isValidPricingCurrency(currency) ? currency.exchangeRate : null
+  }, [syncRateSetting, currency])
+  // ×/÷ 标签与逐行折算展示用同步折算汇率；站点价格预览仍用展示货币
+  const syncCurrency = useMemo(
+    () =>
+      isValidPricingCurrency(currency) && rate !== null
+        ? { ...currency, exchangeRate: rate }
+        : null,
+    [currency, rate]
+  )
+  const updateOption = useUpdateOption()
+  const [rateDraft, setRateDraft] = useState('')
+  useEffect(() => {
+    setRateDraft(Number(syncRateSetting) > 0 ? String(syncRateSetting) : '')
+  }, [syncRateSetting])
+  const handleRateBlur = () => {
+    const raw = rateDraft.trim()
+    let next = 0
+    if (raw !== '') {
+      const parsed = Number.parseFloat(raw)
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        setRateDraft(Number(syncRateSetting) > 0 ? String(syncRateSetting) : '')
+        toast.warning(t('The sync exchange rate must be a non-negative number'))
+        return
+      }
+      next = parsed
+    }
+    if (next === syncRateSetting) return
+    updateOption
+      .mutateAsync({ key: SYNC_RATE_OPTION_KEY, value: next })
+      .then(() => toast.success(t('Sync exchange rate saved')))
+      .catch((error: Error) =>
+        handleServerError(error, t('Failed to save sync exchange rate'))
+      )
+  }
   const [pricingBaseline, setPricingBaseline] =
     useState<ModelPricingConfig | null>(null)
   const [channelDialogOpen, setChannelDialogOpen] = useState(false)
@@ -367,12 +422,12 @@ export function UpstreamRatioSync() {
           pricingBaseline.options,
           after
         ),
-        exchangeRateSummary: isValidPricingCurrency(currency)
-          ? t('Current exchange rate: 1 USD = {{rate}} {{currency}}', {
-              rate: String(rate),
-              currency: currency.label,
-            })
-          : undefined,
+        exchangeRateSummary:
+          rate !== null
+            ? t('Sync conversion: 1 USD = {{rate}} site units', {
+                rate: String(rate),
+              })
+            : undefined,
       })
       syncMutation.reset()
       setConflictDialogOpen(true)
@@ -390,19 +445,38 @@ export function UpstreamRatioSync() {
       <div className='flex shrink-0 flex-wrap items-center gap-2'>
         <PriceAdjustmentSelect
           value={null}
-          currency={currency}
+          currency={syncCurrency}
           label={t('Set selected prices')}
           disabled={isLoading || !Object.keys(selections).length}
           onChange={(mode) => handleAdjustPrices(Object.keys(selections), mode)}
         />
         <span className='text-muted-foreground text-xs'>
-          {isValidPricingCurrency(currency)
-            ? t('Current exchange rate: 1 USD = {{rate}} {{currency}}', {
+          {rate !== null
+            ? t('Sync conversion: 1 USD = {{rate}} site units', {
                 rate: String(rate),
-                currency: currency.label,
               })
             : t('A valid site exchange rate is required.')}
         </span>
+        <label
+          htmlFor='upstream-sync-exchange-rate'
+          className='text-muted-foreground ml-auto text-xs whitespace-nowrap'
+          title={t(
+            'Upstream prices are real USD. This rate converts them into site prices; leave empty or 0 to follow the site display rate.'
+          )}
+        >
+          {t('Sync exchange rate')}
+        </label>
+        <Input
+          id='upstream-sync-exchange-rate'
+          type='number'
+          min={0}
+          step='0.01'
+          className='h-7 w-24 font-mono text-xs tabular-nums'
+          value={rateDraft}
+          onChange={(event) => setRateDraft(event.target.value)}
+          onBlur={handleRateBlur}
+          placeholder='6.7'
+        />
       </div>
       <div className='min-h-0 flex-1'>
         {fetchMutation.isError ? (
@@ -436,7 +510,7 @@ export function UpstreamRatioSync() {
             selectedSources={selectedSources}
             adjustments={adjustments}
             adjustedPrices={adjustedPrices}
-            currency={currency}
+            currency={syncCurrency}
             onAdjustPrices={handleAdjustPrices}
             isDisabled={isLoading}
             isSyncing={fetchMutation.isPending || loadingBaseline}

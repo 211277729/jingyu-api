@@ -17,11 +17,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { zodResolver } from '@hookform/resolvers/zod'
+import type { ChangeEvent } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Form,
   FormControl,
@@ -32,6 +34,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import {
+  formatAmountInput,
+  parseQuotaFromDollars,
+  quotaUnitsToDollars,
+} from '@/lib/format'
 
 import { SettingsForm } from '../components/settings-form-layout'
 import { SettingsPageFormActions } from '../components/settings-page-context'
@@ -53,30 +60,48 @@ const schema = (t: (key: string) => string) =>
       .number()
       .int(t('Days must be a whole number'))
       .min(0, t('Days cannot be negative')),
+    QuotaForInviter: z.coerce.number().min(0),
+    QuotaForInvitee: z.coerce.number().min(0),
   })
 
+type QuotaInputValue = number | ''
 type FormValues = {
   firstPercent: string | number
   percent: string | number
   firstDays: string | number
+  QuotaForInviter: QuotaInputValue
+  QuotaForInvitee: QuotaInputValue
 }
 type ParsedValues = {
   firstPercent: number
   percent: number
   firstDays: number
+  QuotaForInviter: number
+  QuotaForInvitee: number
 }
 
 export function AffRebateSettingsSection({
   defaultValues,
+  complianceConfirmed = true,
 }: {
   defaultValues: {
     firstPercent: number
     percent: number
     firstDays: number
+    // 以下两个字段为原始 quota 整数；表单内部以货币金额表示
+    QuotaForInviter: number
+    QuotaForInvitee: number
   }
+  complianceConfirmed?: boolean
 }) {
   const { t } = useTranslation()
   const updateOption = useUpdateOption()
+  const handleNumberChange =
+    (onChange: (value: QuotaInputValue) => void) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const value = event.currentTarget.valueAsNumber
+      onChange(Number.isNaN(value) ? '' : value)
+    }
 
   const form = useForm<FormValues, unknown, ParsedValues>({
     resolver: zodResolver(schema(t)) as unknown as Resolver<
@@ -88,6 +113,8 @@ export function AffRebateSettingsSection({
       firstPercent: formatPercent(defaultValues.firstPercent),
       percent: formatPercent(defaultValues.percent),
       firstDays: defaultValues.firstDays,
+      QuotaForInviter: quotaUnitsToDollars(defaultValues.QuotaForInviter),
+      QuotaForInvitee: quotaUnitsToDollars(defaultValues.QuotaForInvitee),
     },
   })
 
@@ -114,6 +141,24 @@ export function AffRebateSettingsSection({
         value: String(values.firstDays),
       })
     }
+    if (
+      values.QuotaForInviter !==
+      quotaUnitsToDollars(defaultValues.QuotaForInviter)
+    ) {
+      updates.push({
+        key: 'QuotaForInviter',
+        value: String(parseQuotaFromDollars(values.QuotaForInviter)),
+      })
+    }
+    if (
+      values.QuotaForInvitee !==
+      quotaUnitsToDollars(defaultValues.QuotaForInvitee)
+    ) {
+      updates.push({
+        key: 'QuotaForInvitee',
+        value: String(parseQuotaFromDollars(values.QuotaForInvitee)),
+      })
+    }
 
     if (updates.length === 0) {
       toast.info(t('No changes to save'))
@@ -128,6 +173,8 @@ export function AffRebateSettingsSection({
       firstPercent: formatPercent(values.firstPercent),
       percent: formatPercent(values.percent),
       firstDays: values.firstDays,
+      QuotaForInviter: values.QuotaForInviter,
+      QuotaForInvitee: values.QuotaForInvitee,
     })
     toast.success(t('Settings saved successfully'))
   }
@@ -142,6 +189,15 @@ export function AffRebateSettingsSection({
             isSaveDisabled={!isDirty}
             saveLabel='Save invite reward settings'
           />
+          {!complianceConfirmed ? (
+            <Alert variant='destructive'>
+              <AlertDescription>
+                {t(
+                  'Non-zero invitation rewards require compliance confirmation in Payment Gateway settings.'
+                )}
+              </AlertDescription>
+            </Alert>
+          ) : null}
           <p className='text-muted-foreground text-sm'>
             {t(
               'When a friend tops up (online payment or redemption code), the inviter earns a percentage of the credited amount as pending rewards. Set a percentage to 0 to disable it.'
@@ -220,6 +276,62 @@ export function AffRebateSettingsSection({
                     {t(
                       'Only a first top-up made within this many days after registration earns the first top-up rebate; 0 means no limit'
                     )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className='grid gap-6 sm:grid-cols-2'>
+            <FormField
+              control={form.control}
+              name='QuotaForInviter'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Inviter Reward')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step='0.01'
+                      value={formatAmountInput(field.value)}
+                      onChange={handleNumberChange(field.onChange)}
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t(
+                      'Actual amount given to users who invite others (0 disables)'
+                    )}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='QuotaForInvitee'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('Invitee Reward')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      min={0}
+                      step='0.01'
+                      value={formatAmountInput(field.value)}
+                      onChange={handleNumberChange(field.onChange)}
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    {t('Actual amount given to invited users (0 disables)')}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -114,8 +114,10 @@ export function OfficialPriceSyncDialog(props: OfficialPriceSyncDialogProps) {
     let unmatched = 0
     let manual = 0
     for (const model of report.models) {
-      if (model.options.length === 0) unmatched += 1
-      else if (model.options.length > 1) ambiguous += 1
+      // 后端旧版本对未匹配模型会把 options 序列化成 null,容错为空数组
+      const options = model.options ?? []
+      if (options.length === 0) unmatched += 1
+      else if (options.length > 1) ambiguous += 1
       else auto += 1
       if (model.existing_source === 'manual') manual += 1
     }
@@ -202,6 +204,8 @@ export function OfficialPriceSyncDialog(props: OfficialPriceSyncDialogProps) {
               {report.models.map((model) => {
                 const value = mappings[model.site_model] ?? ''
                 const manuallyEdited = model.existing_source === 'manual'
+                // 后端旧版本对未匹配模型会把 options 序列化成 null,容错为空数组
+                const options = model.options ?? []
                 return (
                   <div
                     key={model.site_model}
@@ -228,15 +232,15 @@ export function OfficialPriceSyncDialog(props: OfficialPriceSyncDialogProps) {
                         {t('Manually edited')}
                       </Badge>
                     )}
-                    {model.options.length === 0 ? (
+                    {options.length === 0 ? (
                       <Badge variant='outline'>{t('Unmatched')}</Badge>
-                    ) : model.options.length > 1 ? (
+                    ) : options.length > 1 ? (
                       <Badge
                         variant='outline'
                         className='border-amber-500 text-amber-600 dark:text-amber-400'
                       >
                         {t('{{count}} candidates', {
-                          count: model.options.length,
+                          count: options.length,
                         })}
                       </Badge>
                     ) : (
@@ -245,9 +249,9 @@ export function OfficialPriceSyncDialog(props: OfficialPriceSyncDialogProps) {
                     <div className='min-w-52 flex-1'>
                       <Combobox
                         options={
-                          model.options.length === 0
+                          options.length === 0
                             ? globalOptions
-                            : renderRowOptions(model.options, true)
+                            : renderRowOptions(options, true)
                         }
                         value={value}
                         onValueChange={(next) =>

@@ -444,7 +444,9 @@ export const ModelCard = memo(function ModelCard(props: ModelCardProps) {
             <ModelDiscountBadge
               model={props.model}
               selectedGroup={props.selectedGroup}
-              now={billingTime === undefined ? undefined : new Date(billingTime)}
+              now={
+                billingTime === undefined ? undefined : new Date(billingTime)
+              }
             />
           </div>
           {dynamicSummary?.providerCount && (

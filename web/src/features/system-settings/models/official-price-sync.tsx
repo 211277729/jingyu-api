@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 import { useMutation } from '@tanstack/react-query'
+import { Loader2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -24,12 +25,21 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { getModelPricing } from '@/features/model-pricing/api'
 import { getCurrencyDisplay } from '@/lib/currency'
 import { handleServerError } from '@/lib/handle-server-error'
 
 import {
   applyOfficialPrice,
+  fetchUpstreamRatios,
   getOfficialPriceConfig,
   syncOfficialPrice,
   updateOfficialPriceConfig,
@@ -39,7 +49,14 @@ import type {
   OfficialPriceEntry,
   OfficialPriceMappingRef,
   OfficialPriceSyncReport,
+  PricingSyncValues,
 } from '../types'
+import {
+  OFFICIAL_CHANNEL_BASE_URL,
+  OFFICIAL_CHANNEL_ENDPOINT,
+  OFFICIAL_CHANNEL_ID,
+  OFFICIAL_CHANNEL_NAME,
+} from './constants'
 import {
   OfficialPriceSyncDialog,
   officialPriceCandidateKey,
@@ -131,10 +148,43 @@ function getDisplayCurrencySymbol(): string {
   return meta.kind === 'tokens' ? '$' : meta.symbol
 }
 
+// 官方倍率预设响应里的来源 key,与后端 ratio_sync 的 uniqueName 格式一致
+const OFFICIAL_PRESET_SOURCE_KEY = `${OFFICIAL_CHANNEL_NAME}(${OFFICIAL_CHANNEL_ID})`
+
+type OfficialPriceSyncSource = 'models-dev' | 'official-preset'
+
+// 官方倍率预设是 new-api 倍率配置,与官方价条目同为倍率口径,直接映射;
+// 只取站点启用模型,预设里本站没有的模型不进表格。
+function presetValuesToEntry(
+  model: string,
+  values: PricingSyncValues
+): OfficialPriceEntry | null {
+  const modelRatio = Number(values.model_ratio)
+  if (!Number.isFinite(modelRatio) || modelRatio < 0) return null
+  const completionRatio = Number(values.completion_ratio)
+  const cacheRatio = Number(values.cache_ratio)
+  const createCacheRatio = Number(values.create_cache_ratio)
+  const entry: OfficialPriceEntry = {
+    official_model_name: model,
+    model_ratio: roundTo6(modelRatio),
+    completion_ratio: Number.isFinite(completionRatio)
+      ? roundTo6(completionRatio)
+      : 0,
+    source: 'sync',
+  }
+  if (Number.isFinite(cacheRatio)) entry.cache_ratio = roundTo6(cacheRatio)
+  if (Number.isFinite(createCacheRatio)) {
+    entry.create_cache_ratio = roundTo6(createCacheRatio)
+  }
+  return entry
+}
+
 export function OfficialPriceSync() {
   const { t } = useTranslation()
   const [entries, setEntries] = useState<Record<string, OfficialPriceEntry>>({})
   const [entriesLoaded, setEntriesLoaded] = useState(false)
+  const [syncSource, setSyncSource] =
+    useState<OfficialPriceSyncSource>('models-dev')
   const [search, setSearch] = useState('')
   const [exchangeRate, setExchangeRate] = useState(DEFAULT_EXCHANGE_RATE)
   const [rateInputNonce, setRateInputNonce] = useState(0)
@@ -147,6 +197,10 @@ export function OfficialPriceSync() {
   )
   const [mappings, setMappings] = useState<Record<string, string | null>>({})
   const [selected, setSelected] = useState<Record<string, boolean>>({})
+  const syncSourceItems = [
+    { value: 'models-dev', label: 'models.dev' },
+    { value: 'official-preset', label: t('Official ratio preset') },
+  ]
 
   const loadEntries = useCallback(async () => {
     try {
@@ -187,6 +241,65 @@ export function OfficialPriceSync() {
     onError: (error) =>
       handleServerError(error, t('Failed to sync official prices')),
   })
+
+  // 官方倍率预设同步:预设本身就是 new-api 倍率口径,按启用模型直接映射成
+  // 官方价条目并合并进表格,用户核对后用「保存官方价配置」落盘。
+  // 与 models.dev 同步共用按钮的 pending 反馈。
+  const presetSyncMutation = useMutation({
+    mutationFn: async () => {
+      const baseline = await getModelPricing()
+      const enabledModels = new Set(
+        baseline.entries.map((entry) => entry.model_name)
+      )
+      const res = await fetchUpstreamRatios({
+        upstreams: [
+          {
+            id: OFFICIAL_CHANNEL_ID,
+            name: OFFICIAL_CHANNEL_NAME,
+            base_url: OFFICIAL_CHANNEL_BASE_URL,
+            endpoint: OFFICIAL_CHANNEL_ENDPOINT,
+          },
+        ],
+        timeout: 10,
+        include_unchanged: true,
+      })
+      if (!res.success || !res.data?.prices) {
+        throw new Error(res.message || 'Failed to fetch official ratio preset')
+      }
+      const matched: Record<string, OfficialPriceEntry> = {}
+      for (const [model, row] of Object.entries(res.data.prices)) {
+        if (!enabledModels.has(model)) continue
+        const upstream = row.upstreams[OFFICIAL_PRESET_SOURCE_KEY]
+        if (!upstream) continue
+        const entry = presetValuesToEntry(model, upstream)
+        if (entry) matched[model] = entry
+      }
+      return matched
+    },
+    onSuccess: (matched) => {
+      const count = Object.keys(matched).length
+      if (!count) {
+        toast.warning(
+          t('No matching models found in the official ratio preset')
+        )
+        return
+      }
+      setEntries((prev) => ({ ...prev, ...matched }))
+      toast.success(
+        t('{{count}} models matched from the official ratio preset', {
+          count,
+        })
+      )
+    },
+    onError: (error: Error) =>
+      handleServerError(error, t('Failed to sync official prices')),
+  })
+
+  const syncPending = syncMutation.isPending || presetSyncMutation.isPending
+  const handleSyncClick = () => {
+    if (syncSource === 'models-dev') syncMutation.mutate()
+    else presetSyncMutation.mutate()
+  }
 
   const applyMutation = useMutation({
     mutationFn: (refs: Record<string, OfficialPriceMappingRef>) =>
@@ -440,12 +553,37 @@ export function OfficialPriceSync() {
   return (
     <div className='flex min-h-0 flex-col gap-4'>
       <div className='flex flex-wrap items-center gap-2'>
-        <Button
-          size='sm'
-          onClick={() => syncMutation.mutate()}
-          disabled={syncMutation.isPending}
+        <Select
+          items={syncSourceItems}
+          value={syncSource}
+          onValueChange={(next) => {
+            if (next === 'models-dev' || next === 'official-preset') {
+              setSyncSource(next)
+            }
+          }}
         >
-          {t('Sync from models.dev')}
+          <SelectTrigger
+            className='h-8 w-44'
+            aria-label={t('Official price data source')}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent alignItemWithTrigger={false}>
+            <SelectItem value='models-dev'>models.dev</SelectItem>
+            <SelectItem value='official-preset'>
+              {t('Official ratio preset')}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Button size='sm' onClick={handleSyncClick} disabled={syncPending}>
+          {syncPending && (
+            <Loader2 className='size-4 animate-spin' aria-hidden />
+          )}
+          {syncPending
+            ? t('Syncing...')
+            : syncSource === 'models-dev'
+              ? t('Sync from models.dev')
+              : t('Sync from official ratio preset')}
         </Button>
         {entriesLoaded && (
           <Button

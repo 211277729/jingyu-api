@@ -240,7 +240,7 @@ export function Pricing() {
                 {t('Live model index')}
               </span>
             </div>
-            <h1 className='mt-4 bg-gradient-to-r from-[#3b82f6] via-[#6d5cf5] to-[#a855f7] bg-clip-text text-[clamp(2.1rem,5.5vw,3.6rem)] leading-[1.12] font-bold tracking-tight text-transparent dark:from-[#60a5fa] dark:via-[#8f7bff] dark:to-[#c084fc] sm:mt-5'>
+            <h1 className='mt-4 bg-gradient-to-r from-[#3b82f6] via-[#6d5cf5] to-[#a855f7] bg-clip-text text-[clamp(2.1rem,5.5vw,3.6rem)] leading-[1.12] font-bold tracking-tight text-transparent sm:mt-5 dark:from-[#60a5fa] dark:via-[#8f7bff] dark:to-[#c084fc]'>
               {t('Model Square')}
             </h1>
             <p className='text-muted-foreground/90 mt-3 font-mono text-xs tracking-wide sm:mt-4 sm:text-sm'>

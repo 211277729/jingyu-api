@@ -56,7 +56,7 @@ export function SearchBar(props: SearchBarProps) {
         aria-hidden
         className='from-primary/25 to-chart-2/20 pointer-events-none absolute -inset-0.5 rounded-xl bg-gradient-to-r opacity-0 blur-md transition-opacity duration-300 group-focus-within:opacity-100'
       />
-      <div className='border-border/60 bg-background/90 relative flex h-12 items-center rounded-xl border shadow-sm backdrop-blur-sm transition-colors group-focus-within:border-primary/60'>
+      <div className='border-border/60 bg-background/90 group-focus-within:border-primary/60 relative flex h-12 items-center rounded-xl border shadow-sm backdrop-blur-sm transition-colors'>
         <span
           aria-hidden
           className='bg-primary/10 text-primary ml-2 flex h-8 items-center rounded-lg px-2 font-mono text-sm font-bold'

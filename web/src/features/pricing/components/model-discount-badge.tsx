@@ -16,9 +16,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { BadgePercent } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
-import { StatusBadge } from '@/components/status-badge'
 import { cn } from '@/lib/utils'
 
 import {
@@ -33,10 +33,21 @@ interface ModelDiscountBadgeProps {
   model: PricingModel
   /** Selected group, so the badge compares the same price the user sees. */
   selectedGroup?: string
-  appearance?: 'default' | 'caption'
   className?: string
   /** Current billing time, so time-tiered models compare the same tier. */
   now?: Date
+}
+
+// 折扣力度分档:越便宜颜色越醒目。percent = 本站价 / 官方价。
+// ≥75% off(≤2.5折)红、50%-75% off(≤5折)橙、<50% off绿。
+function resolveDiscountTone(percent: number): string {
+  if (percent <= 25) {
+    return 'bg-destructive/12 text-destructive'
+  }
+  if (percent <= 50) {
+    return 'bg-warning/15 text-warning'
+  }
+  return 'bg-success/12 text-success'
 }
 
 /**
@@ -92,17 +103,18 @@ export function ModelDiscountBadge(props: ModelDiscountBadgeProps) {
     ? t('{{count}}折', { count: Number((percent / 10).toFixed(1)) })
     : t('{{percent}}% off', { percent: Math.round(100 - percent) })
 
+  const percentOff = Math.round(100 - percent)
   return (
-    <StatusBadge
-      label={label}
-      variant='success'
-      type={props.appearance === 'caption' ? 'text' : undefined}
-      copyable={false}
-      size='sm'
+    <span
       className={cn(
-        props.appearance === 'caption' && 'text-xs font-normal',
+        'inline-flex w-fit min-w-0 shrink-0 items-center gap-0.5 rounded-full px-1.5 py-px text-xs font-semibold leading-none whitespace-nowrap transition-colors',
+        resolveDiscountTone(percent),
         props.className
       )}
-    />
+      title={isZh ? undefined : t('{{percent}}% off', { percent: percentOff })}
+    >
+      <BadgePercent className='size-3 shrink-0' aria-hidden='true' />
+      {label}
+    </span>
   )
 }

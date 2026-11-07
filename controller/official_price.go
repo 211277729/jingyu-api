@@ -25,8 +25,6 @@ import (
 // 官方价同步:从 models.dev 拉取官方定价,精确匹配本站启用模型,
 // 写入展示专用配置 OfficialModelRatio(不影响任何计费)。
 
-const officialPriceCandidateLimit = 10000
-
 type OfficialPriceCandidate struct {
 	ModelName string   `json:"model_name"`
 	Provider  string   `json:"provider"`
@@ -200,21 +198,6 @@ func SyncOfficialPrice(c *gin.Context) {
 		return
 	}
 
-	// 扁平候选列表(供未匹配模型人工搜索),按 (模型名, provider) 排序,截断到上限
-	names := make([]string, 0, len(allCandidates))
-	for name := range allCandidates {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	truncated := len(names) > officialPriceCandidateLimit
-	if truncated {
-		names = names[:officialPriceCandidateLimit]
-	}
-	candidateList := make([]OfficialPriceCandidate, 0, len(names))
-	for _, name := range names {
-		candidateList = append(candidateList, candidateGroupToRefs(allCandidates[name], name)...)
-	}
-
 	// 当前启用模型(从现有 pricing 缓存取,已含禁用过滤)
 	enabledModels := make([]string, 0)
 	for _, pricing := range model.GetPricing() {
@@ -222,9 +205,26 @@ func SyncOfficialPrice(c *gin.Context) {
 	}
 	sort.Strings(enabledModels)
 
+	// 扁平候选列表(供未匹配模型人工搜索)只为启用模型构建:
+	// models.dev api.json 是全量数据,为所有模型展开会把响应撑大、拖慢同步。
+	// 人工搜索任意官方模型的完整候选仍由 ApplyOfficialPrice 按映射全量定位。
+	names := make([]string, 0, len(enabledModels))
+	for _, name := range enabledModels {
+		if _, ok := allCandidates[name]; ok {
+			names = append(names, name)
+		}
+	}
+	truncated := false
+	candidateList := make([]OfficialPriceCandidate, 0, len(names))
+	for _, name := range names {
+		candidateList = append(candidateList, candidateGroupToRefs(allCandidates[name], name)...)
+	}
+
 	modelReports := make([]OfficialPriceSyncModel, 0, len(enabledModels))
 	for _, siteModel := range enabledModels {
-		report := OfficialPriceSyncModel{SiteModel: siteModel}
+		// Options 初始化为空 slice:未匹配到候选时保持 nil 会被序列化成 null,
+		// 前端按数组读取(model.options.length)会直接抛 TypeError。
+		report := OfficialPriceSyncModel{SiteModel: siteModel, Options: []OfficialPriceCandidate{}}
 		if existing, ok := ratio_setting.GetOfficialPrice(siteModel); ok {
 			report.ExistingSource = existing.Source
 		}
