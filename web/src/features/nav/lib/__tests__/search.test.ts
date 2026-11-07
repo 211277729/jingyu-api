@@ -16,75 +16,75 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest'
 
-import type { NavCategory } from "../../types";
-import { hitAnchorId, searchDirectory } from "../search";
+import type { NavCategory } from '../../types'
+import { hitAnchorId, searchDirectory } from '../search'
 
 const categories: NavCategory[] = [
   {
-    id: "chat",
-    labelKey: "Chat Assistants",
+    id: 'chat',
+    labelKey: 'Chat Assistants',
     sites: [
-      { name: "ChatGPT", url: "https://chatgpt.com" },
-      { name: "Claude", url: "https://claude.ai" },
+      { name: 'ChatGPT', url: 'https://chatgpt.com' },
+      { name: 'Claude', url: 'https://claude.ai' },
     ],
   },
   {
-    id: "coding",
-    labelKey: "Coding",
+    id: 'coding',
+    labelKey: 'Coding',
     sites: [
-      { name: "GitHub Copilot", url: "https://github.com/features/copilot" },
+      { name: 'GitHub Copilot', url: 'https://github.com/features/copilot' },
     ],
   },
-];
+]
 
-const translate = (key: string) => key;
+const translate = (key: string) => key
 
-describe("directory search", () => {
-  it("returns nothing for a blank query", () => {
-    expect(searchDirectory(categories, "   ", translate)).toEqual([]);
-  });
+describe('directory search', () => {
+  it('returns nothing for a blank query', () => {
+    expect(searchDirectory(categories, '   ', translate)).toEqual([])
+  })
 
-  it("returns nothing when no name, host or category matches", () => {
-    expect(searchDirectory(categories, "midjourney", translate)).toEqual([]);
-  });
+  it('returns nothing when no name, host or category matches', () => {
+    expect(searchDirectory(categories, 'midjourney', translate)).toEqual([])
+  })
 
-  it("ranks a matching category above the sites inside it", () => {
-    const hits = searchDirectory(categories, "coding", translate);
+  it('ranks a matching category above the sites inside it', () => {
+    const hits = searchDirectory(categories, 'coding', translate)
 
-    expect(hits[0]).toMatchObject({ kind: "category", categoryId: "coding" });
-  });
+    expect(hits[0]).toMatchObject({ kind: 'category', categoryId: 'coding' })
+  })
 
-  it("finds a site by an infix of its name", () => {
-    const hits = searchDirectory(categories, "clau", translate);
+  it('finds a site by an infix of its name', () => {
+    const hits = searchDirectory(categories, 'clau', translate)
 
     expect(hits[0]).toMatchObject({
-      kind: "site",
-      site: { name: "Claude" },
-      categoryLabelKey: "Chat Assistants",
-    });
-  });
+      kind: 'site',
+      site: { name: 'Claude' },
+      categoryLabelKey: 'Chat Assistants',
+    })
+  })
 
-  it("finds a site by its hostname", () => {
-    const hits = searchDirectory(categories, "chatgpt.com", translate);
+  it('finds a site by its hostname', () => {
+    const hits = searchDirectory(categories, 'chatgpt.com', translate)
 
-    expect(hits[0]).toMatchObject({ kind: "site", site: { name: "ChatGPT" } });
-  });
+    expect(hits[0]).toMatchObject({ kind: 'site', site: { name: 'ChatGPT' } })
+  })
 
-  it("finds a site when the query only matches characters in order", () => {
-    const hits = searchDirectory(categories, "gitcop", translate);
+  it('finds a site when the query only matches characters in order', () => {
+    const hits = searchDirectory(categories, 'gitcop', translate)
 
     expect(
-      hits.map((hit) => (hit.kind === "site" ? hit.site.name : "")),
-    ).toEqual(["GitHub Copilot"]);
-  });
+      hits.map((hit) => (hit.kind === 'site' ? hit.site.name : ''))
+    ).toEqual(['GitHub Copilot'])
+  })
 
-  it("anchors a category hit at its section and a site hit at its card", () => {
-    const [categoryHit] = searchDirectory(categories, "coding", translate);
-    const [siteHit] = searchDirectory(categories, "claude", translate);
+  it('anchors a category hit at its section and a site hit at its card', () => {
+    const [categoryHit] = searchDirectory(categories, 'coding', translate)
+    const [siteHit] = searchDirectory(categories, 'claude', translate)
 
-    expect(hitAnchorId(categoryHit)).toBe("nav-category-coding");
-    expect(hitAnchorId(siteHit)).toBe("nav-site-claude-ai");
-  });
-});
+    expect(hitAnchorId(categoryHit)).toBe('nav-category-coding')
+    expect(hitAnchorId(siteHit)).toBe('nav-site-claude-ai')
+  })
+})

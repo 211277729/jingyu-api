@@ -17,19 +17,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 export type NavSite = {
-  name: string;
-  url: string;
+  name: string
+  url: string
   /**
    * `@lobehub/icons` name. Without one, the card renders an initial badge, so
    * a site never needs a remotely hosted logo.
    */
-  iconName?: string;
-};
+  iconName?: string
+}
 
 export type NavCategory = {
   /** Stable anchor used by the category list and the section scroll target. */
-  id: string;
+  id: string
   /** i18n key of the category label. */
-  labelKey: string;
-  sites: NavSite[];
-};
+  labelKey: string
+  sites: NavSite[]
+}

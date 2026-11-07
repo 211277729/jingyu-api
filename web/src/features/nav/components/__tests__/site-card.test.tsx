@@ -16,51 +16,51 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
 
-import { SiteCard } from "../site-card";
+import { SiteCard } from '../site-card'
 
-describe("navigation site card", () => {
-  it("opens the destination in a new tab without leaking the referrer", () => {
-    render(<SiteCard site={{ name: "ChatGPT", url: "https://chatgpt.com" }} />);
+describe('navigation site card', () => {
+  it('opens the destination in a new tab without leaking the referrer', () => {
+    render(<SiteCard site={{ name: 'ChatGPT', url: 'https://chatgpt.com' }} />)
 
-    const link = screen.getByText("ChatGPT").closest("a");
+    const link = screen.getByText('ChatGPT').closest('a')
 
-    expect(link).toHaveAttribute("href", "https://chatgpt.com");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
-  });
+    expect(link).toHaveAttribute('href', 'https://chatgpt.com')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
 
-  it("shows the destination host without the www prefix", () => {
+  it('shows the destination host without the www prefix', () => {
     render(
       <SiteCard
         site={{
-          name: "Hugging Face",
-          url: "https://www.huggingface.co/models",
+          name: 'Hugging Face',
+          url: 'https://www.huggingface.co/models',
         }}
-      />,
-    );
+      />
+    )
 
-    expect(screen.getByText("huggingface.co")).toBeInTheDocument();
-  });
+    expect(screen.getByText('huggingface.co')).toBeInTheDocument()
+  })
 
-  it("falls back to the destination favicon when no brand icon is set", () => {
+  it('falls back to the destination favicon when no brand icon is set', () => {
     const { container } = render(
-      <SiteCard site={{ name: "秘塔AI搜索", url: "https://metaso.cn/" }} />,
-    );
+      <SiteCard site={{ name: '秘塔AI搜索', url: 'https://metaso.cn/' }} />
+    )
 
-    const img = container.querySelector("img");
-    expect(img).toHaveAttribute("src", "https://metaso.cn/favicon.ico");
-    expect(img).toHaveAttribute("loading", "lazy");
-  });
+    const img = container.querySelector('img')
+    expect(img).toHaveAttribute('src', 'https://metaso.cn/favicon.ico')
+    expect(img).toHaveAttribute('loading', 'lazy')
+  })
 
-  it("keeps the letter badge when the destination has no valid origin", () => {
+  it('keeps the letter badge when the destination has no valid origin', () => {
     const { container } = render(
-      <SiteCard site={{ name: "坏链接", url: "not-a-url" }} />,
-    );
+      <SiteCard site={{ name: '坏链接', url: 'not-a-url' }} />
+    )
 
-    expect(container.querySelector("img")).toBeNull();
-    expect(screen.getByText("坏")).toBeInTheDocument();
-  });
-});
+    expect(container.querySelector('img')).toBeNull()
+    expect(screen.getByText('坏')).toBeInTheDocument()
+  })
+})

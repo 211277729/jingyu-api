@@ -24,31 +24,31 @@ For commercial licensing, please contact support@quantumnous.com
  * same anchor across reloads and locale changes.
  */
 export function categoryElementId(categoryId: string): string {
-  return `nav-category-${categoryId}`;
+  return `nav-category-${categoryId}`
 }
 
 export function siteElementId(url: string): string {
-  let host = url;
+  let host = url
   try {
-    host = new URL(url).hostname.replace(/^www\./i, "");
+    host = new URL(url).hostname.replace(/^www\./i, '')
   } catch {
     /* fall back to the raw url */
   }
-  return `nav-site-${host.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-")}`;
+  return `nav-site-${host.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-')}`
 }
 
 export function prefersReducedMotion(): boolean {
   return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  );
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
 }
 
 export function scrollToAnchor(id: string): void {
-  const target = document.querySelector(`#${CSS.escape(id)}`);
-  if (!target) return;
+  const target = document.querySelector(`#${CSS.escape(id)}`)
+  if (!target) return
   target.scrollIntoView({
-    behavior: prefersReducedMotion() ? "auto" : "smooth",
-    block: "start",
-  });
+    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+    block: 'start',
+  })
 }
