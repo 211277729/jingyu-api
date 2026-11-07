@@ -112,6 +112,7 @@ import { DynamicPricingBreakdown } from './dynamic-pricing-breakdown'
 import { ModelBillingModeBadge } from './model-billing-mode-badge'
 import { ModelDetailsApi } from './model-details-api'
 import { ModelDetailsPerformance } from './model-details-performance'
+import { ModelDiscountBadge } from './model-discount-badge'
 
 // ----------------------------------------------------------------------------
 // Local UI helpers
@@ -119,8 +120,16 @@ import { ModelDetailsPerformance } from './model-details-performance'
 
 function SectionTitle(props: { children: React.ReactNode }) {
   return (
-    <h2 className='text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase'>
-      {props.children}
+    <h2 className='mb-3 flex items-baseline gap-1.5'>
+      <span
+        aria-hidden
+        className='text-primary/70 font-mono text-[11px] font-bold'
+      >
+        //
+      </span>
+      <span className='text-muted-foreground text-xs font-semibold tracking-wider uppercase'>
+        {props.children}
+      </span>
     </h2>
   )
 }
@@ -606,34 +615,59 @@ function ModelHeader(props: { model: PricingModel }) {
   const { t } = useTranslation()
   const model = props.model
   const modelIconKey = model.icon || model.vendor_icon
-  const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 20) : null
+  const modelIcon = modelIconKey ? getLobeIcon(modelIconKey, 24) : null
+  const initial = model.model_name?.charAt(0).toUpperCase() || '?'
   const description = model.description || model.vendor_description || null
+  const billingTime = useBillingTime(model.billing_expr)
 
   return (
     <header className='pb-4'>
-      <div className='flex items-center gap-2.5'>
-        {modelIcon}
-        <h1 className='font-mono text-xl font-bold tracking-tight sm:text-2xl'>
-          {model.model_name}
-        </h1>
-        <CopyButton
-          value={model.model_name || ''}
-          className='size-6'
-          iconClassName='size-3'
-          tooltip={t('Copy model name')}
-          successTooltip={t('Copied!')}
-          aria-label={t('Copy model name')}
-        />
-      </div>
-      <div className='mt-1 flex flex-wrap items-center gap-1.5 text-xs'>
-        {model.vendor_name && (
-          <span className='text-muted-foreground'>{model.vendor_name}</span>
-        )}
-        <span className='text-muted-foreground/30'>·</span>
-        <ModelBillingModeBadge model={model} />
+      <div className='flex items-start gap-3'>
+        <div
+          aria-hidden
+          className='from-primary/15 to-chart-2/15 ring-primary/20 flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ring-1'
+        >
+          {modelIcon || (
+            <span className='text-primary/80 font-mono text-lg font-bold'>
+              {initial}
+            </span>
+          )}
+        </div>
+        <div className='min-w-0 flex-1'>
+          <div className='flex items-center gap-2'>
+            <h1 className='font-mono text-xl font-bold tracking-tight [overflow-wrap:anywhere] sm:text-2xl'>
+              {model.model_name}
+            </h1>
+            <CopyButton
+              value={model.model_name || ''}
+              className='size-6'
+              iconClassName='size-3'
+              tooltip={t('Copy model name')}
+              successTooltip={t('Copied!')}
+              aria-label={t('Copy model name')}
+            />
+          </div>
+          <div className='mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs'>
+            {model.vendor_name && (
+              <span className='text-muted-foreground font-mono text-[11px] tracking-wide uppercase'>
+                {model.vendor_name}
+              </span>
+            )}
+            {model.vendor_name && (
+              <span className='text-muted-foreground/30'>·</span>
+            )}
+            <ModelBillingModeBadge model={model} />
+            <ModelDiscountBadge
+              model={model}
+              now={
+                billingTime === undefined ? undefined : new Date(billingTime)
+              }
+            />
+          </div>
+        </div>
       </div>
       {description && (
-        <p className='text-muted-foreground mt-2 text-sm leading-relaxed'>
+        <p className='text-muted-foreground mt-2.5 text-sm leading-relaxed'>
           {description}
         </p>
       )}
@@ -769,8 +803,8 @@ function PriceSection(props: {
       )
     })()
     return (
-      <div className='text-muted-foreground flex flex-wrap items-baseline gap-x-1 text-xs'>
-        <span>
+      <div className='text-muted-foreground/80 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[11px]'>
+        <span className='shrink-0'>
           {t('Official {{label}}', { label })}
           {tierLabel && <> ({t(tierLabel)})</>}
         </span>
@@ -863,18 +897,22 @@ function PriceSection(props: {
               return (
                 <div
                   key={entry.key}
-                  className='bg-muted/20 rounded-lg border p-3'
+                  className='border-border/60 bg-muted/20 rounded-xl border p-3.5'
                 >
-                  <div className='text-muted-foreground text-xs'>
+                  <div className='text-muted-foreground truncate font-mono text-[11px] tracking-wider uppercase'>
                     <DynamicPriceEntryLabel entry={entry} />
                   </div>
-                  {official}
-                  <div className='text-foreground mt-1 font-mono text-base font-semibold tabular-nums'>
+                  <div className='text-foreground mt-1.5 font-mono text-lg font-semibold tabular-nums'>
                     {entry.formattedRange ?? entry.formatted}
                     <span className='text-muted-foreground/40 ml-1 text-xs font-normal'>
                       / {unitLabel}
                     </span>
                   </div>
+                  {official && (
+                    <div className='border-border/50 mt-2 border-t pt-1.5'>
+                      {official}
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -887,8 +925,8 @@ function PriceSection(props: {
           </p>
         )}
         {dynamicSummary.secondaryEntries.length > 0 && (
-          <div className='bg-muted/20 mt-3 rounded-lg border px-3 py-2.5'>
-            <div className='space-y-1.5'>
+          <div className='border-border/60 bg-muted/20 mt-3 rounded-xl border px-3.5 py-2.5'>
+            <div className='space-y-2.5'>
               {dynamicSummary.secondaryEntries.map((entry) => {
                 const unitLabelKey = getDynamicPriceUnitLabelKey(entry)
                 const unitLabel = taskUsageUnitLabel(
@@ -899,24 +937,25 @@ function PriceSection(props: {
                 const officialType = officialPriceTypeForDynamicField(
                   entry.field
                 )
+                const official = officialType
+                  ? officialBlock(officialType, t(entry.shortLabel))
+                  : null
                 return (
-                  <div
-                    key={entry.key}
-                    className='flex items-baseline justify-between gap-4'
-                  >
-                    <span className='text-muted-foreground/70 text-sm'>
-                      <DynamicPriceEntryLabel entry={entry} />
-                    </span>
-                    <span className='flex flex-wrap items-baseline justify-end gap-x-2'>
-                      {officialType &&
-                        officialBlock(officialType, t(entry.shortLabel))}
-                      <span className='text-muted-foreground font-mono text-sm tabular-nums'>
+                  <div key={entry.key} className='min-w-0'>
+                    <div className='flex items-baseline justify-between gap-4'>
+                      <span className='text-muted-foreground/70 text-sm'>
+                        <DynamicPriceEntryLabel entry={entry} />
+                      </span>
+                      <span className='text-foreground font-mono text-sm font-semibold tabular-nums'>
                         {entry.formattedRange ?? entry.formatted}
                         <span className='text-muted-foreground/40 ml-1 text-xs font-normal'>
                           / {unitLabel}
                         </span>
                       </span>
-                    </span>
+                    </div>
+                    {official && (
+                      <div className='mt-0.5 flex justify-end'>{official}</div>
+                    )}
                   </div>
                 )
               })}
@@ -940,11 +979,11 @@ function PriceSection(props: {
     return (
       <section>
         <SectionTitle>{t('Base Price')}</SectionTitle>
-        <div className='flex items-baseline justify-between'>
-          <span className='text-muted-foreground text-sm'>
+        <div className='border-border/60 bg-muted/20 flex items-baseline justify-between rounded-xl border p-3.5'>
+          <span className='text-muted-foreground font-mono text-[11px] tracking-wider uppercase'>
             {t('Per request')}
           </span>
-          <span className='text-foreground font-mono text-sm font-semibold tabular-nums'>
+          <span className='text-foreground font-mono text-lg font-semibold tabular-nums'>
             {formatFixedPrice(
               props.model,
               baseGroupKey,
@@ -982,35 +1021,49 @@ function PriceSection(props: {
     <section>
       <SectionTitle>{t('Base Price')}</SectionTitle>
       <div className='grid grid-cols-2 gap-2'>
-        {primaryPriceTypes.map((item) => (
-          <div key={item.type} className='bg-muted/20 rounded-lg border p-3'>
-            <div className='text-muted-foreground text-xs'>{item.label}</div>
-            {officialBlock(item.type, item.label)}
-            <div className='text-foreground mt-1 font-mono text-base font-semibold tabular-nums'>
-              {renderPrice(item.type)}
+        {primaryPriceTypes.map((item) => {
+          const official = officialBlock(item.type, item.label)
+          return (
+            <div
+              key={item.type}
+              className='border-border/60 bg-muted/20 rounded-xl border p-3.5'
+            >
+              <div className='text-muted-foreground font-mono text-[11px] tracking-wider uppercase'>
+                {item.label}
+              </div>
+              <div className='text-foreground mt-1.5 font-mono text-lg font-semibold tabular-nums'>
+                {renderPrice(item.type)}
+              </div>
+              {official && (
+                <div className='border-border/50 mt-2 border-t pt-1.5'>
+                  {official}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
       {secondaryItems.length > 0 && (
-        <div className='bg-muted/20 mt-3 rounded-lg border px-3 py-2.5'>
-          <div className='space-y-1.5'>
-            {secondaryItems.map((item) => (
-              <div
-                key={item.type}
-                className='flex items-baseline justify-between gap-4'
-              >
-                <span className='text-muted-foreground/70 text-sm'>
-                  {item.label}
-                </span>
-                <span className='flex flex-wrap items-baseline justify-end gap-x-2'>
-                  {officialBlock(item.type, item.label)}
-                  <span className='text-muted-foreground font-mono text-sm tabular-nums'>
-                    {renderPrice(item.type)}
-                  </span>
-                </span>
-              </div>
-            ))}
+        <div className='border-border/60 bg-muted/20 mt-3 rounded-xl border px-3.5 py-2.5'>
+          <div className='space-y-2.5'>
+            {secondaryItems.map((item) => {
+              const official = officialBlock(item.type, item.label)
+              return (
+                <div key={item.type} className='min-w-0'>
+                  <div className='flex items-baseline justify-between gap-4'>
+                    <span className='text-muted-foreground/70 text-sm'>
+                      {item.label}
+                    </span>
+                    <span className='text-foreground font-mono text-sm font-semibold tabular-nums'>
+                      {renderPrice(item.type)}
+                    </span>
+                  </div>
+                  {official && (
+                    <div className='mt-0.5 flex justify-end'>{official}</div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       )}
@@ -1297,7 +1350,10 @@ function ProviderGroupPricingSection(
               new Map<DynamicPricingTier, Map<string, string>>()
 
             return (
-              <div key={group} className='overflow-hidden rounded-lg border'>
+              <div
+                key={group}
+                className='border-border/60 overflow-hidden rounded-xl border'
+              >
                 <div className='bg-muted/20 flex items-center justify-between gap-3 border-b px-3 py-2'>
                   <GroupBadge group={group} size='sm' />
                   <span className='text-muted-foreground font-mono text-xs'>
