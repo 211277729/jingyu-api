@@ -44,7 +44,6 @@ import { OAuthProviders } from '@/features/auth/components/oauth-providers'
 import { registerFormSchema } from '@/features/auth/constants'
 import { useAuthRedirect } from '@/features/auth/hooks/use-auth-redirect'
 import { useEmailVerification } from '@/features/auth/hooks/use-email-verification'
-import { useLegalConsentPrompt } from '@/features/auth/hooks/use-legal-consent-prompt'
 import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
 import {
   getAffiliateCode,
@@ -63,7 +62,6 @@ export function SignUpForm({
   const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [verificationCode, setVerificationCode] = useState('')
-  const [agreedToLegal, setAgreedToLegal] = useState(false)
   const [wechatCode, setWeChatCode] = useState('')
   const [isWeChatDialogOpen, setIsWeChatDialogOpen] = useState(false)
   const [isWeChatSubmitting, setIsWeChatSubmitting] = useState(false)
@@ -78,11 +76,6 @@ export function SignUpForm({
     validateTurnstile,
   } = useTurnstile()
   const { redirectToLogin, handleLoginResult } = useAuthRedirect()
-  const { confirmLegalConsent, legalConsentDialog } = useLegalConsentPrompt(
-    status,
-    agreedToLegal,
-    () => setAgreedToLegal(true)
-  )
   const {
     isSending: isSendingCode,
     secondsLeft,
@@ -105,9 +98,6 @@ export function SignUpForm({
 
   const emailValue = form.watch('email')
   const emailVerificationRequired = !!status?.email_verification
-  const hasUserAgreement = Boolean(status?.user_agreement_enabled)
-  const hasPrivacyPolicy = Boolean(status?.privacy_policy_enabled)
-  const requiresLegalConsent = hasUserAgreement || hasPrivacyPolicy
   const oauthRegisterEnabled =
     status?.oauth_register_enabled ??
     status?.data?.oauth_register_enabled ??
@@ -130,14 +120,6 @@ export function SignUpForm({
   }, [status])
 
   useEffect(() => {
-    if (requiresLegalConsent) {
-      setAgreedToLegal(false)
-    } else {
-      setAgreedToLegal(true)
-    }
-  }, [requiresLegalConsent])
-
-  useEffect(() => {
     const aff = new URLSearchParams(window.location.search).get('aff')?.trim()
     if (aff) {
       saveAffiliateCode(aff)
@@ -145,10 +127,6 @@ export function SignUpForm({
   }, [])
 
   async function onSubmit(data: z.infer<typeof registerFormSchema>) {
-    if (!(await confirmLegalConsent())) {
-      return
-    }
-
     // Validate email verification if required
     if (emailVerificationRequired) {
       if (!data.email) {
@@ -197,10 +175,6 @@ export function SignUpForm({
   }
 
   const handleOpenWeChatDialog = async () => {
-    if (!(await confirmLegalConsent())) {
-      return
-    }
-
     setIsWeChatDialogOpen(true)
   }
 
@@ -364,22 +338,13 @@ export function SignUpForm({
           </div>
         )}
 
-        <LegalConsent
-          status={status}
-          checked={agreedToLegal}
-          onCheckedChange={setAgreedToLegal}
-          className='mt-1'
-        />
+        <LegalConsent status={status} className='mt-1' />
 
         {/* Submit Button */}
         <Button
           type='submit'
           className='mt-2 w-full justify-center gap-2'
-          disabled={
-            isLoading ||
-            (requiresLegalConsent && !agreedToLegal) ||
-            !turnstileReady
-          }
+          disabled={isLoading || !turnstileReady}
         >
           {isLoading ? <Loader2 className='h-4 w-4 animate-spin' /> : null}
           {t('Create account')}
@@ -392,7 +357,6 @@ export function SignUpForm({
             onWeChatLogin={hasWeChatLogin ? handleOpenWeChatDialog : undefined}
             isWeChatLoading={isWeChatSubmitting}
             className='pt-2'
-            onBeforeOAuthClick={confirmLegalConsent}
           />
         )}
       </form>
@@ -422,11 +386,7 @@ export function SignUpForm({
               <Button
                 type='button'
                 onClick={handleWeChatLogin}
-                disabled={
-                  isWeChatSubmitting ||
-                  !wechatCode.trim() ||
-                  (requiresLegalConsent && !agreedToLegal)
-                }
+                disabled={isWeChatSubmitting || !wechatCode.trim()}
                 className='gap-2'
               >
                 {isWeChatSubmitting ? (
@@ -462,8 +422,6 @@ export function SignUpForm({
           </div>
         </Dialog>
       )}
-
-      {legalConsentDialog}
     </Form>
   )
 }
