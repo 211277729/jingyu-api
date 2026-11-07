@@ -18,7 +18,6 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Bell, Megaphone } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type UIEvent } from 'react'
-
 import { useTranslation } from 'react-i18next'
 
 import { Dialog } from '@/components/dialog'
@@ -167,8 +166,7 @@ export function AnnouncementPopupDialog() {
   // 已触底时须上滚超过迟滞余量才隐藏，避免按钮自身的渲染/卸载引起闪烁
   const handleTimelineScroll = (event: UIEvent<HTMLDivElement>) => {
     const el = event.currentTarget
-    const distanceToBottom =
-      el.scrollHeight - el.scrollTop - el.clientHeight
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight
     if (distanceToBottom <= SCROLL_BOTTOM_THRESHOLD_PX) {
       setTimelineAtBottom(true)
     } else if (

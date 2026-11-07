@@ -48,7 +48,9 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot='dialog-overlay'
       className={cn(
-        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/20 duration-150 supports-backdrop-filter:backdrop-blur-xs',
+        // 遮罩保持低感知阈值：黑度/时长调高后，关闭淡出会被察觉为「闪一下灰」；
+        // 全屏 backdrop-filter 层的参数勿随意加深或放慢
+        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs',
         className
       )}
       {...props}
@@ -90,7 +92,7 @@ function DialogContent({
             render={
               <Button
                 variant='ghost'
-                className='absolute top-2 right-2 rounded-full text-muted-foreground transition-transform duration-200 hover:rotate-90 hover:text-foreground'
+                className='text-muted-foreground hover:text-foreground absolute top-2 right-2 rounded-full transition-transform duration-200 hover:rotate-90'
                 size='icon-sm'
               />
             }
