@@ -807,7 +807,7 @@ it('applies bulk changes only to existing selections, allows row overrides and s
     })
   )
   expect(
-    within(dialog).getByText('Current exchange rate: 1 USD = 7 CNY')
+    within(dialog).getByText('Sync conversion: 1 USD = 7 site units')
   ).toBeVisible()
   await user.click(
     within(dialog).getByRole('button', { name: 'Confirm Changes' })
