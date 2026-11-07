@@ -48,9 +48,11 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot='dialog-overlay'
       className={cn(
-        // 遮罩保持低感知阈值：黑度/时长调高后，关闭淡出会被察觉为「闪一下灰」；
-        // 全屏 backdrop-filter 层的参数勿随意加深或放慢
-        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs',
+        // fill-mode-both 是必须的：tw-animate-css 的 animate-out 默认无 fill-mode，
+        // 动画结束后元素会弹回基础态 opacity:1。遮罩退场(100ms)早于面板退场
+        // (200ms)，root 要等面板动画结束才卸载 portal，若无 fill-mode 兜底，
+        // 遮罩会在卸载前以全强度回跳 ~100ms，表现为关闭时整页「闪一下灰」
+        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fill-mode-both fixed inset-0 isolate z-50 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs',
         className
       )}
       {...props}
@@ -78,8 +80,9 @@ function DialogContent({
           'before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary/50 before:to-transparent',
           'after:pointer-events-none after:absolute after:inset-x-0 after:top-0 after:h-20 after:bg-gradient-to-b after:from-primary/[0.06] after:to-transparent',
           'shadow-2xl shadow-black/10 dark:shadow-black/40',
-          // 入场：淡入 + 轻微缩放 + 自下而上浮现；出场反向收起
-          'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-open:slide-in-from-bottom-2 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:slide-out-to-bottom-1 duration-200 ease-out',
+          // 入场：淡入 + 轻微缩放 + 自下而上浮现；出场反向收起。
+          // fill-mode-both 同样必要：面板动画结束后、portal 卸载前不能回跳
+          'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-open:slide-in-from-bottom-2 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:slide-out-to-bottom-1 fill-mode-both duration-200 ease-out',
           'fixed top-[var(--dialog-viewport-center,50dvh)] left-1/2 z-50 grid max-h-[var(--dialog-available-height,calc(100dvh-2rem))] w-full overflow-y-auto overscroll-contain max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl p-4 text-sm ring-1 outline-none sm:max-w-sm',
           className
         )}
