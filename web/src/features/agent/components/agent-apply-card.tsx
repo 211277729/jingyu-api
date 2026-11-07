@@ -54,8 +54,9 @@ interface AgentApplyCardProps {
 }
 
 /**
- * 招代理落地页：费率横幅 + 权益说明 + 三步流程 + 申请表单；
+ * 招代理落地页：费率大读数 + 权益说明 + 三步流程 + 申请表单；
  * 已申请但未通过时展示状态卡。后台 /agent 与公开页 /agent-program 共用。
+ * 视觉为控制台风但主题自适应（浅/深两套都成立），佣金主题保持金色。
  */
 export function AgentApplyCard({
   status,
@@ -92,14 +93,14 @@ export function AgentApplyCard({
 
   if (status === 'pending') {
     return (
-      <div className='border-border/60 bg-muted/30 flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-14 text-center'>
-        <span className='flex size-12 items-center justify-center rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400'>
+      <div className='border-border/60 flex flex-col items-center gap-3 rounded-3xl border border-dashed px-6 py-16 text-center'>
+        <span className='flex size-12 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/25 dark:bg-amber-500/15 dark:text-amber-400 dark:ring-amber-400/25'>
           <Hourglass className='size-6' />
         </span>
-        <div className='text-lg font-semibold'>
+        <div className='text-xl font-semibold'>
           {t('Application under review')}
         </div>
-        <p className='text-muted-foreground max-w-md text-sm'>
+        <p className='text-muted-foreground max-w-md text-sm leading-relaxed'>
           {t(
             'Your agent application has been submitted. We will review it as soon as possible.'
           )}
@@ -110,14 +111,14 @@ export function AgentApplyCard({
 
   if (status === 'disabled') {
     return (
-      <div className='border-border/60 bg-muted/30 flex flex-col items-center gap-3 rounded-2xl border border-dashed px-6 py-14 text-center'>
-        <span className='flex size-12 items-center justify-center rounded-full bg-red-500/10 text-red-600 dark:text-red-400'>
+      <div className='border-border/60 flex flex-col items-center gap-3 rounded-3xl border border-dashed px-6 py-16 text-center'>
+        <span className='flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-600 ring-1 ring-red-500/25 dark:bg-red-500/15 dark:text-red-400 dark:ring-red-400/25'>
           <OctagonX className='size-6' />
         </span>
-        <div className='text-lg font-semibold'>
+        <div className='text-xl font-semibold'>
           {t('Agent account disabled')}
         </div>
-        <p className='text-muted-foreground max-w-md text-sm'>
+        <p className='text-muted-foreground max-w-md text-sm leading-relaxed'>
           {profile?.remark ||
             t(
               'Your agent account has been disabled. Contact support if you have questions.'
@@ -181,60 +182,80 @@ export function AgentApplyCard({
   ] as const
 
   return (
-    <div className='space-y-5'>
-      {/* 费率横幅 */}
-      <div className='rounded-2xl border border-amber-500/20 bg-gradient-to-r from-amber-500/15 via-orange-500/8 to-transparent p-5 sm:p-6'>
-        <div className='flex items-center gap-2.5'>
-          <span className='flex size-10 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400'>
-            <Handshake className='size-5' />
-          </span>
-          <div className='text-lg font-bold sm:text-xl'>
-            {t('Become an Agent')}
-          </div>
-        </div>
-        <p className='text-muted-foreground mt-2.5 text-sm'>
-          {t('No caps, no expiry — withdraw your commission as cash.')}
-        </p>
-        <div className='mt-4 grid grid-cols-3 gap-3'>
-          {[
-            { value: firstPercent, label: t('First top-up') },
-            { value: percent, label: t('Every top-up after') },
-            { value: secondPercent, label: t('Second-level commission') },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className='bg-background/80 border-border/60 rounded-xl border px-3 py-3.5 text-center shadow-sm backdrop-blur'
+    <div className='space-y-6'>
+      {/* 费率面板：三档佣金大读数 */}
+      <section className='border-amber-500/25 relative overflow-hidden rounded-3xl border bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent p-5 shadow-sm sm:p-8 dark:border-amber-400/20 dark:from-amber-500/[0.12] dark:via-orange-500/[0.06]'>
+        <div
+          aria-hidden
+          className='pointer-events-none absolute -top-20 right-0 size-72 rounded-full bg-amber-500/15 blur-3xl'
+        />
+        <div className='relative space-y-6'>
+          <div className='flex items-start gap-4'>
+            <span
+              className='flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 ring-1 ring-amber-500/30 dark:text-amber-400 dark:ring-amber-400/25'
+              aria-hidden
             >
-              <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-xl font-bold text-transparent tabular-nums sm:text-2xl dark:from-amber-400 dark:to-orange-400'>
-                {item.value}%
-              </div>
-              <div className='text-muted-foreground mt-1 text-[11px] font-medium sm:text-xs'>
-                {item.label}
-              </div>
+              <Handshake className='size-5' />
+            </span>
+            <div className='space-y-1.5'>
+              <h2 className='text-xl font-semibold tracking-tight sm:text-2xl'>
+                {t('Become an Agent')}
+              </h2>
+              <p className='text-muted-foreground text-sm leading-relaxed'>
+                {t('No caps, no expiry — withdraw your commission as cash.')}
+              </p>
             </div>
-          ))}
-        </div>
-        {status === 'rejected' && profile ? (
-          <div className='mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400'>
-            {profile.remark ||
-              t('Your previous application was rejected. You can apply again.')}
           </div>
-        ) : null}
-      </div>
 
-      <div className='grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.8fr)] xl:items-start'>
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-3'>
+            {[
+              { value: firstPercent, label: t('First top-up') },
+              { value: percent, label: t('Every top-up after') },
+              { value: secondPercent, label: t('Second-level commission') },
+            ].map((item) => (
+              <div
+                key={item.label}
+                className='border-border/60 rounded-2xl border bg-background/80 px-4 py-5 text-center shadow-sm backdrop-blur'
+              >
+                <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-3xl font-bold text-transparent tabular-nums sm:text-4xl dark:from-amber-400 dark:to-orange-400'>
+                  {item.value}%
+                </div>
+                <div className='text-muted-foreground mt-1.5 text-xs font-medium tracking-wide'>
+                  {item.label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {status === 'rejected' && profile ? (
+            <div className='rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2.5 text-xs leading-relaxed text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300'>
+              {profile.remark ||
+                t(
+                  'Your previous application was rejected. You can apply again.'
+                )}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <div className='grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.85fr)] xl:items-start'>
         {/* 权益 + 流程 */}
-        <div className='space-y-5'>
-          <section className='space-y-3'>
-            <h3 className='text-base font-semibold'>{t('Why join?')}</h3>
+        <div className='space-y-6'>
+          <section className='border-border/60 bg-muted/30 space-y-4 rounded-3xl border p-5 sm:p-7'>
+            <h3 className='text-lg font-semibold tracking-tight'>
+              {t('Why join?')}
+            </h3>
             <div className='grid gap-3 sm:grid-cols-2'>
               {benefits.map((item) => (
                 <div
                   key={item.title}
-                  className='border-border/60 bg-muted/30 rounded-xl border p-4 transition-colors hover:border-amber-500/40'
+                  className='border-border/50 bg-card/60 hover:border-amber-500/40 rounded-2xl border p-4 transition-colors hover:bg-amber-500/[0.04]'
                 >
-                  <div className='flex items-center gap-2'>
-                    <span className='flex size-7 items-center justify-center rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400'>
+                  <div className='flex items-center gap-2.5'>
+                    <span
+                      className='flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400'
+                      aria-hidden
+                    >
                       <item.icon className='size-3.5' />
                     </span>
                     <div className='text-sm font-semibold'>{item.title}</div>
@@ -247,20 +268,25 @@ export function AgentApplyCard({
             </div>
           </section>
 
-          <section className='space-y-3'>
-            <h3 className='text-base font-semibold'>{t('How it works')}</h3>
+          <section className='border-border/60 bg-muted/30 space-y-4 rounded-3xl border p-5 sm:p-7'>
+            <h3 className='text-lg font-semibold tracking-tight'>
+              {t('How it works')}
+            </h3>
             <ol className='space-y-3'>
               {steps.map((step, index) => (
                 <li
                   key={step.title}
-                  className='border-border/60 bg-muted/30 flex items-start gap-3 rounded-xl border p-4'
+                  className='border-border/50 bg-card/60 flex items-start gap-3.5 rounded-2xl border p-4'
                 >
-                  <span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-amber-500/15 text-sm font-bold text-amber-600 dark:text-amber-400'>
+                  <span
+                    className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 font-mono text-sm font-bold text-amber-600 ring-1 ring-amber-500/25 dark:bg-amber-500/15 dark:text-amber-400 dark:ring-amber-400/25'
+                    aria-hidden
+                  >
                     {index + 1}
                   </span>
                   <div className='min-w-0'>
                     <div className='flex items-center gap-1.5 text-sm font-semibold'>
-                      <step.icon className='text-muted-foreground size-3.5' />
+                      <step.icon className='text-amber-600/80 size-3.5 dark:text-amber-400/80' />
                       {step.title}
                     </div>
                     <p className='text-muted-foreground mt-1 text-xs leading-relaxed'>
@@ -274,48 +300,62 @@ export function AgentApplyCard({
         </div>
 
         {/* 申请表单 */}
-        <div className='border-border/60 bg-card space-y-3 rounded-2xl border p-5 shadow-sm xl:sticky xl:top-4'>
-          <div className='flex items-center gap-2 text-sm font-semibold'>
-            <Undo2 className='text-muted-foreground size-4' />
-            {status === 'rejected' ? t('Apply Again') : t('Agent Application')}
+        <div className='border-border/60 bg-card relative space-y-4 overflow-hidden rounded-3xl border p-5 shadow-sm sm:p-7 xl:sticky xl:top-4'>
+          <div
+            aria-hidden
+            className='pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-amber-500/10 blur-3xl'
+          />
+          <div className='relative space-y-4'>
+            <div className='flex items-center gap-2.5 text-sm font-semibold'>
+              <span
+                className='flex size-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 ring-1 ring-amber-500/25 dark:bg-amber-500/15 dark:text-amber-400 dark:ring-amber-400/25'
+                aria-hidden
+              >
+                <Undo2 className='size-4' />
+              </span>
+              {status === 'rejected' ? t('Apply Again') : t('Agent Application')}
+            </div>
+            <div className='space-y-1.5'>
+              <label className='text-muted-foreground text-xs font-medium'>
+                {t('Contact (WeChat / QQ / Telegram)')}
+              </label>
+              <Input
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                placeholder={t('How should we reach you?')}
+                maxLength={128}
+              />
+            </div>
+            <div className='space-y-1.5'>
+              <label className='text-muted-foreground text-xs font-medium'>
+                {t('Promotion plan (optional)')}
+              </label>
+              <Textarea
+                value={remark}
+                onChange={(e) => setRemark(e.target.value)}
+                placeholder={t(
+                  'Briefly describe how you plan to promote our service.'
+                )}
+                rows={3}
+                maxLength={255}
+              />
+            </div>
+            <Button
+              className='h-10 w-full bg-gradient-to-r from-amber-500 to-orange-500 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-60 dark:from-amber-400 dark:to-orange-400 dark:text-zinc-950 dark:shadow-amber-400/20 dark:hover:from-amber-300 dark:hover:to-orange-300'
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? t('Submitting') : t('Submit Application')}
+            </Button>
+            {status === 'rejected' ? (
+              <Badge
+                variant='outline'
+                className='border-red-500/30 text-red-600 dark:border-red-400/30 dark:text-red-400'
+              >
+                {t('Previous application was rejected')}
+              </Badge>
+            ) : null}
           </div>
-          <div className='space-y-1.5'>
-            <label className='text-muted-foreground text-xs font-medium'>
-              {t('Contact (WeChat / QQ / Telegram)')}
-            </label>
-            <Input
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
-              placeholder={t('How should we reach you?')}
-              maxLength={128}
-            />
-          </div>
-          <div className='space-y-1.5'>
-            <label className='text-muted-foreground text-xs font-medium'>
-              {t('Promotion plan (optional)')}
-            </label>
-            <Textarea
-              value={remark}
-              onChange={(e) => setRemark(e.target.value)}
-              placeholder={t(
-                'Briefly describe how you plan to promote our service.'
-              )}
-              rows={3}
-              maxLength={255}
-            />
-          </div>
-          <Button
-            className='w-full'
-            onClick={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? t('Submitting') : t('Submit Application')}
-          </Button>
-          {status === 'rejected' ? (
-            <Badge variant='outline' className='w-full justify-center'>
-              {t('Previous application was rejected')}
-            </Badge>
-          ) : null}
         </div>
       </div>
     </div>

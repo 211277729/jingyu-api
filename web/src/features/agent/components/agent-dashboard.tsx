@@ -29,10 +29,8 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { Dialog } from '@/components/dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   getAgentCommissions,
   getAgentCustomers,
@@ -51,6 +49,7 @@ import {
   quotaUnitsToDollars,
 } from '@/lib/format'
 import { handleServerError } from '@/lib/handle-server-error'
+import { cn } from '@/lib/utils'
 
 const PAGE_SIZE = 10
 
@@ -59,6 +58,7 @@ function formatDateTime(timestamp: number): string {
   return new Date(timestamp * 1000).toLocaleString()
 }
 
+/** 数据表外框：卡片容器 + 表头分隔，主题自适应。 */
 function TableShell({
   header,
   children,
@@ -67,16 +67,26 @@ function TableShell({
   children: React.ReactNode
 }) {
   return (
-    <div className='overflow-x-auto rounded-lg border'>
-      <table className='w-full text-sm'>
-        <thead>
-          <tr className='bg-muted/50 border-b text-left text-xs whitespace-nowrap'>
-            {header}
-          </tr>
-        </thead>
-        <tbody className='divide-y'>{children}</tbody>
-      </table>
+    <div className='border-border/60 overflow-hidden rounded-2xl border bg-card shadow-sm'>
+      <div className='overflow-x-auto'>
+        <table className='w-full text-sm'>
+          <thead>
+            <tr className='bg-muted/40 border-b text-left text-xs whitespace-nowrap'>
+              {header}
+            </tr>
+          </thead>
+          <tbody className='divide-y'>{children}</tbody>
+        </table>
+      </div>
     </div>
+  )
+}
+
+function Th({ children }: { children: React.ReactNode }) {
+  return (
+    <th className='text-muted-foreground px-4 py-2.5 text-[11px] font-medium tracking-wider uppercase'>
+      {children}
+    </th>
   )
 }
 
@@ -86,7 +96,7 @@ function EmptyRow({ colSpan }: { colSpan: number }) {
     <tr>
       <td
         colSpan={colSpan}
-        className='text-muted-foreground py-8 text-center text-xs'
+        className='text-muted-foreground py-10 text-center text-xs'
       >
         {t('No data')}
       </td>
@@ -158,11 +168,25 @@ function WithdrawalStatusBadge({ status }: { status: AgentWithdrawalStatus }) {
   }
   const item = map[status]
   return (
-    <Badge variant='outline' className={item.className}>
+    <span
+      className={cn(
+        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
+        item.className
+      )}
+    >
       {item.label}
-    </Badge>
+    </span>
   )
 }
+
+/** 列表切换标签 + 佣金/客户/提现三个数据视图。 */
+const VIEWS = [
+  { value: 'commissions', labelKey: 'Commission Details' },
+  { value: 'customers', labelKey: 'My Customers' },
+  { value: 'withdrawals', labelKey: 'Withdrawal Records' },
+] as const
+
+type ViewValue = (typeof VIEWS)[number]['value']
 
 interface AgentDashboardProps {
   data: AgentProfileData
@@ -171,9 +195,11 @@ interface AgentDashboardProps {
 
 /**
  * 代理中心：佣金余额与统计、提现申请，以及佣金明细 / 名下客户 / 提现记录三个列表。
+ * 视觉为控制台风但主题自适应（浅/深两套都成立），佣金主题保持金色。
  */
 export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
   const { t } = useTranslation()
+  const [view, setView] = useState<ViewValue>('commissions')
   const [commissionsPage, setCommissionsPage] = useState(1)
   const [customersPage, setCustomersPage] = useState(1)
   const [withdrawalsPage, setWithdrawalsPage] = useState(1)
@@ -239,8 +265,41 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
     }
   }
 
+  const stats = [
+    {
+      icon: Wallet,
+      label: t('Commission Balance'),
+      node: (
+        <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-2xl font-bold text-transparent tabular-nums sm:text-3xl dark:from-amber-400 dark:to-orange-400'>
+          {formatQuota(data.agent_quota)}
+        </div>
+      ),
+    },
+    {
+      icon: BanknoteArrowDown,
+      label: t('Total Commission Earned'),
+      node: (
+        <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-2xl font-bold text-transparent tabular-nums sm:text-3xl dark:from-amber-400 dark:to-orange-400'>
+          {formatQuota(data.agent_history_quota)}
+        </div>
+      ),
+    },
+    {
+      icon: Users,
+      label: t('Commission Rates'),
+      node: (
+        <div className='text-lg font-semibold tabular-nums sm:text-xl'>
+          {t('First {{first}}% · Then {{later}}%', {
+            first: firstPercent,
+            later: percent,
+          })}
+        </div>
+      ),
+    },
+  ] as const
+
   return (
-    <div className='space-y-4'>
+    <div className='space-y-6'>
       {/* 推广物料：邀请码/链接/二维码，与邀请返利页同一个码 */}
       <InviteLinkCard
         affiliateCode={affiliateCode}
@@ -248,182 +307,212 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
         loading={affiliateLoading}
       />
 
-      {/* 统计 + 提现 */}
-      <div className='grid gap-3 sm:grid-cols-3'>
-        <div className='rounded-2xl border p-4'>
-          <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
-            <Wallet className='size-3.5' />
-            {t('Commission Balance')}
-          </div>
-          <div className='mt-1.5 text-2xl font-semibold tabular-nums'>
-            {formatQuota(data.agent_quota)}
-          </div>
+      {/* 统计大读数面板 */}
+      <section className='border-border/60 relative overflow-hidden rounded-3xl border bg-gradient-to-b from-amber-500/[0.08] to-transparent p-5 shadow-sm sm:p-7 dark:from-amber-500/[0.10]'>
+        <div
+          aria-hidden
+          className='pointer-events-none absolute -top-20 right-0 size-72 rounded-full bg-amber-500/10 blur-3xl'
+        />
+        <div className='relative grid grid-cols-1 gap-3 sm:grid-cols-3'>
+          {stats.map((item) => (
+            <div
+              key={item.label}
+              className='border-border/60 rounded-2xl border bg-background/80 px-4 py-5 shadow-sm backdrop-blur'
+            >
+              <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide'>
+                <item.icon className='size-3.5 text-amber-600 dark:text-amber-400' />
+                {item.label}
+              </div>
+              <div className='mt-2'>{item.node}</div>
+            </div>
+          ))}
         </div>
-        <div className='rounded-2xl border p-4'>
-          <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
-            <BanknoteArrowDown className='size-3.5' />
-            {t('Total Commission Earned')}
-          </div>
-          <div className='mt-1.5 text-2xl font-semibold tabular-nums'>
-            {formatQuota(data.agent_history_quota)}
-          </div>
-        </div>
-        <div className='rounded-2xl border p-4'>
-          <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium'>
-            <Users className='size-3.5' />
-            {t('Commission Rates')}
-          </div>
-          <div className='mt-1.5 text-sm font-semibold tabular-nums'>
-            {t('First {{first}}% · Then {{later}}%', {
-              first: firstPercent,
-              later: percent,
-            })}
-          </div>
-        </div>
-      </div>
+      </section>
 
-      <div className='flex items-center justify-between gap-2'>
-        <p className='text-muted-foreground text-xs'>
+      <div className='flex flex-wrap items-center justify-between gap-2'>
+        <p className='text-muted-foreground text-xs leading-relaxed'>
           {t(
             'Withdrawals are settled manually: once approved, the commission is paid to you via red envelope.'
           )}
         </p>
-        <Button onClick={() => setWithdrawOpen(true)} className='shrink-0'>
+        <Button
+          onClick={() => setWithdrawOpen(true)}
+          className='bg-gradient-to-r from-amber-500 to-orange-500 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600 dark:from-amber-400 dark:to-orange-400 dark:text-zinc-950 dark:shadow-amber-400/20 dark:hover:from-amber-300 dark:hover:to-orange-300'
+        >
           <BanknoteArrowDown className='size-4' />
           {t('Request Withdrawal')}
         </Button>
       </div>
 
-      {/* 三个列表 */}
-      <Tabs defaultValue='commissions'>
-        <TabsList>
-          <TabsTrigger value='commissions'>
-            {t('Commission Details')}
-          </TabsTrigger>
-          <TabsTrigger value='customers'>{t('My Customers')}</TabsTrigger>
-          <TabsTrigger value='withdrawals'>
-            {t('Withdrawal Records')}
-          </TabsTrigger>
-        </TabsList>
+      {/* 三个列表：分段切换 + 数据表 */}
+      <section className='border-border/60 space-y-4 rounded-3xl border bg-card p-5 shadow-sm sm:p-7'>
+        <div
+          role='tablist'
+          className='bg-muted/40 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border border-border/60 p-1'
+        >
+          {VIEWS.map((item) => (
+            <button
+              key={item.value}
+              type='button'
+              role='tab'
+              aria-selected={view === item.value}
+              onClick={() => setView(item.value)}
+              className={cn(
+                'rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all sm:text-sm',
+                view === item.value
+                  ? 'bg-amber-500/15 font-semibold text-amber-700 ring-1 ring-amber-500/30 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              )}
+            >
+              {t(item.labelKey)}
+            </button>
+          ))}
+        </div>
 
-        <TabsContent value='commissions' className='space-y-2'>
-          <TableShell
-            header={
-              <>
-                <th className='px-3 py-2 font-medium'>{t('Time')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Customer')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Level')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Top-up Amount')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Rate')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Commission')}</th>
-              </>
-            }
-          >
-            {(commissions.data?.items ?? []).map((item) => (
-              <tr key={item.id} className='whitespace-nowrap'>
-                <td className='px-3 py-2 text-xs tabular-nums'>
-                  {formatDateTime(item.created_at)}
-                </td>
-                <td className='px-3 py-2 font-medium'>{item.payer_username}</td>
-                <td className='px-3 py-2'>
-                  <Badge variant='outline'>
-                    {item.level === 2 ? t('Level 2') : t('Level 1')}
-                  </Badge>
-                </td>
-                <td className='px-3 py-2 tabular-nums'>
-                  {formatQuota(item.credited_quota)}
-                </td>
-                <td className='px-3 py-2 tabular-nums'>{item.percent}%</td>
-                <td className='px-3 py-2 font-semibold text-emerald-600 tabular-nums dark:text-emerald-400'>
-                  +{formatQuota(item.commission_quota)}
-                </td>
-              </tr>
-            ))}
-            {commissions.data?.items?.length === 0 ? (
-              <EmptyRow colSpan={6} />
-            ) : null}
-          </TableShell>
-          <Pager
-            page={commissionsPage}
-            total={commissions.data?.total ?? 0}
-            onPageChange={setCommissionsPage}
-          />
-        </TabsContent>
+        <div role='tabpanel' className='space-y-3'>
+          {view === 'commissions' ? (
+            <>
+              <TableShell
+                header={
+                  <>
+                    <Th>{t('Time')}</Th>
+                    <Th>{t('Customer')}</Th>
+                    <Th>{t('Level')}</Th>
+                    <Th>{t('Top-up Amount')}</Th>
+                    <Th>{t('Rate')}</Th>
+                    <Th>{t('Commission')}</Th>
+                  </>
+                }
+              >
+                {(commissions.data?.items ?? []).map((item) => (
+                  <tr
+                    key={item.id}
+                    className='hover:bg-muted/30 whitespace-nowrap transition-colors'
+                  >
+                    <td className='text-muted-foreground px-4 py-3 text-xs tabular-nums'>
+                      {formatDateTime(item.created_at)}
+                    </td>
+                    <td className='px-4 py-3 font-medium'>
+                      {item.payer_username}
+                    </td>
+                    <td className='px-4 py-3'>
+                      <span
+                        className={cn(
+                          'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                          item.level === 2
+                            ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                            : 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400'
+                        )}
+                      >
+                        {item.level === 2 ? t('Level 2') : t('Level 1')}
+                      </span>
+                    </td>
+                    <td className='px-4 py-3 tabular-nums'>
+                      {formatQuota(item.credited_quota)}
+                    </td>
+                    <td className='text-muted-foreground px-4 py-3 tabular-nums'>
+                      {item.percent}%
+                    </td>
+                    <td className='px-4 py-3 font-semibold text-emerald-600 tabular-nums dark:text-emerald-400'>
+                      +{formatQuota(item.commission_quota)}
+                    </td>
+                  </tr>
+                ))}
+                {commissions.data?.items?.length === 0 ? (
+                  <EmptyRow colSpan={6} />
+                ) : null}
+              </TableShell>
+              <Pager
+                page={commissionsPage}
+                total={commissions.data?.total ?? 0}
+                onPageChange={setCommissionsPage}
+              />
+            </>
+          ) : null}
 
-        <TabsContent value='customers' className='space-y-2'>
-          <TableShell
-            header={
-              <>
-                <th className='px-3 py-2 font-medium'>{t('Customer')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Registered At')}</th>
-                <th className='px-3 py-2 font-medium'>
-                  {t('Commission Generated')}
-                </th>
-              </>
-            }
-          >
-            {(customers.data?.items ?? []).map((item) => (
-              <tr key={item.user_id} className='whitespace-nowrap'>
-                <td className='px-3 py-2 font-medium'>
-                  {item.display_name || item.username}
-                </td>
-                <td className='px-3 py-2 text-xs tabular-nums'>
-                  {formatDateTime(item.created_at)}
-                </td>
-                <td className='px-3 py-2 font-semibold tabular-nums'>
-                  {formatQuota(Number(item.total_commission) || 0)}
-                </td>
-              </tr>
-            ))}
-            {customers.data?.items?.length === 0 ? (
-              <EmptyRow colSpan={3} />
-            ) : null}
-          </TableShell>
-          <Pager
-            page={customersPage}
-            total={customers.data?.total ?? 0}
-            onPageChange={setCustomersPage}
-          />
-        </TabsContent>
+          {view === 'customers' ? (
+            <>
+              <TableShell
+                header={
+                  <>
+                    <Th>{t('Customer')}</Th>
+                    <Th>{t('Registered At')}</Th>
+                    <Th>{t('Commission Generated')}</Th>
+                  </>
+                }
+              >
+                {(customers.data?.items ?? []).map((item) => (
+                  <tr
+                    key={item.user_id}
+                    className='hover:bg-muted/30 whitespace-nowrap transition-colors'
+                  >
+                    <td className='px-4 py-3 font-medium'>
+                      {item.display_name || item.username}
+                    </td>
+                    <td className='text-muted-foreground px-4 py-3 text-xs tabular-nums'>
+                      {formatDateTime(item.created_at)}
+                    </td>
+                    <td className='px-4 py-3 font-semibold tabular-nums'>
+                      {formatQuota(Number(item.total_commission) || 0)}
+                    </td>
+                  </tr>
+                ))}
+                {customers.data?.items?.length === 0 ? (
+                  <EmptyRow colSpan={3} />
+                ) : null}
+              </TableShell>
+              <Pager
+                page={customersPage}
+                total={customers.data?.total ?? 0}
+                onPageChange={setCustomersPage}
+              />
+            </>
+          ) : null}
 
-        <TabsContent value='withdrawals' className='space-y-2'>
-          <TableShell
-            header={
-              <>
-                <th className='px-3 py-2 font-medium'>{t('Time')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Amount')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Status')}</th>
-                <th className='px-3 py-2 font-medium'>{t('Remark')}</th>
-              </>
-            }
-          >
-            {(withdrawals.data?.items ?? []).map((item) => (
-              <tr key={item.id} className='whitespace-nowrap'>
-                <td className='px-3 py-2 text-xs tabular-nums'>
-                  {formatDateTime(item.applied_at)}
-                </td>
-                <td className='px-3 py-2 font-semibold tabular-nums'>
-                  {formatQuota(item.amount)}
-                </td>
-                <td className='px-3 py-2'>
-                  <WithdrawalStatusBadge status={item.status} />
-                </td>
-                <td className='text-muted-foreground max-w-60 truncate px-3 py-2 text-xs'>
-                  {item.remark || '-'}
-                </td>
-              </tr>
-            ))}
-            {withdrawals.data?.items?.length === 0 ? (
-              <EmptyRow colSpan={4} />
-            ) : null}
-          </TableShell>
-          <Pager
-            page={withdrawalsPage}
-            total={withdrawals.data?.total ?? 0}
-            onPageChange={setWithdrawalsPage}
-          />
-        </TabsContent>
-      </Tabs>
+          {view === 'withdrawals' ? (
+            <>
+              <TableShell
+                header={
+                  <>
+                    <Th>{t('Time')}</Th>
+                    <Th>{t('Amount')}</Th>
+                    <Th>{t('Status')}</Th>
+                    <Th>{t('Remark')}</Th>
+                  </>
+                }
+              >
+                {(withdrawals.data?.items ?? []).map((item) => (
+                  <tr
+                    key={item.id}
+                    className='hover:bg-muted/30 whitespace-nowrap transition-colors'
+                  >
+                    <td className='text-muted-foreground px-4 py-3 text-xs tabular-nums'>
+                      {formatDateTime(item.applied_at)}
+                    </td>
+                    <td className='px-4 py-3 font-semibold tabular-nums'>
+                      {formatQuota(item.amount)}
+                    </td>
+                    <td className='px-4 py-3'>
+                      <WithdrawalStatusBadge status={item.status} />
+                    </td>
+                    <td className='text-muted-foreground max-w-60 truncate px-4 py-3 text-xs'>
+                      {item.remark || '-'}
+                    </td>
+                  </tr>
+                ))}
+                {withdrawals.data?.items?.length === 0 ? (
+                  <EmptyRow colSpan={4} />
+                ) : null}
+              </TableShell>
+              <Pager
+                page={withdrawalsPage}
+                total={withdrawals.data?.total ?? 0}
+                onPageChange={setWithdrawalsPage}
+              />
+            </>
+          ) : null}
+        </div>
+      </section>
 
       {/* 提现弹窗 */}
       <Dialog
@@ -463,7 +552,11 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
           <Button variant='outline' onClick={() => setWithdrawOpen(false)}>
             {t('Cancel')}
           </Button>
-          <Button onClick={handleWithdraw} disabled={submitting}>
+          <Button
+            onClick={handleWithdraw}
+            disabled={submitting}
+            className='bg-gradient-to-r from-amber-500 to-orange-500 font-semibold text-white shadow-lg shadow-amber-500/25 transition-all hover:from-amber-600 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-60 dark:from-amber-400 dark:to-orange-400 dark:text-zinc-950 dark:shadow-amber-400/20 dark:hover:from-amber-300 dark:hover:to-orange-300'
+          >
             {submitting ? t('Submitting') : t('Submit Application')}
           </Button>
         </div>
