@@ -14,7 +14,9 @@ docs
 
 # 本地调试/历史产物，不进镜像也不进构建上下文（合计约 700MB，
 # 漏排是 docker build 变慢的主因）
-*.exe
+# 写成 *.exe* 而不是 *.exe：`main.exe~`（Windows 备份名带波浪号，160MB）不匹配
+# *.exe，此前一直漏进构建上下文，每次构建多传 160MB 并写进 builder2 的 COPY . . 层
+*.exe*
 *.tar
 *.dump
 logs
