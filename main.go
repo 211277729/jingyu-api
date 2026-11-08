@@ -124,6 +124,9 @@ func main() {
 	// 每日访问打点：内存缓冲周期性批量落库
 	go model.InitVisitRecorder()
 
+	// 超长上下文守卫命中日志：同款内存缓冲落库
+	go model.InitGuardLogRecorder()
+
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
 		if err != nil {

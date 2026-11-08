@@ -166,6 +166,10 @@ func InitOptionMap() {
 	common.OptionMap["ModelRequestRateLimitCount"] = strconv.Itoa(setting.ModelRequestRateLimitCount)
 	common.OptionMap["ModelRequestRateLimitDurationMinutes"] = strconv.Itoa(setting.ModelRequestRateLimitDurationMinutes)
 	common.OptionMap["ModelRequestRateLimitSuccessCount"] = strconv.Itoa(setting.ModelRequestRateLimitSuccessCount)
+	common.OptionMap["ContextLengthGuardMaxTokens"] = strconv.Itoa(setting.ContextLengthGuardMaxTokens)
+	common.OptionMap["ContextLengthGuardIdleMinutes"] = strconv.Itoa(setting.ContextLengthGuardIdleMinutes)
+	common.OptionMap["ContextLengthGuardExemptLimit"] = strconv.Itoa(setting.ContextLengthGuardExemptLimit)
+	common.OptionMap["ContextLengthGuardMessage"] = setting.ContextLengthGuardMessage
 	common.OptionMap["ModelRequestRateLimitGroup"] = setting.ModelRequestRateLimitGroup2JSONString()
 	common.OptionMap["ModelRatio"] = ratio_setting.ModelRatio2JSONString()
 	common.OptionMap["ModelPrice"] = ratio_setting.ModelPrice2JSONString()
@@ -698,6 +702,14 @@ func updateOptionMap(key string, value string) (err error) {
 		setting.ModelRequestRateLimitDurationMinutes, _ = strconv.Atoi(value)
 	case "ModelRequestRateLimitSuccessCount":
 		setting.ModelRequestRateLimitSuccessCount, _ = strconv.Atoi(value)
+	case "ContextLengthGuardMaxTokens":
+		setting.ContextLengthGuardMaxTokens, _ = strconv.Atoi(value)
+	case "ContextLengthGuardIdleMinutes":
+		setting.ContextLengthGuardIdleMinutes, _ = strconv.Atoi(value)
+	case "ContextLengthGuardExemptLimit":
+		setting.ContextLengthGuardExemptLimit, _ = strconv.Atoi(value)
+	case "ContextLengthGuardMessage":
+		setting.ContextLengthGuardMessage = value
 	case "ModelRequestRateLimitGroup":
 		err = setting.UpdateModelRequestRateLimitGroupByJSONString(value)
 	case "RetryTimes":

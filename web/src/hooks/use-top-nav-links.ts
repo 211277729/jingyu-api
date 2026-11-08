@@ -98,6 +98,20 @@ export function useTopNavLinks(): TopNavLink[] {
     })
   }
 
+  // 资源广场：可下载的 MCP / Skills / Agent 工具，公开引流入口
+  const resources = modules?.resources
+  const resourcesEnabled =
+    typeof resources === 'object' && resources !== null
+      ? resources.enabled
+      : resources !== false
+  if (resourcesEnabled) {
+    links.push({
+      title: t('Resource Hub'),
+      href: '/resources',
+      openInNewTab: true,
+    })
+  }
+
   // Rankings
   const rankings = modules?.rankings
   if (rankings && typeof rankings === 'object' && rankings.enabled) {

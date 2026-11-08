@@ -24,6 +24,7 @@ import {
   Eye,
   FileText,
   FlaskConical,
+  Gauge,
   Handshake,
   Key,
   LayoutDashboard,
@@ -165,6 +166,11 @@ export function useSidebarData(): SidebarData {
             title: t('Daily Visits'),
             url: '/daily-visits',
             icon: Eye,
+          },
+          {
+            title: t('Guard Logs'),
+            url: '/guard-logs',
+            icon: Gauge,
           },
           {
             title: t('Redemption Codes'),

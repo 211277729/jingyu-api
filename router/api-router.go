@@ -409,6 +409,13 @@ func SetApiRouter(router *gin.Engine) {
 			visitRoute.GET("/detail", controller.GetDailyVisitDetail)
 		}
 
+		guardLogRoute := apiRouter.Group("/guard_log")
+		guardLogRoute.Use(middleware.AdminAuth())
+		{
+			guardLogRoute.GET("/stats", controller.GetGuardStats)
+			guardLogRoute.GET("/", controller.GetGuardLogList)
+		}
+
 		logRoute.Use(middleware.CORS(), middleware.CriticalRateLimit())
 		{
 			logRoute.GET("/token", middleware.TokenAuthReadOnly(), controller.GetLogByKey)

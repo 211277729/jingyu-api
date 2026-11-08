@@ -16,6 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { ContextGuardSection } from '../request-limits/context-guard-section'
 import { RateLimitSection } from '../request-limits/rate-limit-section'
 import { SSRFSection } from '../request-limits/ssrf-section'
 import { TokenLimitSection } from '../request-limits/token-limit-section'
@@ -73,6 +74,20 @@ const SECURITY_SECTIONS = [
         defaultValues={{
           'token_setting.max_user_tokens':
             settings['token_setting.max_user_tokens'],
+        }}
+      />
+    ),
+  },
+  {
+    id: 'context-guard',
+    titleKey: 'Context Length Guard',
+    build: (settings: SecuritySettings) => (
+      <ContextGuardSection
+        defaultValues={{
+          ContextLengthGuardMaxTokens: settings.ContextLengthGuardMaxTokens,
+          ContextLengthGuardIdleMinutes: settings.ContextLengthGuardIdleMinutes,
+          ContextLengthGuardExemptLimit: settings.ContextLengthGuardExemptLimit,
+          ContextLengthGuardMessage: settings.ContextLengthGuardMessage,
         }}
       />
     ),

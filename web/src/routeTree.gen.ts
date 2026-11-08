@@ -36,6 +36,8 @@ import { Route as NavIndexRouteImport } from './routes/nav/index'
 import { Route as OauthProviderRouteImport } from './routes/oauth/$provider'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
 import { Route as RankingsIndexRouteImport } from './routes/rankings/index'
+import { Route as ResourcesIndexRouteImport } from './routes/resources/index'
+import { Route as ResourcesSlugRouteImport } from './routes/resources/$slug'
 import { Route as SetupIndexRouteImport } from './routes/setup/index'
 import { Route as SourceIndexRouteImport } from './routes/source/index'
 import { Route as authUserResetRouteImport } from './routes/(auth)/user/reset'
@@ -43,9 +45,11 @@ import { Route as AuthenticatedAgentAdminIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAgentIndexRouteImport } from './routes/_authenticated/agent/index'
 import { Route as AuthenticatedChannelsIndexRouteImport } from './routes/_authenticated/channels/index'
 import { Route as AuthenticatedChatChatIdRouteImport } from './routes/_authenticated/chat/$chatId'
+import { Route as AuthenticatedDailyVisitsIndexRouteImport } from './routes/_authenticated/daily-visits/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedDashboardSectionRouteImport } from './routes/_authenticated/dashboard/$section'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedGuardLogsIndexRouteImport } from './routes/_authenticated/guard-logs/index'
 import { Route as AuthenticatedInviteIndexRouteImport } from './routes/_authenticated/invite/index'
 import { Route as AuthenticatedKeysIndexRouteImport } from './routes/_authenticated/keys/index'
 import { Route as AuthenticatedModelsIndexRouteImport } from './routes/_authenticated/models/index'
@@ -215,6 +219,16 @@ const RankingsIndexRoute = RankingsIndexRouteImport.update({
   path: '/rankings/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/resources/',
+  path: '/resources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesSlugRoute = ResourcesSlugRouteImport.update({
+  id: '/resources/$slug',
+  path: '/resources/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetupIndexRoute = SetupIndexRouteImport.update({
   id: '/setup/',
   path: '/setup/',
@@ -252,6 +266,12 @@ const AuthenticatedChatChatIdRoute = AuthenticatedChatChatIdRouteImport.update({
   path: '/chat/$chatId',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDailyVisitsIndexRoute =
+  AuthenticatedDailyVisitsIndexRouteImport.update({
+    id: '/daily-visits/',
+    path: '/daily-visits/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardIndexRoute =
   AuthenticatedDashboardIndexRouteImport.update({
     id: '/dashboard/',
@@ -268,6 +288,12 @@ const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
     path: '/errors/$error',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGuardLogsIndexRoute =
+  AuthenticatedGuardLogsIndexRouteImport.update({
+    id: '/guard-logs/',
+    path: '/guard-logs/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedInviteIndexRoute =
@@ -492,12 +518,14 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/about/': typeof AboutIndexRoute
   '/agent-program/': typeof AgentProgramIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/nav/': typeof NavIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/rankings/': typeof RankingsIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/setup/': typeof SetupIndexRoute
   '/source/': typeof SourceIndexRoute
   '/user/reset': typeof authUserResetRoute
@@ -510,7 +538,9 @@ export interface FileRoutesByFullPath {
   '/agent-admin/': typeof AuthenticatedAgentAdminIndexRoute
   '/agent/': typeof AuthenticatedAgentIndexRoute
   '/channels/': typeof AuthenticatedChannelsIndexRoute
+  '/daily-visits/': typeof AuthenticatedDailyVisitsIndexRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/guard-logs/': typeof AuthenticatedGuardLogsIndexRoute
   '/invite/': typeof AuthenticatedInviteIndexRoute
   '/keys/': typeof AuthenticatedKeysIndexRoute
   '/models/': typeof AuthenticatedModelsIndexRoute
@@ -562,12 +592,14 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/about': typeof AboutIndexRoute
   '/agent-program': typeof AgentProgramIndexRoute
   '/docs': typeof DocsIndexRoute
   '/nav': typeof NavIndexRoute
   '/pricing': typeof PricingIndexRoute
   '/rankings': typeof RankingsIndexRoute
+  '/resources': typeof ResourcesIndexRoute
   '/setup': typeof SetupIndexRoute
   '/source': typeof SourceIndexRoute
   '/user/reset': typeof authUserResetRoute
@@ -580,7 +612,9 @@ export interface FileRoutesByTo {
   '/agent-admin': typeof AuthenticatedAgentAdminIndexRoute
   '/agent': typeof AuthenticatedAgentIndexRoute
   '/channels': typeof AuthenticatedChannelsIndexRoute
+  '/daily-visits': typeof AuthenticatedDailyVisitsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
+  '/guard-logs': typeof AuthenticatedGuardLogsIndexRoute
   '/invite': typeof AuthenticatedInviteIndexRoute
   '/keys': typeof AuthenticatedKeysIndexRoute
   '/models': typeof AuthenticatedModelsIndexRoute
@@ -636,12 +670,14 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/resources/$slug': typeof ResourcesSlugRoute
   '/about/': typeof AboutIndexRoute
   '/agent-program/': typeof AgentProgramIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/nav/': typeof NavIndexRoute
   '/pricing/': typeof PricingIndexRoute
   '/rankings/': typeof RankingsIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
   '/setup/': typeof SetupIndexRoute
   '/source/': typeof SourceIndexRoute
   '/(auth)/user/reset': typeof authUserResetRoute
@@ -654,7 +690,9 @@ export interface FileRoutesById {
   '/_authenticated/agent-admin/': typeof AuthenticatedAgentAdminIndexRoute
   '/_authenticated/agent/': typeof AuthenticatedAgentIndexRoute
   '/_authenticated/channels/': typeof AuthenticatedChannelsIndexRoute
+  '/_authenticated/daily-visits/': typeof AuthenticatedDailyVisitsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
+  '/_authenticated/guard-logs/': typeof AuthenticatedGuardLogsIndexRoute
   '/_authenticated/invite/': typeof AuthenticatedInviteIndexRoute
   '/_authenticated/keys/': typeof AuthenticatedKeysIndexRoute
   '/_authenticated/models/': typeof AuthenticatedModelsIndexRoute
@@ -709,12 +747,14 @@ export interface FileRouteTypes {
     | '/503'
     | '/chat2link'
     | '/oauth/$provider'
+    | '/resources/$slug'
     | '/about/'
     | '/agent-program/'
     | '/docs/'
     | '/nav/'
     | '/pricing/'
     | '/rankings/'
+    | '/resources/'
     | '/setup/'
     | '/source/'
     | '/user/reset'
@@ -727,7 +767,9 @@ export interface FileRouteTypes {
     | '/agent-admin/'
     | '/agent/'
     | '/channels/'
+    | '/daily-visits/'
     | '/dashboard/'
+    | '/guard-logs/'
     | '/invite/'
     | '/keys/'
     | '/models/'
@@ -779,12 +821,14 @@ export interface FileRouteTypes {
     | '/503'
     | '/chat2link'
     | '/oauth/$provider'
+    | '/resources/$slug'
     | '/about'
     | '/agent-program'
     | '/docs'
     | '/nav'
     | '/pricing'
     | '/rankings'
+    | '/resources'
     | '/setup'
     | '/source'
     | '/user/reset'
@@ -797,7 +841,9 @@ export interface FileRouteTypes {
     | '/agent-admin'
     | '/agent'
     | '/channels'
+    | '/daily-visits'
     | '/dashboard'
+    | '/guard-logs'
     | '/invite'
     | '/keys'
     | '/models'
@@ -852,12 +898,14 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/chat2link'
     | '/oauth/$provider'
+    | '/resources/$slug'
     | '/about/'
     | '/agent-program/'
     | '/docs/'
     | '/nav/'
     | '/pricing/'
     | '/rankings/'
+    | '/resources/'
     | '/setup/'
     | '/source/'
     | '/(auth)/user/reset'
@@ -870,7 +918,9 @@ export interface FileRouteTypes {
     | '/_authenticated/agent-admin/'
     | '/_authenticated/agent/'
     | '/_authenticated/channels/'
+    | '/_authenticated/daily-visits/'
     | '/_authenticated/dashboard/'
+    | '/_authenticated/guard-logs/'
     | '/_authenticated/invite/'
     | '/_authenticated/keys/'
     | '/_authenticated/models/'
@@ -917,12 +967,14 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   OauthProviderRoute: typeof OauthProviderRoute
+  ResourcesSlugRoute: typeof ResourcesSlugRoute
   AboutIndexRoute: typeof AboutIndexRoute
   AgentProgramIndexRoute: typeof AgentProgramIndexRoute
   DocsIndexRoute: typeof DocsIndexRoute
   NavIndexRoute: typeof NavIndexRoute
   PricingIndexRoute: typeof PricingIndexRoute
   RankingsIndexRoute: typeof RankingsIndexRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
   SetupIndexRoute: typeof SetupIndexRoute
   SourceIndexRoute: typeof SourceIndexRoute
   PricingModelIdIndexRoute: typeof PricingModelIdIndexRoute
@@ -1119,6 +1171,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RankingsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/resources/': {
+      id: '/resources/'
+      path: '/resources'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources/$slug': {
+      id: '/resources/$slug'
+      path: '/resources/$slug'
+      fullPath: '/resources/$slug'
+      preLoaderRoute: typeof ResourcesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/setup/': {
       id: '/setup/'
       path: '/setup'
@@ -1168,6 +1234,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatChatIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/daily-visits/': {
+      id: '/_authenticated/daily-visits/'
+      path: '/daily-visits'
+      fullPath: '/daily-visits/'
+      preLoaderRoute: typeof AuthenticatedDailyVisitsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard/': {
       id: '/_authenticated/dashboard/'
       path: '/dashboard'
@@ -1187,6 +1260,13 @@ declare module '@tanstack/react-router' {
       path: '/errors/$error'
       fullPath: '/errors/$error'
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guard-logs/': {
+      id: '/_authenticated/guard-logs/'
+      path: '/guard-logs'
+      fullPath: '/guard-logs/'
+      preLoaderRoute: typeof AuthenticatedGuardLogsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/invite/': {
@@ -1531,7 +1611,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgentAdminIndexRoute: typeof AuthenticatedAgentAdminIndexRoute
   AuthenticatedAgentIndexRoute: typeof AuthenticatedAgentIndexRoute
   AuthenticatedChannelsIndexRoute: typeof AuthenticatedChannelsIndexRoute
+  AuthenticatedDailyVisitsIndexRoute: typeof AuthenticatedDailyVisitsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
+  AuthenticatedGuardLogsIndexRoute: typeof AuthenticatedGuardLogsIndexRoute
   AuthenticatedInviteIndexRoute: typeof AuthenticatedInviteIndexRoute
   AuthenticatedKeysIndexRoute: typeof AuthenticatedKeysIndexRoute
   AuthenticatedModelsIndexRoute: typeof AuthenticatedModelsIndexRoute
@@ -1560,7 +1642,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgentAdminIndexRoute: AuthenticatedAgentAdminIndexRoute,
   AuthenticatedAgentIndexRoute: AuthenticatedAgentIndexRoute,
   AuthenticatedChannelsIndexRoute: AuthenticatedChannelsIndexRoute,
+  AuthenticatedDailyVisitsIndexRoute: AuthenticatedDailyVisitsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
+  AuthenticatedGuardLogsIndexRoute: AuthenticatedGuardLogsIndexRoute,
   AuthenticatedInviteIndexRoute: AuthenticatedInviteIndexRoute,
   AuthenticatedKeysIndexRoute: AuthenticatedKeysIndexRoute,
   AuthenticatedModelsIndexRoute: AuthenticatedModelsIndexRoute,
@@ -1593,12 +1677,14 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   OauthProviderRoute: OauthProviderRoute,
+  ResourcesSlugRoute: ResourcesSlugRoute,
   AboutIndexRoute: AboutIndexRoute,
   AgentProgramIndexRoute: AgentProgramIndexRoute,
   DocsIndexRoute: DocsIndexRoute,
   NavIndexRoute: NavIndexRoute,
   PricingIndexRoute: PricingIndexRoute,
   RankingsIndexRoute: RankingsIndexRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
   SetupIndexRoute: SetupIndexRoute,
   SourceIndexRoute: SourceIndexRoute,
   PricingModelIdIndexRoute: PricingModelIdIndexRoute,
