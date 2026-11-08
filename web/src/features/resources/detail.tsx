@@ -24,11 +24,15 @@ import { useTranslation } from 'react-i18next'
 import { PageTransition } from '@/components/page-transition'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { CodeBlock } from '@/features/docs/components/code-block'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { cn } from '@/lib/utils'
 
-import { GatewayCta, ResourceBackdrop, ResourceCard } from './components'
+import {
+  GatewayCta,
+  ResourceBackdrop,
+  ResourceCard,
+  SnippetBlock,
+} from './components'
 import { RESOURCES } from './data'
 import {
   KIND_STYLES,
@@ -148,7 +152,7 @@ export function ResourceDetail({ slug }: { slug: string }) {
             <h2 className='text-sm font-semibold tracking-wide'>
               {t('Install command')}
             </h2>
-            <CodeBlock
+            <SnippetBlock
               className='mt-2.5'
               label='terminal'
               code={item.installCommand}

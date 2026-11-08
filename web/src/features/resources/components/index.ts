@@ -19,3 +19,4 @@ For commercial licensing, please contact support@quantumnous.com
 export { ResourceCard } from './resource-card'
 export { GatewayCta } from './gateway-cta'
 export { ResourceBackdrop } from './backdrop'
+export { SnippetBlock } from './snippet-block'

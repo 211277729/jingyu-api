@@ -18,12 +18,10 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useTranslation } from 'react-i18next'
 
 import { Button } from '@/components/ui/button'
-import { CodeBlock } from '@/features/docs/components/code-block'
+import { SnippetBlock } from '@/features/resources/components/snippet-block'
 import { cn } from '@/lib/utils'
 
 type SnippetTab = {
@@ -121,11 +119,12 @@ export function GatewayCta() {
           ))}
         </div>
 
-        <CodeBlock
-          className='mt-3'
-          label={t(snippet.labelKey)}
-          code={snippet.buildCode(origin)}
-        />
+        <div className='mt-3'>
+          <SnippetBlock
+            label={t(snippet.labelKey)}
+            code={snippet.buildCode(origin)}
+          />
+        </div>
 
         <div className='mt-4'>
           <Button render={<Link to='/dashboard' />}>
