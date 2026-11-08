@@ -23,7 +23,7 @@ import { Globe, User as UserIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { BadgeCell, DataTablePage, useDataTable } from '@/components/data-table'
+import { DataTablePage, useDataTable } from '@/components/data-table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { useMediaQuery } from '@/hooks'
@@ -115,25 +115,30 @@ export function DailyVisitsTable() {
         header: t('Visitor'),
         cell: ({ row }) => {
           const item = row.original
-          return (
-            <BadgeCell>
-              <span className='flex items-center gap-1.5'>
-                {item.is_anonymous ? (
-                  <Globe className='text-muted-foreground h-4 w-4 shrink-0' />
-                ) : (
-                  <UserIcon className='text-muted-foreground h-4 w-4 shrink-0' />
-                )}
-                <span className='max-w-48 truncate'>
-                  {item.is_anonymous
-                    ? item.ip
-                    : item.username || `#${item.user_id}`}
+          if (item.is_anonymous) {
+            return (
+              <div className='flex items-center gap-1.5'>
+                <Globe className='text-warning h-4 w-4 shrink-0' />
+                <span className='text-warning max-w-48 truncate font-medium'>
+                  {item.ip}
                 </span>
+                <Badge variant='warning' className='shrink-0'>
+                  {t('Anonymous IP')}
+                </Badge>
+              </div>
+            )
+          }
+          return (
+            <div className='flex items-center gap-1.5'>
+              <UserIcon className='text-muted-foreground h-4 w-4 shrink-0' />
+              <span className='max-w-48 truncate'>
+                {item.username || `#${item.user_id}`}
               </span>
-              <Badge variant={item.is_anonymous ? 'outline' : 'secondary'}>
-                {item.is_anonymous ? t('Anonymous') : t('User')}
+              <Badge variant='secondary' className='shrink-0'>
+                {t('User')}
               </Badge>
               {item.is_new_user && <Badge variant='default'>{t('New')}</Badge>}
-            </BadgeCell>
+            </div>
           )
         },
         meta: { mobileTitle: t('Visitor') },
@@ -168,6 +173,7 @@ export function DailyVisitsTable() {
           <Button
             variant='ghost'
             size='sm'
+            className='-mr-2 font-normal'
             onClick={() => openDetail(row.original)}
           >
             {t('Details')}
@@ -187,6 +193,10 @@ export function DailyVisitsTable() {
     manualPagination: true,
     totalCount: data?.total || 0,
   })
+
+  //「操作」列头与「详情」文本右缘对齐（按钮负外边距抵消单元格内边距）
+  const getColumnClassName = (columnId: string) =>
+    columnId === 'actions' ? 'text-right' : undefined
 
   const statsNode = stats ? (
     <div className='flex flex-wrap items-center gap-2'>
@@ -212,6 +222,7 @@ export function DailyVisitsTable() {
         columns={columns}
         isLoading={isLoading}
         isFetching={isFetching}
+        getColumnClassName={getColumnClassName}
         emptyTitle={t('No Visits Found')}
         emptyDescription={t(
           'No visit records in this date range. Visitors are recorded when they browse the site.'

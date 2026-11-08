@@ -7966,6 +7966,7 @@
     "New Users": "新用户",
     "No Visits Found": "未找到访问记录",
     "Daily Visits": "每日访问",
+    "Anonymous IP": "陌生 IP",
     "No visit records in this date range. Visitors are recorded when they browse the site.": "该日期范围内暂无访问记录。访客浏览网站时会被记录。"
   }
 }
