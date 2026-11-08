@@ -21,6 +21,7 @@ import {
   Box,
   ClipboardList,
   CreditCard,
+  Eye,
   FileText,
   FlaskConical,
   Handshake,
@@ -159,6 +160,11 @@ export function useSidebarData(): SidebarData {
             title: t('Users'),
             url: '/users',
             icon: Users,
+          },
+          {
+            title: t('Daily Visits'),
+            url: '/daily-visits',
+            icon: Eye,
           },
           {
             title: t('Redemption Codes'),

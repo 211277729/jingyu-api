@@ -7948,6 +7948,24 @@
     "Billing modes": "Billing modes",
     "Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥": "Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥",
     "Site-wide limit (registrations)": "Site-wide limit (registrations)",
-    "Site-wide window (seconds)": "Site-wide window (seconds)"
+    "Site-wide window (seconds)": "Site-wide window (seconds)",
+    "Visit Details": "Visit Details",
+    "Date": "Date",
+    "Failed to load visit details": "Failed to load visit details",
+    "No visit records": "No visit records",
+    "Failed to load daily visits": "Failed to load daily visits",
+    "Visitor": "Visitor",
+    "Anonymous": "Anonymous",
+    "New": "New",
+    "Visits": "Visits",
+    "First Visit": "First Visit",
+    "Last Visit": "Last Visit",
+    "Total Visitors": "Total Visitors",
+    "Logged In": "Logged In",
+    "Anonymous Visitors": "Anonymous Visitors",
+    "New Users": "New Users",
+    "No Visits Found": "No Visits Found",
+    "Daily Visits": "Daily Visits",
+    "No visit records in this date range. Visitors are recorded when they browse the site.": "No visit records in this date range. Visitors are recorded when they browse the site."
   }
 }

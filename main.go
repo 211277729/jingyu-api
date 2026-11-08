@@ -121,6 +121,9 @@ func main() {
 	// 数据看板
 	go model.UpdateQuotaData()
 
+	// 每日访问打点：内存缓冲周期性批量落库
+	go model.InitVisitRecorder()
+
 	if os.Getenv("CHANNEL_UPDATE_FREQUENCY") != "" {
 		frequency, err := strconv.Atoi(os.Getenv("CHANNEL_UPDATE_FREQUENCY"))
 		if err != nil {

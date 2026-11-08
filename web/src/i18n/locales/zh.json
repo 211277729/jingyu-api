@@ -7948,6 +7948,24 @@
     "Billing modes": "计费方式",
     "Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥": "本站汇率 ¥1 = $1 · 国外模型统一换算 ¥ 计价",
     "Site-wide limit (registrations)": "全站总量限制（次）",
-    "Site-wide window (seconds)": "全站窗口（秒）"
+    "Site-wide window (seconds)": "全站窗口（秒）",
+    "Visit Details": "访问明细",
+    "Date": "日期",
+    "Failed to load visit details": "加载访问明细失败",
+    "No visit records": "暂无访问记录",
+    "Failed to load daily visits": "加载每日访问记录失败",
+    "Visitor": "访客",
+    "Anonymous": "匿名",
+    "New": "新",
+    "Visits": "访问次数",
+    "First Visit": "首次访问",
+    "Last Visit": "最新访问",
+    "Total Visitors": "总访客",
+    "Logged In": "登录用户",
+    "Anonymous Visitors": "陌生 IP",
+    "New Users": "新用户",
+    "No Visits Found": "未找到访问记录",
+    "Daily Visits": "每日访问",
+    "No visit records in this date range. Visitors are recorded when they browse the site.": "该日期范围内暂无访问记录。访客浏览网站时会被记录。"
   }
 }

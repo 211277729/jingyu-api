@@ -7948,6 +7948,24 @@
     "Billing modes": "Billing modes",
     "Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥": "Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥",
     "Site-wide limit (registrations)": "Site-wide limit (registrations)",
-    "Site-wide window (seconds)": "Site-wide window (seconds)"
+    "Site-wide window (seconds)": "Site-wide window (seconds)",
+    "Visit Details": "訪問明細",
+    "Date": "日期",
+    "Failed to load visit details": "載入訪問明細失敗",
+    "No visit records": "暫無訪問記錄",
+    "Failed to load daily visits": "載入每日訪問記錄失敗",
+    "Visitor": "訪客",
+    "Anonymous": "匿名",
+    "New": "新",
+    "Visits": "訪問次數",
+    "First Visit": "首次訪問",
+    "Last Visit": "最新訪問",
+    "Total Visitors": "總訪客",
+    "Logged In": "登入用戶",
+    "Anonymous Visitors": "陌生 IP",
+    "New Users": "新用戶",
+    "No Visits Found": "未找到訪問記錄",
+    "Daily Visits": "每日訪問",
+    "No visit records in this date range. Visitors are recorded when they browse the site.": "該日期範圍內暫無訪問記錄。訪客瀏覽網站時會被記錄。"
   }
 }

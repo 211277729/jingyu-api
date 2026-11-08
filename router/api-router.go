@@ -401,6 +401,14 @@ func SetApiRouter(router *gin.Engine) {
 		dataRoute.GET("/flow", middleware.AdminAuth(), controller.GetAllFlowQuotaDates)
 		dataRoute.GET("/flow/self", middleware.UserAuth(), controller.GetUserFlowQuotaDates)
 
+		apiRouter.POST("/visit/track", middleware.TryUserAuth(), controller.TrackVisit)
+		visitRoute := apiRouter.Group("/visit")
+		visitRoute.Use(middleware.AdminAuth())
+		{
+			visitRoute.GET("/daily", controller.GetDailyVisits)
+			visitRoute.GET("/detail", controller.GetDailyVisitDetail)
+		}
+
 		logRoute.Use(middleware.CORS(), middleware.CriticalRateLimit())
 		{
 			logRoute.GET("/token", middleware.TokenAuthReadOnly(), controller.GetLogByKey)
