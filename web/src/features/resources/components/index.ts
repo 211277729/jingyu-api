@@ -17,6 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 export { ResourceCard } from './resource-card'
-export { GatewayCta } from './gateway-cta'
+export { ResourceGallery } from './resource-gallery'
+export { McpInstall } from './mcp-install'
 export { ResourceBackdrop } from './backdrop'
 export { SnippetBlock } from './snippet-block'

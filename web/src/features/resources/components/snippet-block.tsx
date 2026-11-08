@@ -19,8 +19,9 @@ For commercial licensing, please contact support@quantumnous.com
 import { CopyButton } from '@/components/copy-button'
 import { cn } from '@/lib/utils'
 
-/** 命令动词（行首的 export / curl 等）渲染为薄荷绿，空格开头视为延续行不重复高亮。 */
-const COMMAND_RE = /^(\s*)(export|curl)\b/
+/** 命令动词（行首的 export / claude / codex 等）渲染为薄荷绿，空格开头视为延续行不重复高亮。 */
+const COMMAND_RE =
+  /^(\s*)(export|curl|claude|codex|gemini|npm|npx|docker|uvx)\b/
 
 /** 生成内容相关的 React key：同一行的重复片段用出现序号区分。 */
 function uniqueKey(builder: Map<string, number>, base: string) {
@@ -42,7 +43,7 @@ function SnippetLine(props: { line: string }) {
     return <span className='block text-zinc-200'>{'\u00a0'}</span>
   }
   const pieces = line.split(/("[^"]*")/g).filter((piece) => piece !== '')
-  // 行首命令动词（export / curl）单独高亮；命中时首个片段已由它开头。
+  // 行首命令动词（export / claude 等）单独高亮；命中时首个片段已由它开头。
   const commandMatch = COMMAND_RE.exec(pieces[0] ?? '')
   const [, ...plainPieces] = commandMatch ? pieces : [null, ...pieces]
   const snippetKeys = new Map<string, number>()

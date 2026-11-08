@@ -16,18 +16,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 import { ResourceDetail } from '@/features/resources/detail'
-import { findResourceBySlug } from '@/features/resources/lib'
 
 export const Route = createFileRoute('/resources/$slug')({
-  beforeLoad: ({ params }) => {
-    // 数据随前端打包，加载期即可判定 slug 有效性，直接回落到广场
-    if (!findResourceBySlug(params.slug)) {
-      throw redirect({ to: '/resources' })
-    }
-  },
+  // 条目来自后端接口，slug 是否有效由页面在数据到达后判断
   component: ResourceDetailRoute,
 })
 

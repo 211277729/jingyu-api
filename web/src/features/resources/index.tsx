@@ -16,36 +16,41 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { PackageSearch, Search, Sparkles } from 'lucide-react'
+import { Search, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { BackToTopButton } from '@/components/back-to-top-button'
 import { PublicLayout } from '@/components/layout'
 import { PageTransition } from '@/components/page-transition'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
-import { ResourceBackdrop, ResourceCard } from './components'
-import { filterResources, RESOURCE_KIND_TABS } from './lib'
+import { useResourcesQuery } from './api'
+import { ResourceBackdrop, ResourceGallery } from './components'
+import { EMPTY_RESOURCES, filterResources, RESOURCE_KIND_TABS } from './lib'
 import type { ResourceKind } from './types'
 
 export function Resources() {
   const { t } = useTranslation()
   const [kind, setKind] = useState<'all' | ResourceKind>('all')
   const [query, setQuery] = useState('')
+  const { data, isLoading, isError, refetch } = useResourcesQuery()
+  const items = data ?? EMPTY_RESOURCES
 
   const counts = useMemo(() => {
-    const list = filterResources('all', '')
     return {
-      mcp: list.filter((item) => item.kind === 'mcp').length,
-      skill: list.filter((item) => item.kind === 'skill').length,
-      'agent-tool': list.filter((item) => item.kind === 'agent-tool').length,
-      total: list.length,
+      mcp: items.filter((item) => item.kind === 'mcp').length,
+      skill: items.filter((item) => item.kind === 'skill').length,
+      'agent-tool': items.filter((item) => item.kind === 'agent-tool').length,
+      total: items.length,
     }
-  }, [])
+  }, [items])
 
-  const filtered = useMemo(() => filterResources(kind, query), [kind, query])
+  const filtered = useMemo(
+    () => filterResources(items, kind, query),
+    [items, kind, query]
+  )
 
   const statItems = useMemo(
     () => [
@@ -74,7 +79,7 @@ export function Resources() {
             </h1>
             <p className='text-muted-foreground/60 mx-auto mt-3 max-w-2xl text-xs leading-relaxed sm:mt-4 sm:text-sm'>
               {t(
-                'Ready-to-use MCP servers, agent skills and AI tools. Grab what you need, plug it into the gateway, and ship faster.'
+                'Ready-to-use MCP servers, agent skills and AI tools. Grab what you need, install it in your own client, and ship faster.'
               )}
             </p>
             <div className='relative mx-auto mt-5 max-w-2xl sm:mt-7'>
@@ -149,34 +154,19 @@ export function Resources() {
             })}
           </div>
 
-          {filtered.length > 0 ? (
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4'>
-              {filtered.map((item) => (
-                <ResourceCard key={item.slug} item={item} />
-              ))}
-            </div>
-          ) : (
-            <div className='text-muted-foreground mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center'>
-              <PackageSearch
-                aria-hidden
-                className='text-muted-foreground/40 size-10'
-              />
-              <p className='text-sm'>
-                {t('No resources match your search. Try a different keyword.')}
-              </p>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => {
-                  setQuery('')
-                  setKind('all')
-                }}
-              >
-                {t('All')}
-              </Button>
-            </div>
-          )}
+          <ResourceGallery
+            isLoading={isLoading}
+            isError={isError}
+            items={items}
+            filtered={filtered}
+            onRetry={() => void refetch()}
+            onClearFilters={() => {
+              setQuery('')
+              setKind('all')
+            }}
+          />
         </PageTransition>
+        <BackToTopButton />
       </div>
     </PublicLayout>
   )

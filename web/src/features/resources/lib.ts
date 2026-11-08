@@ -16,7 +16,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { RESOURCES } from './data'
+import { buildDefaultMcpSnippet } from './mcp'
 import type {
   LocalizedList,
   LocalizedText,
@@ -70,16 +70,33 @@ export const KIND_STYLES: Record<
   },
 }
 
-export function findResourceBySlug(slug: string): ResourceItem | undefined {
-  return RESOURCES.find((item) => item.slug === slug)
+/**
+ * 接口还没返回时的稳定空数组。
+ * 直接写 `data ?? []` 会让每次渲染都产生新引用，依赖它的 useMemo 白算一遍。
+ */
+export const EMPTY_RESOURCES: ResourceItem[] = []
+
+/** 在已加载的条目里按 slug 找详情；数据来自后端接口，找不到由页面呈现空态。 */
+export function findResourceBySlug(
+  items: ResourceItem[],
+  slug: string
+): ResourceItem | undefined {
+  return items.find((item) => item.slug === slug)
 }
 
+/** 卡片快捷复制用的片段：MCP 取默认客户端写法，其余直接取安装命令 */
+export function getQuickInstall(item: ResourceItem): string | undefined {
+  return item.mcp ? buildDefaultMcpSnippet(item.mcp) : item.installCommand
+}
+
+/** 类别 + 关键字过滤，关键字命中名称、slug、标签与简介。 */
 export function filterResources(
+  items: ResourceItem[],
   kind: 'all' | ResourceKind,
   query: string
 ): ResourceItem[] {
   const needle = query.trim().toLowerCase()
-  return RESOURCES.filter((item) => {
+  return items.filter((item) => {
     if (kind !== 'all' && item.kind !== kind) return false
     if (!needle) return true
     const haystack = [

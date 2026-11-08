@@ -18,28 +18,34 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, CheckCircle2, Download, ExternalLink } from 'lucide-react'
-import { useMemo } from 'react'
+import { type ReactNode, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { BackToTopButton } from '@/components/back-to-top-button'
+import { EmptyState } from '@/components/empty-state'
+import { ErrorState } from '@/components/error-state'
 import { PageTransition } from '@/components/page-transition'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Markdown } from '@/components/ui/markdown'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { cn } from '@/lib/utils'
 
+import { useResourcesQuery } from './api'
 import {
-  GatewayCta,
+  McpInstall,
   ResourceBackdrop,
   ResourceCard,
   SnippetBlock,
 } from './components'
-import { RESOURCES } from './data'
 import {
+  EMPTY_RESOURCES,
   KIND_STYLES,
   findResourceBySlug,
   pickLocalized,
   pickLocalizedList,
 } from './lib'
+import type { ResourceItem } from './types'
 
 const KIND_LABEL_KEYS = {
   mcp: 'MCP Servers',
@@ -47,19 +53,125 @@ const KIND_LABEL_KEYS = {
   'agent-tool': 'Agent Tools',
 } as const
 
+/** 加载 / 错误 / 未找到时复用同一个外壳，保证返回广场的入口一直在。 */
+function DetailShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
+  return (
+    <div className='relative min-h-dvh'>
+      <ResourceBackdrop />
+      <PageTransition className='relative mx-auto w-full max-w-4xl px-4 pt-20 pb-16 sm:pt-24'>
+        <Link
+          to='/resources'
+          className='text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm transition-colors'
+        >
+          <ArrowLeft aria-hidden className='size-4' />
+          {t('Back to Resource Hub')}
+        </Link>
+        {children}
+      </PageTransition>
+    </div>
+  )
+}
+
+/** MCP 条目按客户端生成多份片段，Agent 工具仍是单条安装命令 */
+function InstallSection({ item }: { item: ResourceItem }) {
+  const { t } = useTranslation()
+
+  if (item.mcp) return <McpInstall spec={item.mcp} />
+  if (!item.installCommand) return null
+  return (
+    <section className='mt-4'>
+      <h2 className='text-sm font-semibold tracking-wide'>
+        {t('Install command')}
+      </h2>
+      <SnippetBlock
+        className='mt-2.5'
+        label='terminal'
+        code={item.installCommand}
+      />
+    </section>
+  )
+}
+
+/**
+ * 技能正文：后台填的 Markdown 原样渲染（标题 / 列表 / 表格 / 代码块都支持）。
+ * 这里只放核心用法，完整包走下面的仓库或下载地址。
+ */
+function ContentSection({ item }: { item: ResourceItem }) {
+  const { t } = useTranslation()
+
+  if (!item.content) return null
+
+  return (
+    <section className='mt-4'>
+      <h2 className='text-sm font-semibold tracking-wide'>{t('Content')}</h2>
+      <Card className='mt-2.5 px-5 py-4'>
+        <Markdown>{item.content}</Markdown>
+      </Card>
+    </section>
+  )
+}
+
 export function ResourceDetail({ slug }: { slug: string }) {
   const { t, i18n } = useTranslation()
   const language = i18n.language
-  const item = findResourceBySlug(slug)
+  const { data, isLoading, isError, refetch } = useResourcesQuery()
+  const items = data ?? EMPTY_RESOURCES
+  const item = findResourceBySlug(items, slug)
 
   const related = useMemo(() => {
     if (!item) return []
-    return RESOURCES.filter(
-      (other) => other.kind === item.kind && other.slug !== item.slug
-    ).slice(0, 3)
-  }, [item])
+    return items
+      .filter((other) => other.kind === item.kind && other.slug !== item.slug)
+      .slice(0, 3)
+  }, [items, item])
 
-  if (!item) return null
+  if (isLoading) {
+    return (
+      <DetailShell>
+        <div className='mt-6 space-y-4'>
+          <div className='bg-muted/40 h-16 w-2/3 animate-pulse rounded-2xl' />
+          <div className='bg-muted/30 h-24 animate-pulse rounded-2xl' />
+          <div className='bg-muted/30 h-40 animate-pulse rounded-2xl' />
+        </div>
+      </DetailShell>
+    )
+  }
+
+  if (isError) {
+    return (
+      <DetailShell>
+        <ErrorState
+          className='mt-6'
+          title={t('Failed to load resources')}
+          description={t('The resource list is unavailable right now.')}
+          onRetry={() => void refetch()}
+        />
+      </DetailShell>
+    )
+  }
+
+  if (!item) {
+    return (
+      <DetailShell>
+        <EmptyState
+          className='mt-6'
+          title={t('Resource not found')}
+          description={t(
+            'This resource may have been unpublished. Browse the hub for what is live now.'
+          )}
+          action={
+            <Button variant='outline' render={<Link to='/resources' />}>
+              {t('Back to Resource Hub')}
+            </Button>
+          }
+        />
+      </DetailShell>
+    )
+  }
+
+  // 亮点是可选的：没有内容时连标题一起不渲染，避免留一个空标题
+  const highlights = pickLocalizedList(item.highlights, language)
 
   return (
     <div className='relative min-h-dvh'>
@@ -127,42 +239,36 @@ export function ResourceDetail({ slug }: { slug: string }) {
           </div>
         </Card>
 
-        <section className='mt-4'>
-          <h2 className='text-sm font-semibold tracking-wide'>
-            {t('Highlights')}
-          </h2>
-          <ul className='mt-2.5 grid gap-2 sm:grid-cols-3'>
-            {pickLocalizedList(item.highlights, language).map((highlight) => (
-              <li
-                key={highlight}
-                className='border-border/60 bg-card/50 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-xs leading-relaxed'
-              >
-                <CheckCircle2
-                  aria-hidden
-                  className='text-primary mt-0.5 size-3.5 shrink-0'
-                />
-                {highlight}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {item.installCommand ? (
+        {highlights.length > 0 && (
           <section className='mt-4'>
             <h2 className='text-sm font-semibold tracking-wide'>
-              {t('Install command')}
+              {t('Highlights')}
             </h2>
-            <SnippetBlock
-              className='mt-2.5'
-              label='terminal'
-              code={item.installCommand}
-            />
+            <ul className='mt-2.5 grid gap-2 sm:grid-cols-3'>
+              {highlights.map((highlight) => (
+                <li
+                  key={highlight}
+                  className='border-border/60 bg-card/50 flex items-start gap-2 rounded-xl border px-3 py-2.5 text-xs leading-relaxed'
+                >
+                  <CheckCircle2
+                    aria-hidden
+                    className='text-primary mt-0.5 size-3.5 shrink-0'
+                  />
+                  {highlight}
+                </li>
+              ))}
+            </ul>
           </section>
-        ) : null}
+        )}
+
+        {/* 使用方式（安装命令 / 各客户端接入片段）排在正文之前：先能跑起来，再看长文 */}
+        <InstallSection item={item} />
+
+        <ContentSection item={item} />
 
         {item.downloadUrl || item.repoUrl ? (
           <div className='mt-5 flex flex-wrap items-center gap-2.5'>
-            {item.downloadUrl ? (
+            {item.downloadUrl && (
               <Button
                 render={
                   <a
@@ -175,8 +281,8 @@ export function ResourceDetail({ slug }: { slug: string }) {
                 <Download aria-hidden className='size-4' />
                 {t('Download')}
               </Button>
-            ) : null}
-            {item.repoUrl ? (
+            )}
+            {item.repoUrl && (
               <Button
                 variant='outline'
                 render={
@@ -190,13 +296,9 @@ export function ResourceDetail({ slug }: { slug: string }) {
                 {t('Source repository')}
                 <ExternalLink aria-hidden className='size-3.5' />
               </Button>
-            ) : null}
+            )}
           </div>
         ) : null}
-
-        <div className='mt-6'>
-          <GatewayCta />
-        </div>
 
         {related.length > 0 ? (
           <section className='mt-10'>
@@ -211,6 +313,7 @@ export function ResourceDetail({ slug }: { slug: string }) {
           </section>
         ) : null}
       </PageTransition>
+      <BackToTopButton />
     </div>
   )
 }

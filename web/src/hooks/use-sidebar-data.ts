@@ -18,6 +18,7 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import {
   Activity,
+  Blocks,
   Box,
   ClipboardList,
   CreditCard,
@@ -156,6 +157,11 @@ export function useSidebarData(): SidebarData {
             title: t('Models'),
             url: '/models/metadata',
             icon: Box,
+          },
+          {
+            title: t('Resource Management'),
+            url: '/resources-admin',
+            icon: Blocks,
           },
           {
             title: t('Users'),

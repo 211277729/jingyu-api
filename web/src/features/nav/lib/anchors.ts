@@ -16,6 +16,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
+import { prefersReducedMotion } from '@/lib/dom-utils'
+
 /**
  * DOM anchors for the directory.
  *
@@ -37,12 +39,8 @@ export function siteElementId(url: string): string {
   return `nav-site-${host.toLowerCase().replaceAll(/[^a-z0-9]+/g, '-')}`
 }
 
-export function prefersReducedMotion(): boolean {
-  return (
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  )
-}
+// 导航页的滚动工具也在用它，保持从这里导出的老路径可用
+export { prefersReducedMotion }
 
 export function scrollToAnchor(id: string): void {
   const target = document.querySelector(`#${CSS.escape(id)}`)

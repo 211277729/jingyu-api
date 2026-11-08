@@ -26,7 +26,7 @@ import { useCopyToClipboard } from '@/hooks/use-copy-to-clipboard'
 import { getLobeIcon } from '@/lib/lobe-icon'
 import { cn } from '@/lib/utils'
 
-import { KIND_STYLES, pickLocalized } from '../lib'
+import { KIND_STYLES, getQuickInstall, pickLocalized } from '../lib'
 import type { ResourceItem, ResourceKind } from '../types'
 
 /** kind → 徽标文案的 i18n key */
@@ -83,6 +83,7 @@ function ResourceAvatar({
 export function ResourceCard({ item }: { item: ResourceItem }) {
   const { t, i18n } = useTranslation()
   const { copyToClipboard } = useCopyToClipboard()
+  const quickInstall = getQuickInstall(item)
 
   return (
     <Link
@@ -120,7 +121,7 @@ export function ResourceCard({ item }: { item: ResourceItem }) {
               </span>
             ))}
           </div>
-          {item.installCommand ? (
+          {quickInstall ? (
             <Button
               variant='ghost'
               size='icon'
@@ -130,7 +131,7 @@ export function ResourceCard({ item }: { item: ResourceItem }) {
                 // 卡片整体是详情页链接，复制动作不触发跳转
                 event.preventDefault()
                 event.stopPropagation()
-                void copyToClipboard(item.installCommand ?? '')
+                void copyToClipboard(quickInstall)
               }}
             >
               <Copy className='size-3.5' />

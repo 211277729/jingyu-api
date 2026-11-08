@@ -416,6 +416,17 @@ func SetApiRouter(router *gin.Engine) {
 			guardLogRoute.GET("/", controller.GetGuardLogList)
 		}
 
+		// 资源广场：公开列表跟顶栏「资源广场」开关联动，管理端只给管理员。
+		apiRouter.GET("/resource/list", middleware.HeaderNavModuleAuth("resources"), controller.GetPublicResourceList)
+		resourceRoute := apiRouter.Group("/resource/admin")
+		resourceRoute.Use(middleware.AdminAuth())
+		{
+			resourceRoute.GET("/list", controller.GetResourceAdminList)
+			resourceRoute.POST("/", controller.AddResource)
+			resourceRoute.PUT("/", controller.UpdateResource)
+			resourceRoute.DELETE("/:id", controller.DeleteResource)
+		}
+
 		logRoute.Use(middleware.CORS(), middleware.CriticalRateLimit())
 		{
 			logRoute.GET("/token", middleware.TokenAuthReadOnly(), controller.GetLogByKey)

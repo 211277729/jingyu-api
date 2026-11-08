@@ -19,11 +19,12 @@ For commercial licensing, please contact support@quantumnous.com
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { BackToTopButton } from '@/components/back-to-top-button'
 import { PublicLayout } from '@/components/layout'
 import { PageTransition } from '@/components/page-transition'
 import { cn } from '@/lib/utils'
 
-import { BackToTopButton, CategoryNav, NavSearch, SiteCard } from './components'
+import { CategoryNav, NavSearch, SiteCard } from './components'
 import { NAV_CATEGORIES, NAV_SITE_COUNT } from './constants'
 import { categoryElementId, scrollToAnchor, siteElementId } from './lib/anchors'
 import { hitAnchorId, type NavSearchHit } from './lib/search'

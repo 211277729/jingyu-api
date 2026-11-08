@@ -32,3 +32,14 @@ export function applyFaviconToDom(url: string) {
     // Ignore malformed URLs
   }
 }
+
+/**
+ * 用户是否要求减少动效（系统级 prefers-reduced-motion）。
+ * 平滑滚动 / 过渡动画前都先问它，别在无障碍场景里硬推动画。
+ */
+export function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}

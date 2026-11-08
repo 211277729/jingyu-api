@@ -33,6 +33,20 @@ export type LocalizedList = {
   en: string[]
 }
 
+/**
+ * MCP 服务器的 stdio 启动参数。各客户端的配置文件格式不同，
+ * 这里只保留与客户端无关的三要素，渲染时再按客户端生成片段。
+ */
+export type McpServerSpec = {
+  /** 写入客户端配置的服务器名，如 `fetch` */
+  name: string
+  /** 启动命令，如 `uvx` / `npx` / `docker` */
+  command: string
+  args: string[]
+  /** 需要用户自填的凭证：键为变量名，值为占位示例 */
+  env?: Record<string, string>
+}
+
 export type ResourceItem = {
   /** 详情页 URL 标识，如 `mcp-fetch` */
   slug: string
@@ -53,10 +67,37 @@ export type ResourceItem = {
   description: LocalizedText
   /** 详情页亮点列表 */
   highlights: LocalizedList
-  /** 终端安装命令（MCP / CLI 工具），展示为可复制码块 */
+  /** MCP 服务器的启动参数，详情页按客户端生成多种接入片段 */
+  mcp?: McpServerSpec
+  /** 详情页正文（Markdown）：技能的核心用法，原样渲染；完整包走仓库 / CDN */
+  content?: string
+  /** 终端安装命令（Agent 工具），展示为可复制码块 */
   installCommand?: string
   /** 直接下载地址（技能包 / 桌面客户端） */
   downloadUrl?: string
   /** 开源仓库地址，供溯源 */
   repoUrl?: string
+}
+
+/**
+ * 后端 `/api/resource/list` 返回的条目（snake_case 列名 + 双层双语）。
+ * 前台统一映射成 `ResourceItem`，组件层只认一种形状。
+ */
+export type ResourceApiItem = {
+  id: number
+  slug: string
+  name: string
+  kind: ResourceKind
+  icon_name: string
+  vendor: 'Official' | 'Community'
+  tags: string[]
+  summary: LocalizedText
+  description: LocalizedText
+  highlights: LocalizedList
+  mcp?: McpServerSpec
+  content: string
+  install_command: string
+  download_url: string
+  repo_url: string
+  sort_order: number
 }
