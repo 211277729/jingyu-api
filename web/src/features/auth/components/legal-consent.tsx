@@ -38,7 +38,12 @@ export function LegalConsent({ status, className }: LegalConsentProps) {
   }
 
   return (
-    <p className={cn('text-muted-foreground text-xs leading-5', className)}>
+    <p
+      className={cn(
+        'text-muted-foreground text-center text-xs leading-5',
+        className
+      )}
+    >
       {t('By signing in, you have read and agreed to our')}{' '}
       {hasUserAgreement && (
         <a
