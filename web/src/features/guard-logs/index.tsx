@@ -18,12 +18,12 @@ For commercial licensing, please contact support@quantumnous.com
 */
 import { useQuery } from '@tanstack/react-query'
 import { getRouteApi } from '@tanstack/react-router'
+import type { ColumnDef } from '@tanstack/react-table'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { ColumnDef } from '@tanstack/react-table'
 
-import { SectionPageLayout } from '@/components/layout'
 import { BadgeCell, DataTablePage, useDataTable } from '@/components/data-table'
+import { SectionPageLayout } from '@/components/layout'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -189,19 +189,19 @@ export function GuardLogs() {
     <div className='flex flex-col gap-3'>
       <div className='grid grid-cols-2 gap-3 md:grid-cols-4'>
         <div className='rounded-lg border p-3'>
-          <div className='text-xs text-muted-foreground'>
+          <div className='text-muted-foreground text-xs'>
             {t('Blocked today')}
           </div>
           <div className='text-2xl font-semibold'>{decisionCount(1)}</div>
         </div>
         <div className='rounded-lg border p-3'>
-          <div className='text-xs text-muted-foreground'>
+          <div className='text-muted-foreground text-xs'>
             {t('Allowed over limit today (active session)')}
           </div>
           <div className='text-2xl font-semibold'>{decisionCount(2)}</div>
         </div>
         <div className='rounded-lg border p-3'>
-          <div className='text-xs text-muted-foreground'>
+          <div className='text-muted-foreground text-xs'>
             {t('Peak estimated tokens (7d)')}
           </div>
           <div className='text-2xl font-semibold'>
@@ -209,7 +209,7 @@ export function GuardLogs() {
           </div>
         </div>
         <div className='rounded-lg border p-3'>
-          <div className='text-xs text-muted-foreground'>
+          <div className='text-muted-foreground text-xs'>
             {t('Peak body size (7d)')}
           </div>
           <div className='text-2xl font-semibold'>

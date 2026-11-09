@@ -67,7 +67,7 @@ function TableShell({
   children: React.ReactNode
 }) {
   return (
-    <div className='border-border/60 overflow-hidden rounded-2xl border bg-card shadow-sm'>
+    <div className='border-border/60 bg-card overflow-hidden rounded-2xl border shadow-sm'>
       <div className='overflow-x-auto'>
         <table className='w-full text-sm'>
           <thead>
@@ -317,7 +317,7 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
           {stats.map((item) => (
             <div
               key={item.label}
-              className='border-border/60 rounded-2xl border bg-background/80 px-4 py-5 shadow-sm backdrop-blur'
+              className='border-border/60 bg-background/80 rounded-2xl border px-4 py-5 shadow-sm backdrop-blur'
             >
               <div className='text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide'>
                 <item.icon className='size-3.5 text-amber-600 dark:text-amber-400' />
@@ -345,10 +345,10 @@ export function AgentDashboard({ data, onRefresh }: AgentDashboardProps) {
       </div>
 
       {/* 三个列表：分段切换 + 数据表 */}
-      <section className='border-border/60 space-y-4 rounded-3xl border bg-card p-5 shadow-sm sm:p-7'>
+      <section className='border-border/60 bg-card space-y-4 rounded-3xl border p-5 shadow-sm sm:p-7'>
         <div
           role='tablist'
-          className='bg-muted/40 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border border-border/60 p-1'
+          className='bg-muted/40 border-border/60 inline-flex max-w-full gap-1 overflow-x-auto rounded-xl border p-1'
         >
           {VIEWS.map((item) => (
             <button

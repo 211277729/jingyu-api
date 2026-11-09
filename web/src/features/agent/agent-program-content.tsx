@@ -103,7 +103,8 @@ export function AgentProgramContent() {
               'radial-gradient(ellipse 60% 50% at 25% 15%, oklch(0.78 0.16 80 / 80%) 0%, transparent 70%)',
               'radial-gradient(ellipse 50% 40% at 75% 20%, oklch(0.70 0.15 300 / 60%) 0%, transparent 70%)',
             ].join(', '),
-            maskImage: 'linear-gradient(to bottom, black 40%, transparent 100%)',
+            maskImage:
+              'linear-gradient(to bottom, black 40%, transparent 100%)',
             WebkitMaskImage:
               'linear-gradient(to bottom, black 40%, transparent 100%)',
           }}
@@ -123,14 +124,14 @@ export function AgentProgramContent() {
           />
 
           <div className='relative space-y-4'>
-            <p className='text-amber-600/90 flex items-center justify-center gap-2 font-mono text-[11px] tracking-[0.32em] uppercase dark:text-amber-400/80'>
+            <p className='flex items-center justify-center gap-2 font-mono text-[11px] tracking-[0.32em] text-amber-600/90 uppercase dark:text-amber-400/80'>
               <span
                 aria-hidden
-                className='motion-safe:animate-pulse motion-safe:size-1.5 motion-safe:rounded-full bg-amber-500/80 dark:bg-amber-400/80'
+                className='bg-amber-500/80 motion-safe:size-1.5 motion-safe:animate-pulse motion-safe:rounded-full dark:bg-amber-400/80'
               />
               Agent Program
             </p>
-            <h1 className='w-fit bg-gradient-to-r from-foreground via-foreground to-amber-600 bg-clip-text text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.12] font-bold tracking-tight text-transparent dark:to-amber-400'>
+            <h1 className='from-foreground via-foreground w-fit bg-gradient-to-r to-amber-600 bg-clip-text text-[clamp(1.75rem,4vw,2.75rem)] leading-[1.12] font-bold tracking-tight text-transparent dark:to-amber-400'>
               {t('Agent Earnings')}
             </h1>
             <p className='text-muted-foreground mx-auto max-w-3xl text-sm leading-relaxed sm:text-base'>

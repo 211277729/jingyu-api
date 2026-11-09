@@ -184,7 +184,7 @@ export function AgentApplyCard({
   return (
     <div className='space-y-6'>
       {/* 费率面板：三档佣金大读数 */}
-      <section className='border-amber-500/25 relative overflow-hidden rounded-3xl border bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent p-5 shadow-sm sm:p-8 dark:border-amber-400/20 dark:from-amber-500/[0.12] dark:via-orange-500/[0.06]'>
+      <section className='relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent p-5 shadow-sm sm:p-8 dark:border-amber-400/20 dark:from-amber-500/[0.12] dark:via-orange-500/[0.06]'>
         <div
           aria-hidden
           className='pointer-events-none absolute -top-20 right-0 size-72 rounded-full bg-amber-500/15 blur-3xl'
@@ -215,7 +215,7 @@ export function AgentApplyCard({
             ].map((item) => (
               <div
                 key={item.label}
-                className='border-border/60 rounded-2xl border bg-background/80 px-4 py-5 text-center shadow-sm backdrop-blur'
+                className='border-border/60 bg-background/80 rounded-2xl border px-4 py-5 text-center shadow-sm backdrop-blur'
               >
                 <div className='bg-gradient-to-br from-amber-600 to-orange-500 bg-clip-text text-3xl font-bold text-transparent tabular-nums sm:text-4xl dark:from-amber-400 dark:to-orange-400'>
                   {item.value}%
@@ -249,7 +249,7 @@ export function AgentApplyCard({
               {benefits.map((item) => (
                 <div
                   key={item.title}
-                  className='border-border/50 bg-card/60 hover:border-amber-500/40 rounded-2xl border p-4 transition-colors hover:bg-amber-500/[0.04]'
+                  className='border-border/50 bg-card/60 rounded-2xl border p-4 transition-colors hover:border-amber-500/40 hover:bg-amber-500/[0.04]'
                 >
                   <div className='flex items-center gap-2.5'>
                     <span
@@ -286,7 +286,7 @@ export function AgentApplyCard({
                   </span>
                   <div className='min-w-0'>
                     <div className='flex items-center gap-1.5 text-sm font-semibold'>
-                      <step.icon className='text-amber-600/80 size-3.5 dark:text-amber-400/80' />
+                      <step.icon className='size-3.5 text-amber-600/80 dark:text-amber-400/80' />
                       {step.title}
                     </div>
                     <p className='text-muted-foreground mt-1 text-xs leading-relaxed'>
@@ -313,7 +313,9 @@ export function AgentApplyCard({
               >
                 <Undo2 className='size-4' />
               </span>
-              {status === 'rejected' ? t('Apply Again') : t('Agent Application')}
+              {status === 'rejected'
+                ? t('Apply Again')
+                : t('Agent Application')}
             </div>
             <div className='space-y-1.5'>
               <label className='text-muted-foreground text-xs font-medium'>

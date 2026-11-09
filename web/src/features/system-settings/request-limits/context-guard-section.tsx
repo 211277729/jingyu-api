@@ -205,8 +205,8 @@ export function ContextGuardSection({
                 </FormControl>
                 <FormDescription>
                   {t('Leave empty to use the built-in message.')}{' '}
-                  {t('Placeholders:')}{' '}
-                  <code>{'{{.Tokens}}'}</code> / <code>{'{{.Max}}'}</code>.{' '}
+                  {t('Placeholders:')} <code>{'{{.Tokens}}'}</code> /{' '}
+                  <code>{'{{.Max}}'}</code>.{' '}
                   {t('Invalid templates fall back to the built-in message.')}
                 </FormDescription>
                 <FormMessage />
