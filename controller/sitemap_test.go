@@ -71,7 +71,7 @@ func TestGetSitemapStaticPages(t *testing.T) {
 	setupSitemapDB(t)
 	_, doc := requestSitemap(t)
 
-	for _, path := range []string{"/", "/nav", "/pricing", "/rankings", "/resources", "/docs", "/about", "/agent-program"} {
+	for _, path := range []string{"/", "/nav", "/pricing", "/pricing/free", "/rankings", "/resources", "/docs", "/about", "/agent-program"} {
 		entry, ok := findSitemapLoc(doc, path)
 		require.True(t, ok, "sitemap 缺少固定页面 %s", path)
 		assert.NotEmpty(t, entry.Loc)

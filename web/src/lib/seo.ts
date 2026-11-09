@@ -59,6 +59,11 @@ export const PUBLIC_PAGE_META = {
     title: '模型详情 - 大模型 API 价格与倍率 - 鲸鱼 API',
     description: '查看单个大模型的 API 定价：输入输出单价、倍率与计费说明。',
   },
+  freeModels: {
+    title: '免费大模型 API 汇总 - 免费额度模型列表 - 鲸鱼 API',
+    description:
+      '鲸鱼 API 免费模型专区：免费调用 GPT、Claude、DeepSeek、Qwen 等大模型 API，0 元模型与免费分组长期开放，注册即用。',
+  },
   rankings: {
     title: '模型排行榜 - 鲸鱼 API',
     description: '大模型 API 调用量排行榜：看看站内用户最常用的模型有哪些。',

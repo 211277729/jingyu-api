@@ -16,7 +16,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 For commercial licensing, please contact support@quantumnous.com
 */
-import { Activity, ArrowLeftRight } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { Activity, ArrowLeftRight, ChevronRight, Gift } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -308,6 +309,14 @@ export function Pricing() {
                   'Site rate ¥1 = $1 · foreign models are uniformly quoted in ¥'
                 )}
               </span>
+              <Link
+                to='/pricing/free'
+                className='border-primary/30 bg-primary/5 text-foreground hover:border-primary/60 hover:bg-primary/10 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] tracking-wide transition-colors'
+              >
+                <Gift aria-hidden className='text-primary/70 size-3' />
+                {t('Free models zone')}
+                <ChevronRight aria-hidden className='size-3 opacity-60' />
+              </Link>
             </div>
           </header>
 

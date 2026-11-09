@@ -23,6 +23,7 @@ var sitemapStaticPaths = []struct {
 	{Path: "/", ChangeFreq: "daily", Priority: "1.0"},
 	{Path: "/nav", ChangeFreq: "weekly", Priority: "0.9"},
 	{Path: "/pricing", ChangeFreq: "daily", Priority: "0.9"},
+	{Path: "/pricing/free", ChangeFreq: "daily", Priority: "0.9"},
 	{Path: "/rankings", ChangeFreq: "daily", Priority: "0.8"},
 	{Path: "/resources", ChangeFreq: "weekly", Priority: "0.9"},
 	{Path: "/docs", ChangeFreq: "monthly", Priority: "0.7"},
