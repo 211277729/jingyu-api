@@ -19,12 +19,14 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { AgentProgram } from '@/features/agent/agent-program'
+import { PUBLIC_PAGE_META, createPublicHead } from '@/lib/seo'
 import { useAuthStore } from '@/stores/auth-store'
 
 /**
  * 代理赚钱公开页。未登录先去登录（回来继续看）；已登录直接展示。
  */
 export const Route = createFileRoute('/agent-program/')({
+  head: () => createPublicHead(PUBLIC_PAGE_META.agentProgram),
   beforeLoad: () => {
     const { auth } = useAuthStore.getState()
     if (!auth.user) {

@@ -21,6 +21,7 @@ import z from 'zod'
 
 import { Pricing } from '@/features/pricing'
 import { getModuleAccessForGuard } from '@/lib/nav-modules'
+import { PUBLIC_PAGE_META, createPublicHead } from '@/lib/seo'
 import { useAuthStore } from '@/stores/auth-store'
 
 const pricingSearchSchema = z.object({
@@ -37,6 +38,7 @@ const pricingSearchSchema = z.object({
 })
 
 export const Route = createFileRoute('/pricing/')({
+  head: () => createPublicHead(PUBLIC_PAGE_META.pricing),
   validateSearch: pricingSearchSchema,
   beforeLoad: async ({ context, location }) => {
     const access = await getModuleAccessForGuard(context.queryClient, 'pricing')

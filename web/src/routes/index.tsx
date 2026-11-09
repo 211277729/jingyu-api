@@ -19,7 +19,9 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Home } from '@/features/home'
+import { PUBLIC_PAGE_META, createPublicHead } from '@/lib/seo'
 
 export const Route = createFileRoute('/')({
+  head: () => createPublicHead(PUBLIC_PAGE_META.home),
   component: Home,
 })

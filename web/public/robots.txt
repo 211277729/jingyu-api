@@ -4,3 +4,7 @@
 User-agent: *
 Disallow: /licensing
 Disallow: /source
+
+# 站点地图由后端 /sitemap.xml 动态生成（controller/sitemap.go）；
+# robots 的 Sitemap 行必须是绝对 URL，域名与部署一致，换域名时同步改这里。
+Sitemap: https://jingyuai.xiaoyuji.cn/sitemap.xml

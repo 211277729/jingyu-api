@@ -22,6 +22,10 @@ func SetWebRouter(router *gin.Engine, assets WebAssets, pluginDispatcher gin.Han
 	frontendFS := common.EmbedFolder(assets.BuildFS, "web/dist")
 	compress := gzip.Gzip(gzip.DefaultCompression)
 
+	// 站点地图要抢在 NoRoute 兜底之前：gin 的显式路由优先级高于 NoRoute，
+	// 不注册的话 /sitemap.xml 会被 SPA 兜底返回成 index.html。
+	router.GET("/sitemap.xml", middleware.RouteTag("web"), controller.GetSitemap)
+
 	router.NoRoute(
 		pluginDispatcher,
 		middleware.RouteTag("web"),

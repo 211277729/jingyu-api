@@ -81,12 +81,14 @@ function awaitLocalePreload(): Promise<void> {
   })
 }
 
-// Set document.title and favicon from cached status, then refresh from network
+// Set meta[name="title"] and favicon from cached status, then refresh from network
 ;(function initSystemBranding() {
   try {
     if (typeof window === 'undefined' || typeof document === 'undefined') return
+    // document.title 归路由 head 管（@/lib/seo 的按页 SEO 标题）；系统名
+    // 只写 meta[name="title"] 和 favicon，避免 branding 刷新把各页面标题
+    // 打回全局系统名。
     const apply = (name: string) => {
-      document.title = name
       const metaTitle = document.querySelector(
         'meta[name="title"]'
       ) as HTMLMetaElement | null

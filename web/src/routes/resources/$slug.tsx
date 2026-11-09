@@ -19,9 +19,11 @@ For commercial licensing, please contact support@quantumnous.com
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ResourceDetail } from '@/features/resources/detail'
+import { PUBLIC_PAGE_META, createPublicHead } from '@/lib/seo'
 
 export const Route = createFileRoute('/resources/$slug')({
   // 条目来自后端接口，slug 是否有效由页面在数据到达后判断
+  head: () => createPublicHead(PUBLIC_PAGE_META.resourceDetail),
   component: ResourceDetailRoute,
 })
 

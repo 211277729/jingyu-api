@@ -20,9 +20,11 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { NavDirectory } from '@/features/nav'
 import { getModuleAccessForGuard } from '@/lib/nav-modules'
+import { PUBLIC_PAGE_META, createPublicHead } from '@/lib/seo'
 import { useAuthStore } from '@/stores/auth-store'
 
 export const Route = createFileRoute('/nav/')({
+  head: () => createPublicHead(PUBLIC_PAGE_META.nav),
   beforeLoad: async ({ context, location }) => {
     const access = await getModuleAccessForGuard(context.queryClient, 'nav')
     if (!access.enabled) {
