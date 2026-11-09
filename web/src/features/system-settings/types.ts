@@ -383,6 +383,9 @@ export type BillingSettings = {
   'checkin_setting.enabled': boolean
   'checkin_setting.min_quota': number
   'checkin_setting.max_quota': number
+  'ip_geo_setting.enabled': boolean
+  'ip_geo_setting.providers': string
+  'ip_geo_setting.timeout_seconds': number
   'aff_rebate_setting.first_percent': number
   'aff_rebate_setting.percent': number
   'aff_rebate_setting.first_days': number

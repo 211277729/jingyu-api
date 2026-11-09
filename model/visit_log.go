@@ -4,6 +4,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/QuantumNous/new-api/common"
@@ -60,6 +61,15 @@ var visitBuffer = struct {
 	pending  []VisitLog
 	lastSeen map[string]int64
 }{lastSeen: make(map[string]int64)}
+
+// visitIpGeoPrefetchHook 落库后陌生 IP 归属地预取钩子。
+// model 层不 import service（会循环依赖），由 service 包启动时注入回调。
+var visitIpGeoPrefetchHook atomic.Value
+
+// SetVisitIpGeoPrefetchHook 注入预取回调（service.PrefetchIpGeo），传 nil 卸载。
+func SetVisitIpGeoPrefetchHook(fn func(ips []string)) {
+	visitIpGeoPrefetchHook.Store(fn)
+}
 
 // visitBufferKey 访客的节流键：登录用户按身份，匿名按 IP。
 func visitBufferKey(userId int, ip string) string {
@@ -125,6 +135,24 @@ func FlushVisitBuffer() {
 	}
 	if err := DB.CreateInBatches(&batch, visitFlushSubBatch).Error; err != nil {
 		common.SysError(common.LogText("failed to flush visits: %s", err.Error()))
+		return
+	}
+	// 陌生 IP 丢给归属地预取（fire-and-forget，缓存命中即跳过外网请求）。
+	prefetchHook := visitIpGeoPrefetchHook.Load()
+	if prefetchHook != nil {
+		seen := make(map[string]struct{})
+		var anonymousIps []string
+		for _, row := range batch {
+			if row.UserId <= 0 && row.Ip != "" && !IsPrivateOrReservedIp(row.Ip) {
+				if _, dup := seen[row.Ip]; !dup {
+					seen[row.Ip] = struct{}{}
+					anonymousIps = append(anonymousIps, row.Ip)
+				}
+			}
+		}
+		if len(anonymousIps) > 0 {
+			prefetchHook.(func([]string))(anonymousIps)
+		}
 	}
 }
 
@@ -139,6 +167,8 @@ type VisitSummaryItem struct {
 	IsAnonymous   bool   `json:"is_anonymous"`
 	IsNewUser     bool   `json:"is_new_user"`
 	UserCreatedAt int64  `json:"user_created_at"`
+	// IpGeo 陌生 IP 归属地（仅匿名行；由 controller 层从缓存读回，未命中为 nil）
+	IpGeo *IpGeoInfo `json:"ip_geo,omitempty"`
 }
 
 // VisitDailyStats 查询范围内的访客构成统计。

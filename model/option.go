@@ -11,6 +11,7 @@ import (
 	"github.com/QuantumNous/new-api/pkg/jsplugin"
 	"github.com/QuantumNous/new-api/setting"
 	"github.com/QuantumNous/new-api/setting/config"
+	"github.com/QuantumNous/new-api/setting/ip_geo_setting"
 	"github.com/QuantumNous/new-api/setting/operation_setting"
 	"github.com/QuantumNous/new-api/setting/performance_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
@@ -290,6 +291,9 @@ func validateOptionValue(key string, value string) error {
 	}
 	if key == operation_setting.LogMaxRangeDaysOptionKey {
 		return operation_setting.ValidateLogMaxRangeDays(value)
+	}
+	if key == "ip_geo_setting.providers" {
+		return ip_geo_setting.ValidateProvidersJSON(value)
 	}
 	if key == "MaxTokenAutoGroups" {
 		return setting.ValidateMaxTokenAutoGroups(value)

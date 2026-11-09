@@ -99,6 +99,19 @@ func GetDailyVisits(c *gin.Context) {
 		common.ApiError(c, err)
 		return
 	}
+	// 陌生 IP 归属地：批量读库/缓存（预取已在打点落库后异步写库），未命中的保持 nil。
+	anonymousIps := make([]string, 0, len(items))
+	for i := range items {
+		if items[i].IsAnonymous {
+			anonymousIps = append(anonymousIps, items[i].Ip)
+		}
+	}
+	ipGeoMap := model.GetIpGeoBatch(anonymousIps)
+	for i := range items {
+		if items[i].IsAnonymous {
+			items[i].IpGeo = ipGeoMap[items[i].Ip]
+		}
+	}
 	common.ApiSuccess(c, gin.H{
 		"page":       pageInfo.GetPage(),
 		"page_size":  pageInfo.GetPageSize(),

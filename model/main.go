@@ -383,6 +383,7 @@ func migrateDB() error {
 		&VisitLog{},
 		&GuardLog{},
 		&Resource{},
+		&IpGeoInfo{},
 	)
 	if err != nil {
 		return err

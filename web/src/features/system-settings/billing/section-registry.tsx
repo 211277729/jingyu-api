@@ -21,6 +21,7 @@ import { parseCurrencyDisplayType } from '@/lib/currency'
 import { AffRebateSettingsSection } from '../general/aff-rebate-settings-section'
 import { AgentDistributionSettingsSection } from '../general/agent-distribution-settings-section'
 import { CheckinSettingsSection } from '../general/checkin-settings-section'
+import { IpGeoSettingsSection } from '../general/ip-geo-settings-section'
 import { PricingSection } from '../general/pricing-section'
 import { QuotaSettingsSection } from '../general/quota-settings-section'
 import { PaymentSettingsSection } from '../integrations/payment-settings-section'
@@ -254,6 +255,19 @@ const BILLING_SECTIONS = [
           secondPercent: settings['agent_setting.second_percent'],
           firstDays: settings['agent_setting.first_days'],
           minWithdrawQuotaUnits: settings['agent_setting.min_withdraw_quota'],
+        }}
+      />
+    ),
+  },
+  {
+    id: 'ip-geo',
+    titleKey: 'IP Geo Lookup',
+    build: (settings: BillingSettings) => (
+      <IpGeoSettingsSection
+        defaultValues={{
+          enabled: settings['ip_geo_setting.enabled'],
+          providers: settings['ip_geo_setting.providers'],
+          timeoutSeconds: settings['ip_geo_setting.timeout_seconds'],
         }}
       />
     ),

@@ -116,15 +116,34 @@ export function DailyVisitsTable() {
         cell: ({ row }) => {
           const item = row.original
           if (item.is_anonymous) {
+            const geoParts = item.ip_geo
+              ? [
+                  item.ip_geo.country,
+                  item.ip_geo.region,
+                  item.ip_geo.city,
+                  item.ip_geo.isp,
+                ].filter((part) => part !== '')
+              : []
             return (
-              <div className='flex items-center gap-1.5'>
-                <Globe className='text-warning h-4 w-4 shrink-0' />
-                <span className='text-warning max-w-48 truncate font-medium'>
-                  {item.ip}
-                </span>
-                <Badge variant='warning' className='shrink-0'>
-                  {t('Anonymous IP')}
-                </Badge>
+              <div className='flex min-w-0 flex-col gap-0.5'>
+                <div className='flex items-center gap-1.5'>
+                  <Globe className='text-warning h-4 w-4 shrink-0' />
+                  <span className='text-warning max-w-48 truncate font-medium'>
+                    {item.ip}
+                  </span>
+                  <Badge variant='warning' className='shrink-0'>
+                    {t('Anonymous IP')}
+                  </Badge>
+                </div>
+                {geoParts.length > 0 ? (
+                  <span className='text-muted-foreground truncate pl-5.5 text-xs'>
+                    {geoParts.join(' · ')}
+                  </span>
+                ) : (
+                  <span className='text-muted-foreground/70 truncate pl-5.5 text-xs'>
+                    {t('Location not queried')}
+                  </span>
+                )}
               </div>
             )
           }
