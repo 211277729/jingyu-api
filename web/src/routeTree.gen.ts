@@ -35,6 +35,7 @@ import { Route as DocsIndexRouteImport } from './routes/docs/index'
 import { Route as NavIndexRouteImport } from './routes/nav/index'
 import { Route as OauthProviderRouteImport } from './routes/oauth/$provider'
 import { Route as PricingIndexRouteImport } from './routes/pricing/index'
+import { Route as PricingFreeRouteImport } from './routes/pricing/free'
 import { Route as RankingsIndexRouteImport } from './routes/rankings/index'
 import { Route as ResourcesIndexRouteImport } from './routes/resources/index'
 import { Route as ResourcesSlugRouteImport } from './routes/resources/$slug'
@@ -213,6 +214,11 @@ const OauthProviderRoute = OauthProviderRouteImport.update({
 const PricingIndexRoute = PricingIndexRouteImport.update({
   id: '/pricing/',
   path: '/pricing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingFreeRoute = PricingFreeRouteImport.update({
+  id: '/pricing/free',
+  path: '/pricing/free',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RankingsIndexRoute = RankingsIndexRouteImport.update({
@@ -525,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/pricing/free': typeof PricingFreeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/about/': typeof AboutIndexRoute
   '/agent-program/': typeof AgentProgramIndexRoute
@@ -600,6 +607,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/pricing/free': typeof PricingFreeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/about': typeof AboutIndexRoute
   '/agent-program': typeof AgentProgramIndexRoute
@@ -679,6 +687,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/chat2link': typeof AuthenticatedChat2linkRoute
   '/oauth/$provider': typeof OauthProviderRoute
+  '/pricing/free': typeof PricingFreeRoute
   '/resources/$slug': typeof ResourcesSlugRoute
   '/about/': typeof AboutIndexRoute
   '/agent-program/': typeof AgentProgramIndexRoute
@@ -757,6 +766,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/chat2link'
     | '/oauth/$provider'
+    | '/pricing/free'
     | '/resources/$slug'
     | '/about/'
     | '/agent-program/'
@@ -832,6 +842,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/chat2link'
     | '/oauth/$provider'
+    | '/pricing/free'
     | '/resources/$slug'
     | '/about'
     | '/agent-program'
@@ -910,6 +921,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/chat2link'
     | '/oauth/$provider'
+    | '/pricing/free'
     | '/resources/$slug'
     | '/about/'
     | '/agent-program/'
@@ -980,6 +992,7 @@ export interface RootRouteChildren {
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
   OauthProviderRoute: typeof OauthProviderRoute
+  PricingFreeRoute: typeof PricingFreeRoute
   ResourcesSlugRoute: typeof ResourcesSlugRoute
   AboutIndexRoute: typeof AboutIndexRoute
   AgentProgramIndexRoute: typeof AgentProgramIndexRoute
@@ -1175,6 +1188,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing/'
       preLoaderRoute: typeof PricingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing/free': {
+      id: '/pricing/free'
+      path: '/pricing/free'
+      fullPath: '/pricing/free'
+      preLoaderRoute: typeof PricingFreeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rankings/': {
@@ -1699,6 +1719,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors500Route: errors500Route,
   errors503Route: errors503Route,
   OauthProviderRoute: OauthProviderRoute,
+  PricingFreeRoute: PricingFreeRoute,
   ResourcesSlugRoute: ResourcesSlugRoute,
   AboutIndexRoute: AboutIndexRoute,
   AgentProgramIndexRoute: AgentProgramIndexRoute,
