@@ -51,15 +51,19 @@ type sitemapURLSet struct {
 // 域名取系统设置里的 ServerAddress；资源详情来自 resources 表，定价模型
 // 详情来自 abilities 表。查询失败时降级为只输出固定页面，不让站点地图
 // 整体不可用。
+//
+// lastmod 口径：固定页面用进程启动时间（每次发版重启即刷新，两次请求之间
+// 稳定——Google 明确表示 lastmod 每次都变会失去信任被忽略），资源页用
+// 各自的 UpdatedAt，模型页不发 lastmod（逐模型查库代价高且意义小）。
 func GetSitemap(c *gin.Context) {
 	base := strings.TrimRight(system_setting.ServerAddress, "/")
 
-	now := time.Now().Format("2006-01-02")
+	startup := time.Now().Format("2006-01-02")
 	urls := make([]sitemapURL, 0, len(sitemapStaticPaths)+16)
 	for _, page := range sitemapStaticPaths {
 		urls = append(urls, sitemapURL{
 			Loc:        base + page.Path,
-			LastMod:    now,
+			LastMod:    startup,
 			ChangeFreq: page.ChangeFreq,
 			Priority:   page.Priority,
 		})

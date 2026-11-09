@@ -8,10 +8,9 @@
     <!-- Primary Meta Tags -->
     <title>鲸鱼 API</title>
     <meta name="title" content="鲸鱼 API" />
-    <meta
-      name="description"
-      content="鲸鱼 API —— 统一的大模型 API 接口服务。"
-    />
+    <!-- description 由路由 head（HeadContent）按页面注入，这里不放静态副本：
+         爬虫遇到重复的 meta[name=description] 会取第一个，静态旧文案会压过
+         各页面的按页文案（见 web/src/lib/seo.ts）。 -->
     <!-- Bing搜索引擎 -->
     <meta name="msvalidate.01" content="89831DFE50C593870144A7151DAD5990" />
     <!-- 百度搜索引擎 -->

@@ -57,7 +57,9 @@ import {
 } from '@/features/performance-metrics/lib/format'
 import { PluginIcon } from '@/features/task-plugins/components/plugin-icon'
 import { formatBillingCurrencyFromUSD } from '@/lib/currency'
+import { useDynamicHead } from '@/lib/dynamic-head'
 import { getLobeIcon } from '@/lib/lobe-icon'
+import { buildModelJsonLd, SITE_URL } from '@/lib/seo'
 import { requireServerSuccess } from '@/lib/server-error-message'
 import { cn } from '@/lib/utils'
 import { useSystemConfigStore } from '@/stores/system-config-store'
@@ -79,8 +81,13 @@ import {
   type DynamicPriceEntry,
 } from '../lib/dynamic-price'
 import { parseTags } from '../lib/filters'
-import { getAvailableGroups, isTokenBasedModel } from '../lib/model-helpers'
+import {
+  getAvailableGroups,
+  getDisplayGroupRatio,
+  isTokenBasedModel,
+} from '../lib/model-helpers'
 import { withPluginPricing } from '../lib/plugin-pricing'
+import { calculateTokenPrice } from '../lib/price'
 import {
   formatFixedPrice,
   formatGroupPrice,
@@ -1776,6 +1783,34 @@ export function ModelDetails() {
     if (!models || !modelId) return null
     return models.find((m) => m.model_name === modelId) || null
   }, [models, modelId])
+
+  const displayRatio = useMemo(
+    () => (model ? getDisplayGroupRatio(model) : 1),
+    [model]
+  )
+
+  // 软 404：模型不存在时 noindex；存在时写 canonical + 价格 JSON-LD。
+  // ratio 1 = $2/1M tokens（calculateTokenPrice 的换算口径），取分组最小
+  // 倍率下的输入/输出美元价作为 Offer 价格。
+  const canonicalPath = model ? `/pricing/${encodeURIComponent(modelId)}` : null
+  const modelJsonLd = useMemo(() => {
+    if (!model || !canonicalPath) return null
+    const usdInput = calculateTokenPrice(model, 'input', displayRatio)
+    const usdOutput = calculateTokenPrice(model, 'output', displayRatio)
+    if (!Number.isFinite(usdInput) || !Number.isFinite(usdOutput)) return null
+    return buildModelJsonLd({
+      modelName: model.model_name,
+      usdInputPerMillion: usdInput,
+      usdOutputPerMillion: usdOutput,
+      canonicalPath,
+    })
+  }, [model, canonicalPath, displayRatio])
+
+  useDynamicHead({
+    canonicalPath: canonicalPath ? SITE_URL + canonicalPath : null,
+    jsonLd: modelJsonLd,
+    noindex: !isLoading && !model,
+  })
 
   const handleBack = () => {
     navigate({ to: '/pricing', search })

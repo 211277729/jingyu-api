@@ -19,6 +19,7 @@ For commercial licensing, please contact support@quantumnous.com
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import {
   createRootRouteWithContext,
+  HeadContent,
   Outlet,
   redirect,
   useNavigate,
@@ -41,6 +42,7 @@ import {
 } from '@/lib/auth-session'
 import { subscribeAuthSessionEvents } from '@/lib/auth-session-sync'
 import { resolveLegacyRoute } from '@/lib/legacy-route'
+import { buildSiteJsonLd, createPublicHead } from '@/lib/seo'
 import { useAuthStore } from '@/stores/auth-store'
 
 function RootComponent() {
@@ -96,6 +98,9 @@ function RootComponent() {
 
   return (
     <ThemeCustomizationProvider>
+      {/* head() 的 title/meta/JSON-LD 只有经由 HeadContent 才会写进 <head>，
+          SPA 里没有它所有路由 head 都不生效。子路由同名 meta 会覆盖根路由。 */}
+      <HeadContent />
       <NavigationProgress />
       <Outlet />
       <Toaster closeButton duration={5000} position='top-center' richColors />
@@ -265,6 +270,20 @@ export const Route = createRootRouteWithContext<{
     }
   },
   component: RootComponent,
+  // 全站兜底 head：首页文案 + Organization/WebSite 结构化数据。登录后的
+  // 页面路由没定义 head 时会回落到这套；公开页面用 createPublicHead 的
+  // title/description/OG 覆盖同名项（TanStack 深者优先）。
+  head: () => ({
+    meta: [
+      ...createPublicHead({
+        title: '鲸鱼 API - 统一的大模型 API 接口服务',
+        path: '',
+        description:
+          '一个密钥调用 GPT、Claude、Gemini、DeepSeek 等主流大模型，按量计费、开箱即用。',
+      }).meta,
+      ...buildSiteJsonLd().map((json) => ({ 'script:ld+json': json })),
+    ],
+  }),
   notFoundComponent: NotFoundError,
   errorComponent: GeneralError,
 })

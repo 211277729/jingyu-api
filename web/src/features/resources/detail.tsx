@@ -28,7 +28,9 @@ import { PageTransition } from '@/components/page-transition'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Markdown } from '@/components/ui/markdown'
+import { useDynamicHead } from '@/lib/dynamic-head'
 import { getLobeIcon } from '@/lib/lobe-icon'
+import { SITE_URL } from '@/lib/seo'
 import { cn } from '@/lib/utils'
 
 import { useResourcesQuery } from './api'
@@ -125,6 +127,14 @@ export function ResourceDetail({ slug }: { slug: string }) {
       .filter((other) => other.kind === item.kind && other.slug !== item.slug)
       .slice(0, 3)
   }, [items, item])
+
+  // 软 404：资源不存在（已下架/slug 错误）时 noindex；存在时写 canonical。
+  const canonicalPath = item ? `/resources/${encodeURIComponent(slug)}` : null
+  useDynamicHead({
+    canonicalPath: canonicalPath ? SITE_URL + canonicalPath : null,
+    jsonLd: null,
+    noindex: !isLoading && !isError && !item,
+  })
 
   if (isLoading) {
     return (
